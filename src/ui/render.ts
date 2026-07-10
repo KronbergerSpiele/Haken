@@ -1,6 +1,7 @@
 import { BALANCE, CARD_BY_ID, ZONE_LABELS, ZONE_SYMBOLS } from '../game/cards';
 import { cardForSlot } from '../game/engine';
 import { ZONES, type CardDefinition, type GameState, type PlayerId, type Zone } from '../game/types';
+import { cardGraphic, fighterAvatar, impactGraphic, zoneDoodle } from './graphics';
 
 export interface UiState {
   countdown: number | null;
@@ -59,6 +60,7 @@ function handMarkup(state: GameState, player: PlayerId, selected: number | null)
         aria-label="${escapeHtml(card.name)}, ${card.cost} Tokens. ${escapeHtml(card.description)}"
       >
         <span class="card-kind">${card.kind === 'attack' ? 'ANGRIFF' : card.kind === 'guard' ? 'VERTEIDIGUNG' : 'SPEZIAL'}</span>
+        ${cardGraphic(card)}
         <strong>${escapeHtml(card.shortName)}</strong>
         <span class="card-zone">${card.zone === 'choice' ? '◆' : card.zone === 'none' ? '✦' : ZONE_SYMBOLS[card.zone]}</span>
         <span class="card-cost ${affordable ? '' : 'too-costly'}">${card.cost}⚡</span>
@@ -93,7 +95,10 @@ function fighterMarkup(state: GameState, ui: UiState, player: PlayerId): string 
   const playerLabel = player === 0 ? 'K.I. KLAUS' : 'BOT BRIGITTE';
   return `<section class="fighter fighter--${player}" aria-label="Spieler ${player + 1}, ${playerLabel}">
     <div class="fighter-status">
-      <div class="fighter-name"><span>MODELL ${player + 1}</span><b>${playerLabel}</b></div>
+      <div class="fighter-identity">
+        ${fighterAvatar(player)}
+        <div class="fighter-name"><span>MODELL ${player + 1}</span><b>${playerLabel}</b></div>
+      </div>
       <div class="steam" aria-label="${state.players[player].tokens} Tokens">
         <span>TOKENS</span><span class="steam-pips">${tokenMarkup(state.players[player].tokens)}</span>
       </div>
@@ -116,6 +121,7 @@ function centerCardMarkup(state: GameState, zone: Zone): string {
       return `<div class="center-card ${cardClass(card)} owner-${center.owner} ${center.status}"
         style="--progress:${progress}" aria-label="${escapeHtml(card.name)}, ${Math.ceil((deadline - state.time) / 100) / 10} Sekunden">
         <span>${center.owner === 0 ? '↑' : '↓'}</span>
+        ${cardGraphic(card)}
         <b>${escapeHtml(card.shortName)}</b>
         <i></i>
       </div>`;
@@ -127,13 +133,17 @@ function arenaMarkup(state: GameState): string {
   const announcements = state.announcements
     .map(
       (item) =>
-        `<div class="announcement player-${item.player}" style="grid-column:${ZONES.indexOf(item.zone) + 1}">${escapeHtml(item.text)}</div>`,
+        `<div class="announcement player-${item.player}" style="grid-column:${ZONES.indexOf(item.zone) + 1}">
+          ${impactGraphic(item.text)}
+          <span>${escapeHtml(item.text)}</span>
+        </div>`,
     )
     .join('');
   return `<main class="arena" data-arena>
     ${ZONES.map(
       (zone) => `<section class="lane lane--${zone}" data-lane="${zone}">
         <div class="lane-label top">${ZONE_SYMBOLS[zone]} ${ZONE_LABELS[zone]}</div>
+        ${zoneDoodle(zone)}
         <div class="center-stack">${centerCardMarkup(state, zone)}</div>
         <div class="lane-label bottom">${ZONE_SYMBOLS[zone]} ${ZONE_LABELS[zone]}</div>
       </section>`,
@@ -147,6 +157,11 @@ function setupMarkup(ui: UiState): string {
   const countdown = ui.countdown;
   return `<main class="splash">
     <div class="sunburst"></div>
+    <div class="splash-bots" aria-hidden="true">
+      ${fighterAvatar(0)}
+      <span class="splash-zap">VS</span>
+      ${fighterAvatar(1)}
+    </div>
     <div class="logo">
       <span>ZWEI DEUTSCHE KIs · EIN HANDY · KEINE ZÜGE</span>
       <h1>HAKEN!</h1>
@@ -167,12 +182,18 @@ function setupMarkup(ui: UiState): string {
 }
 
 function finishedMarkup(state: GameState): string {
+  const winner = state.result?.winner;
   const result =
-    state.result?.winner === null
+    winner === null
       ? 'DOPPEL-K.O.'
-      : `SPIELER ${(state.result?.winner ?? 0) + 1} GEWINNT!`;
+      : `SPIELER ${(winner ?? 0) + 1} GEWINNT!`;
+  const resultGraphic =
+    winner === null
+      ? `<div class="result-bots">${fighterAvatar(0, 'bonk')}${fighterAvatar(1, 'bonk')}</div>`
+      : `<div class="result-bots">${fighterAvatar(winner ?? 0, 'winner')}<span class="result-crown">♛</span></div>`;
   return `<div class="result-overlay" role="dialog" aria-modal="true">
     <span>DAS WAR'S</span>
+    ${resultGraphic}
     <h2>${result}</h2>
     <button class="start-button" data-restart>NOCHMAL!</button>
   </div>`;

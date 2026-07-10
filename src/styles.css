@@ -69,11 +69,48 @@ button:focus-visible {
 }
 
 .logo,
+.splash-bots,
 .how-to,
 .start-button,
 .countdown,
 .rotate-note {
   position: relative;
+}
+
+.splash-bots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: clamp(66px, 15dvh, 106px);
+  margin-bottom: -18px;
+  filter: drop-shadow(4px 5px 0 rgb(23 20 16 / 35%));
+}
+
+.splash-bots .fighter-avatar {
+  width: clamp(70px, 21vw, 104px);
+  height: clamp(70px, 21vw, 104px);
+}
+
+.splash-bots .fighter-avatar:first-child {
+  transform: rotate(-9deg) translateX(7px);
+}
+
+.splash-bots .fighter-avatar:last-child {
+  transform: rotate(9deg) translateX(-7px);
+}
+
+.splash-zap {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  aspect-ratio: 1;
+  clip-path: polygon(50% 0, 61% 29%, 88% 12%, 75% 41%, 100% 50%, 72% 61%, 89% 88%, 60% 75%, 50% 100%, 39% 72%, 12% 89%, 25% 60%, 0 50%, 29% 39%, 11% 12%, 40% 27%);
+  background: var(--red);
+  color: #fff;
+  font-family: 'Archivo Black', Impact, sans-serif;
+  font-size: 18px;
+  transform: rotate(-7deg);
 }
 
 .logo span {
@@ -207,10 +244,28 @@ button:focus-visible {
   gap: 5px;
 }
 
-.fighter-name {
+.fighter-identity {
   display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.fighter-avatar {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  overflow: visible;
+  color: var(--ink);
+}
+
+.fighter-identity .fighter-avatar {
+  margin: -5px 2px -5px -3px;
+}
+
+.fighter-name {
+  display: grid;
   gap: 5px;
-  align-items: baseline;
+  align-items: center;
   font-size: clamp(10px, 2.7vw, 14px);
   line-height: 1;
 }
@@ -303,7 +358,7 @@ button:focus-visible {
 
 .card {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto minmax(22px, 0.8fr) 1fr;
   place-items: center;
   padding: 3px;
   background: var(--paper);
@@ -366,6 +421,14 @@ button:focus-visible {
   font-size: clamp(10px, 3vw, 16px);
   line-height: 0.92;
   overflow-wrap: anywhere;
+}
+
+.card-graphic {
+  z-index: 1;
+  width: clamp(27px, 8vw, 43px);
+  max-height: 100%;
+  color: var(--ink);
+  filter: drop-shadow(1px 2px 0 rgb(255 255 255 / 40%));
 }
 
 .card-zone {
@@ -464,6 +527,25 @@ button:focus-visible {
   transition: background 80ms linear;
 }
 
+.zone-doodle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(80%, 88px);
+  color: var(--paper);
+  opacity: 0.11;
+  transform: translate(-50%, -50%) rotate(-6deg);
+  pointer-events: none;
+}
+
+.zone-doodle--logik {
+  transform: translate(-50%, -50%) rotate(5deg);
+}
+
+.zone-doodle--output {
+  transform: translate(-50%, -50%) rotate(-2deg);
+}
+
 .lane:last-of-type {
   border-inline-end: 0;
 }
@@ -500,7 +582,7 @@ button:focus-visible {
 .center-card {
   position: relative;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 18px 1fr;
   align-items: center;
   width: min(95%, 110px);
   min-height: 24px;
@@ -511,6 +593,11 @@ button:focus-visible {
   color: var(--ink);
   font-size: clamp(9px, 2.6vw, 13px);
   overflow: hidden;
+}
+
+.center-card .card-graphic {
+  width: 18px;
+  height: 18px;
 }
 
 .center-card.owner-1 {
@@ -538,16 +625,40 @@ button:focus-visible {
 }
 
 .announcement {
+  position: relative;
   align-self: center;
   justify-self: center;
-  padding: 3px 5px;
-  border: 2px solid var(--ink);
-  background: var(--yellow);
-  box-shadow: 2px 2px 0 var(--ink);
+  display: grid;
+  width: clamp(60px, 19vw, 88px);
+  aspect-ratio: 1;
+  place-items: center;
   color: var(--ink);
   font-family: 'Archivo Black', Impact, sans-serif;
   font-size: clamp(9px, 3.2vw, 15px);
   animation: impact 500ms both;
+}
+
+.impact-graphic {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(2px 3px 0 var(--ink));
+}
+
+.impact-graphic text {
+  font: 900 32px 'Archivo Black', Impact, sans-serif;
+  fill: var(--red);
+}
+
+.announcement > span {
+  z-index: 1;
+  max-width: 90%;
+  padding: 2px;
+  text-align: center;
+  line-height: 0.9;
+  transform: rotate(-4deg);
 }
 
 .announcement.player-1 {
@@ -609,6 +720,38 @@ button:focus-visible {
 .result-overlay > span {
   font-weight: 900;
   letter-spacing: 0.2em;
+}
+
+.result-bots {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: clamp(80px, 22vw, 120px);
+  margin-block: -10px;
+  filter: drop-shadow(4px 5px 0 rgb(0 0 0 / 45%));
+}
+
+.result-bots .fighter-avatar {
+  width: clamp(86px, 24vw, 126px);
+  height: clamp(86px, 24vw, 126px);
+}
+
+.result-bots .fighter-avatar:first-child {
+  transform: rotate(-9deg);
+}
+
+.result-bots .fighter-avatar + .fighter-avatar {
+  margin-left: -18px;
+  transform: rotate(9deg);
+}
+
+.result-crown {
+  position: absolute;
+  top: -25px;
+  color: var(--yellow);
+  font-size: 46px;
+  text-shadow: 3px 3px 0 var(--ink);
+  transform: rotate(-10deg);
 }
 
 .landscape-warning {
@@ -675,6 +818,19 @@ button:focus-visible {
 
   .fallback-hint {
     min-height: 18px;
+  }
+
+  .fighter-avatar {
+    width: 31px;
+    height: 31px;
+  }
+
+  .card {
+    grid-template-rows: auto minmax(17px, 0.7fr) 1fr;
+  }
+
+  .card-graphic {
+    width: clamp(23px, 7vw, 34px);
   }
 }
 

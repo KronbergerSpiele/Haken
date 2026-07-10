@@ -228,6 +228,17 @@ button:focus-visible {
   font-weight: 900;
 }
 
+.surcharge-status {
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  background: var(--red);
+  padding: 1px 3px;
+  color: #fff;
+  font-size: clamp(7px, 1.8vw, 9px);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
 .steam-pips,
 .health-pips {
   display: flex;
@@ -389,6 +400,16 @@ button:focus-visible {
 .card-cost.too-costly {
   background: #aaa;
   color: #555;
+}
+
+.card-cost small {
+  margin-left: 1px;
+  color: var(--red);
+  font-size: 0.7em;
+}
+
+.card.surcharged {
+  box-shadow: 2px 2px 0 var(--ink), inset 0 0 0 2px var(--red);
 }
 
 .card-slot.empty {

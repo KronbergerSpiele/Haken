@@ -1,5 +1,5 @@
 import { BALANCE, CARD_BY_ID, ZONE_LABELS, ZONE_SYMBOLS } from '../game/cards';
-import { cardForSlot } from '../game/engine';
+import { cardForSlot, effectiveCardCost } from '../game/engine';
 import { ZONES, type CardDefinition, type GameState, type PlayerId, type Zone } from '../game/types';
 
 export interface UiState {
@@ -51,17 +51,19 @@ function handMarkup(state: GameState, player: PlayerId, selected: number | null)
         return `<div class="card-slot empty" aria-label="Leerer Kartenplatz">${waiting}</div>`;
       }
       const card = CARD_BY_ID.get(instance.definitionId)!;
-      const affordable = state.players[player].tokens >= card.cost;
+      const cost = effectiveCardCost(state, player, card);
+      const surcharged = cost > card.cost;
+      const affordable = state.players[player].tokens >= cost;
       return `<button
-        class="${cardClass(card)} ${selected === slot ? 'selected' : ''}"
+        class="${cardClass(card)} ${selected === slot ? 'selected' : ''} ${surcharged ? 'surcharged' : ''}"
         data-card data-player="${player}" data-slot="${slot}"
         aria-pressed="${selected === slot}"
-        aria-label="${escapeHtml(card.name)}, ${card.cost} Tokens. ${escapeHtml(card.description)}"
+        aria-label="${escapeHtml(card.name)}, ${cost} Tokens${surcharged ? ', inklusive 1 Token Aufschlag' : ''}. ${escapeHtml(card.description)}"
       >
         <span class="card-kind">${card.kind === 'attack' ? 'ANGRIFF' : card.kind === 'guard' ? 'VERTEIDIGUNG' : 'SPEZIAL'}</span>
         <strong>${escapeHtml(card.shortName)}</strong>
         <span class="card-zone">${card.zone === 'choice' ? '◆' : card.zone === 'none' ? '✦' : ZONE_SYMBOLS[card.zone]}</span>
-        <span class="card-cost ${affordable ? '' : 'too-costly'}">${card.cost}⚡</span>
+        <span class="card-cost ${affordable ? '' : 'too-costly'}">${cost}⚡${surcharged ? '<small>+1</small>' : ''}</span>
       </button>`;
     })
     .join('');
@@ -91,11 +93,15 @@ function fallbackMarkup(
 
 function fighterMarkup(state: GameState, ui: UiState, player: PlayerId): string {
   const playerLabel = player === 0 ? 'K.I. KLAUS' : 'BOT BRIGITTE';
+  const hasSurcharge =
+    state.players[player].costPenaltyExpiresAt !== null &&
+    state.players[player].costPenaltyExpiresAt! > state.time;
   return `<section class="fighter fighter--${player}" aria-label="Spieler ${player + 1}, ${playerLabel}">
     <div class="fighter-status">
       <div class="fighter-name"><span>MODELL ${player + 1}</span><b>${playerLabel}</b></div>
       <div class="steam" aria-label="${state.players[player].tokens} Tokens">
         <span>TOKENS</span><span class="steam-pips">${tokenMarkup(state.players[player].tokens)}</span>
+        ${hasSurcharge ? '<strong class="surcharge-status">+1 NÄCHSTE KARTE</strong>' : ''}
       </div>
     </div>
     <div class="health">${healthMarkup(state, player)}</div>

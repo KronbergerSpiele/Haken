@@ -51,6 +51,18 @@ describe('mobile game rendering', () => {
     expect(root.querySelector('[data-play-selected="0"]')?.textContent).toContain('SPIELEN');
   });
 
+  it('shows an active surcharge on the fighter and affected cards', () => {
+    const game = transition(createGame(10), { type: 'start', now: 0 }).state;
+    game.players[0].hand[0] = { instanceId: 50_001, definitionId: 'denkfehler' };
+    game.players[0].costPenaltyExpiresAt = 8_000;
+    render(root, game, ui);
+
+    const fighter = root.querySelector('.fighter--0')!;
+    expect(fighter.querySelector('.surcharge-status')?.textContent).toContain('+1');
+    expect(fighter.querySelector('[data-slot="0"]')?.classList).toContain('surcharged');
+    expect(fighter.querySelector('[data-slot="0"] .card-cost')?.textContent).toContain('3⚡');
+  });
+
   it('announces the final result and offers a rematch', () => {
     const game = transition(createGame(10), { type: 'start', now: 0 }).state;
     game.phase = 'finished';

@@ -47,7 +47,7 @@ pnpm preview    # serve the production build locally
 ## Architecture
 
 - `src/game/types.ts` defines cards, players, center state, and commands.
-- `src/game/cards.ts` contains the symmetric 21-card deck and balance constants.
+- `src/game/cards.ts` contains the symmetric 22-card deck and balance constants.
 - `src/game/engine.ts` is the deterministic transition engine. It has no DOM
   dependency and resolves simultaneous damage in batches.
 - `src/ui/flick-controller.ts` owns independent Pointer Event gestures.

@@ -61,6 +61,7 @@ function emptyPlayer(drawPile: CardInstance[]): PlayerState {
   return {
     health: { kontext: BALANCE.zoneHealth, logik: BALANCE.zoneHealth, output: BALANCE.zoneHealth },
     tokens: BALANCE.startingTokens,
+    costPenaltyExpiresAt: null,
     drawPile,
     discard: [],
     hand: Array.from({ length: BALANCE.handSize }, () => null),
@@ -198,6 +199,10 @@ function applySpecial(
       attack.expiresAt = Math.max(landedAt + BALANCE.hasteMinimumMs, attack.expiresAt! - BALANCE.hasteMs);
     }
     if (attacks.length > 0) text = 'ZACK';
+  } else if (card.effect === 'surcharge') {
+    state.players[enemy].costPenaltyExpiresAt =
+      landedAt + (card.effectDurationMs ?? BALANCE.surchargeMs);
+    text = 'AUFSCHLAG';
   }
 
   addAnnouncement(state, text, center.zone, center.owner, landedAt);
@@ -214,6 +219,9 @@ function processResourceTimers(state: GameState, now: number): void {
 
   for (const playerId of [0, 1] as const) {
     const player = state.players[playerId];
+    if (player.costPenaltyExpiresAt !== null && player.costPenaltyExpiresAt <= now) {
+      player.costPenaltyExpiresAt = null;
+    }
     for (let slot = 0; slot < BALANCE.handSize; slot += 1) {
       const refillAt = player.refillAt[slot];
       if (refillAt !== null && refillAt <= now) drawIntoSlot(state, playerId, slot);
@@ -328,6 +336,7 @@ function shiftDeadlines(state: GameState, delta: number): void {
   state.nextTokenAt += delta;
   for (const player of state.players) {
     player.refillAt = player.refillAt.map((deadline) => (deadline === null ? null : deadline + delta));
+    if (player.costPenaltyExpiresAt !== null) player.costPenaltyExpiresAt += delta;
   }
   for (const center of state.center) {
     center.landsAt += delta;
@@ -396,11 +405,13 @@ export function transition(current: GameState, command: GameCommand): Transition
 
   const card = definition(cardInstance.definitionId);
   const zone = resolveZone(card, command.zone);
-  if (!zone || player.tokens < card.cost) return { state, events };
+  const cost = effectiveCardCost(state, command.player, card);
+  if (!zone || player.tokens < cost) return { state, events };
 
   const travelMs = Math.max(BALANCE.minTravelMs, Math.min(BALANCE.maxTravelMs, command.travelMs));
   const landsAt = command.now + travelMs;
-  player.tokens -= card.cost;
+  player.tokens -= cost;
+  player.costPenaltyExpiresAt = null;
   player.hand[command.slot] = null;
   player.refillAt[command.slot] = landsAt + BALANCE.refillDelayMs;
   state.center.push({
@@ -423,4 +434,13 @@ export function transition(current: GameState, command: GameCommand): Transition
 export function cardForSlot(state: GameState, player: PlayerId, slot: number): CardDefinition | null {
   const card = state.players[player].hand[slot];
   return card ? definition(card.definitionId) : null;
+}
+
+export function effectiveCardCost(
+  state: GameState,
+  player: PlayerId,
+  card: CardDefinition,
+): number {
+  const penalty = state.players[player].costPenaltyExpiresAt;
+  return card.cost + (penalty !== null && penalty > state.time ? BALANCE.surchargeAmount : 0);
 }

@@ -10,11 +10,11 @@ export function fighterAvatar(player: PlayerId, mood: 'ready' | 'winner' | 'bonk
       ? '<path d="M22 39q10 12 20 0" fill="none" stroke="currentColor" stroke-width="3"/><path d="m18 28 4-4 4 4m12 0 4-4 4 4" fill="none" stroke="currentColor" stroke-width="3"/>'
       : mood === 'bonk'
         ? '<path d="m18 24 8 8m0-8-8 8m20-8 8 8m0-8-8 8M24 43q8-7 16 0" fill="none" stroke="currentColor" stroke-width="3"/>'
-        : '<circle cx="23" cy="28" r="3"/><circle cx="41" cy="28" r="3"/><path d="M24 41q8 6 16 0" fill="none" stroke="currentColor" stroke-width="3"/>';
+        : '<g class="avatar-eyes"><circle cx="23" cy="28" r="3"/><circle cx="41" cy="28" r="3"/></g><path d="M24 41q8 6 16 0" fill="none" stroke="currentColor" stroke-width="3"/>';
 
   if (player === 0) {
     return svg(
-      'fighter-avatar fighter-avatar--klaus',
+      `fighter-avatar fighter-avatar--klaus fighter-avatar--${mood}`,
       `<path class="avatar-steam" d="M17 8c-7-6 5-7 0-13M47 8c7-6-5-7 0-13" fill="none" stroke="currentColor" stroke-width="3"/>
        <path d="M22 10 19 3m23 7 3-7M14 14h36l5 9v27l-8 8H17l-8-8V23z" fill="#8ed0e9" stroke="currentColor" stroke-width="3"/>
        <path d="M9 27 3 31v15l6 4m46-23 6 4v15l-6 4" fill="#ffc928" stroke="currentColor" stroke-width="3"/>
@@ -25,13 +25,15 @@ export function fighterAvatar(player: PlayerId, mood: 'ready' | 'winner' | 'bonk
   }
 
   return svg(
-    'fighter-avatar fighter-avatar--brigitte',
+    `fighter-avatar fighter-avatar--brigitte fighter-avatar--${mood}`,
     `<path d="M13 23Q14 7 32 7t19 16v27l-8 8H21l-8-8z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/>
      <path d="M12 25Q13 5 32 5t20 20l-10-7-8 6-8-6-14 9z" fill="#e84a34" stroke="currentColor" stroke-width="3"/>
      <path d="M12 27 5 32v15l8 3m39-23 7 5v15l-8 3" fill="#308ac4" stroke="currentColor" stroke-width="3"/>
      ${face}
-     <path d="M45 42h10v15H38V47z" fill="#fff" stroke="currentColor" stroke-width="3"/>
-     <path d="m42 50 3 3 6-7" fill="none" stroke="#40a462" stroke-width="3"/>`,
+     <g class="avatar-clipboard">
+       <path d="M45 42h10v15H38V47z" fill="#fff" stroke="currentColor" stroke-width="3"/>
+       <path d="m42 50 3 3 6-7" fill="none" stroke="#40a462" stroke-width="3"/>
+     </g>`,
   );
 }
 

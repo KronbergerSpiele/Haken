@@ -25,6 +25,7 @@ describe('mobile game rendering', () => {
     expect(root.querySelector('h1')?.textContent).toBe('HAKEN!');
     expect(root.querySelectorAll('.how-to li')).toHaveLength(3);
     expect(root.querySelectorAll('.splash-bots .fighter-avatar')).toHaveLength(2);
+    expect(root.querySelectorAll('.splash-bots .fighter-avatar--ready')).toHaveLength(2);
     expect(root.querySelector('[data-start]')).not.toBeNull();
   });
 
@@ -74,6 +75,7 @@ describe('mobile game rendering', () => {
 
     expect(root.querySelector('[role="dialog"]')?.textContent).toContain('DOPPEL-K.O.');
     expect(root.querySelectorAll('.result-bots .fighter-avatar')).toHaveLength(2);
+    expect(root.querySelectorAll('.result-bots .fighter-avatar--bonk')).toHaveLength(2);
     expect(root.querySelector('[data-restart]')).not.toBeNull();
   });
 });

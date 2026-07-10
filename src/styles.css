@@ -258,6 +258,43 @@ button:focus-visible {
   color: var(--ink);
 }
 
+.fighter-avatar--ready {
+  animation: avatarHover 1.8s ease-in-out infinite alternate;
+}
+
+.fighter-avatar--brigitte.fighter-avatar--ready {
+  animation-delay: -0.9s;
+}
+
+.fighter-avatar--winner {
+  animation: avatarVictory 650ms ease-in-out infinite;
+}
+
+.fighter-avatar--bonk {
+  animation: avatarDizzy 900ms ease-in-out infinite;
+}
+
+.avatar-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: avatarBlink 4.2s linear infinite;
+}
+
+.fighter-avatar--brigitte .avatar-eyes {
+  animation-delay: -2.1s;
+}
+
+.avatar-steam {
+  stroke-dasharray: 15 5;
+  animation: steamPuff 1.5s linear infinite;
+}
+
+.avatar-clipboard {
+  transform-box: fill-box;
+  transform-origin: bottom left;
+  animation: clipboardCheck 2.6s ease-in-out infinite;
+}
+
 .fighter-identity .fighter-avatar {
   margin: -5px 2px -5px -3px;
 }
@@ -780,6 +817,75 @@ button:focus-visible {
 @keyframes drift {
   to {
     rotate: 360deg;
+  }
+}
+
+@keyframes avatarHover {
+  from {
+    translate: 0 1px;
+  }
+  to {
+    translate: 0 -2px;
+  }
+}
+
+@keyframes avatarBlink {
+  0%,
+  45%,
+  49%,
+  100% {
+    transform: scaleY(1);
+  }
+  47% {
+    transform: scaleY(0.08);
+  }
+}
+
+@keyframes steamPuff {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+@keyframes clipboardCheck {
+  0%,
+  72%,
+  100% {
+    transform: rotate(0);
+  }
+  78% {
+    transform: rotate(-12deg);
+  }
+  86% {
+    transform: rotate(7deg);
+  }
+}
+
+@keyframes avatarVictory {
+  0%,
+  100% {
+    translate: 0 0;
+    scale: 1;
+  }
+  45% {
+    translate: 0 -9px;
+    scale: 1.06 0.96;
+  }
+  65% {
+    translate: 0 1px;
+    scale: 0.98 1.02;
+  }
+}
+
+@keyframes avatarDizzy {
+  0%,
+  100% {
+    rotate: -3deg;
+    translate: -1px 0;
+  }
+  50% {
+    rotate: 3deg;
+    translate: 1px 0;
   }
 }
 

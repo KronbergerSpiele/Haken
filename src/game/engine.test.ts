@@ -47,12 +47,12 @@ function totalCards(state: GameState, player: PlayerId): number {
 }
 
 describe('game setup', () => {
-  it('builds identical twenty-one-card decks and four-card hands', () => {
+  it('builds identical twenty-two-card decks and four-card hands', () => {
     const state = createGame(42);
-    expect(totalCards(state, 0)).toBe(21);
-    expect(totalCards(state, 1)).toBe(21);
+    expect(totalCards(state, 0)).toBe(22);
+    expect(totalCards(state, 1)).toBe(22);
     expect(state.players[0].hand).toHaveLength(4);
-    expect([...CARD_BY_ID.values()].reduce((sum, card) => sum + card.copies, 0)).toBe(21);
+    expect([...CARD_BY_ID.values()].reduce((sum, card) => sum + card.copies, 0)).toBe(22);
   });
 
   it('reproduces shuffled hands from the same seed', () => {
@@ -194,6 +194,40 @@ describe('center resolution', () => {
     state = transition(state, { type: 'tick', now: 520 }).state;
 
     expect(state.center.find((card) => card.definitionId === 'kontext-kollaps')?.expiresAt).toBe(2_120);
+  });
+
+  it('adds one token to the next enemy card cost and then clears the surcharge', () => {
+    let state = play(started(), 0, 'buerokratieaufschlag', 0);
+    state = transition(state, { type: 'tick', now: 220 }).state;
+    expect(state.players[1].costPenaltyExpiresAt).toBe(8_220);
+
+    state.players[1].tokens = 3;
+    state = play(state, 1, 'denkfehler', 300);
+
+    expect(state.players[1].tokens).toBe(0);
+    expect(state.players[1].costPenaltyExpiresAt).toBeNull();
+    expect(state.center.some((card) => card.definitionId === 'denkfehler')).toBe(true);
+  });
+
+  it('keeps the surcharge when a card is unaffordable and expires it after eight seconds', () => {
+    let state = play(started(), 0, 'buerokratieaufschlag', 0);
+    state = transition(state, { type: 'tick', now: 220 }).state;
+    state.players[1].tokens = 2;
+    stage(state, 1, 'denkfehler');
+
+    state = transition(state, {
+      type: 'play',
+      now: 300,
+      player: 1,
+      slot: 0,
+      zone: 'logik',
+      travelMs: 180,
+    }).state;
+    expect(state.players[1].tokens).toBe(2);
+    expect(state.players[1].costPenaltyExpiresAt).toBe(8_220);
+
+    state = transition(state, { type: 'tick', now: 8_220 }).state;
+    expect(state.players[1].costPenaltyExpiresAt).toBeNull();
   });
 
   it('applies simultaneous lethal damage as a double knockout', () => {

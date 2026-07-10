@@ -3,7 +3,7 @@ export const ZONES = ['kontext', 'logik', 'output'] as const;
 export type Zone = (typeof ZONES)[number];
 export type PlayerId = 0 | 1;
 export type CardKind = 'attack' | 'guard' | 'special';
-export type SpecialEffect = 'counter' | 'redirect' | 'haste';
+export type SpecialEffect = 'counter' | 'redirect' | 'haste' | 'surcharge';
 export type GamePhase = 'setup' | 'playing' | 'paused' | 'finished';
 
 export interface CardDefinition {
@@ -15,6 +15,7 @@ export interface CardDefinition {
   copies: number;
   zone: Zone | 'choice' | 'none';
   durationMs: number;
+  effectDurationMs?: number;
   damage?: number;
   effect?: SpecialEffect;
   description: string;
@@ -28,6 +29,7 @@ export interface CardInstance {
 export interface PlayerState {
   health: Record<Zone, number>;
   tokens: number;
+  costPenaltyExpiresAt: number | null;
   drawPile: CardInstance[];
   discard: CardInstance[];
   hand: Array<CardInstance | null>;

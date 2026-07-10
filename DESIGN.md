@@ -81,7 +81,7 @@ Commands are ordered by monotonic release time and stable card instance ID.
 Player assignment to the first ID alternates with the match seed. Pausing or
 hiding the page freezes travel, regeneration, refills, and center deadlines.
 
-### Initial 21-card deck
+### Initial 22-card deck
 
 - **Kontextzertrümmerungshammer** ×3 — attack, Kontext, cost 2, damage 1, fuse 2,700 ms.
 - **Logikverdrehungsmaschine** ×3 — attack, Logik, cost 2, damage 1, fuse 2,400 ms.
@@ -100,6 +100,9 @@ hiding the page freezes travel, regeneration, refills, and center deadlines.
   Ausgabe. It visibly fizzles when no alternative is healthy.
 - **Turbo-Inferenz** ×1 — special, cost 2. Reduce all currently armed friendly
   attack deadlines by 800 ms, but never below 500 ms from now.
+- **Bürokratieaufschlag** ×1 — special, cost 1. The next enemy card costs 1
+  additional token. The surcharge does not stack, is consumed only by a
+  successful play, and expires after 8,000 ms.
 
 All values are balance constants. A typical match should last 90–150 seconds.
 

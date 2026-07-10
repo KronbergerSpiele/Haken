@@ -22,8 +22,10 @@ Both players can drag cards at exactly the same time. A sideways drag recycles
 an unwanted card. Tapping a card exposes accessible lane and **Spielen**
 controls for players who do not want to flick.
 
-The complete rules, balance values, card catalog, timing model, UX requirements,
-and implementation contracts are in [DESIGN.md](DESIGN.md).
+The complete rules, balance values, card catalog, timing model, and UX
+requirements are in the [game design document](DESIGN.md). Architecture and
+implementation decisions are in the
+[technical design document](TECHNICAL_DESIGN.md).
 
 ## Development
 

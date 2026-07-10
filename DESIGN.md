@@ -1,4 +1,4 @@
-# Haken — game and implementation specification
+# Haken — game design document
 
 ## Product
 
@@ -121,26 +121,6 @@ Each result combines motion, text, symbol, and color: `TREFFER`, `GEBLOCKT`,
 never required. Reduced-motion mode replaces travel and shake effects with
 short fades. Large controls, high contrast, semantic buttons, visible focus,
 and live status announcements support non-gesture and assistive use.
-
-## Technical design
-
-The site is framework-free TypeScript built by Vite. Native DOM rendering,
-Pointer Events, CSS, `requestAnimationFrame`, and the Fullscreen API are enough;
-there is no server, account, persistence, or network play.
-
-The game engine is a pure state transition layer. UI code emits timestamped
-commands and renders snapshots. Seeded randomization makes every deck and test
-reproducible. Absolute monotonic deadlines prevent timer drift. Visibility
-changes are represented as explicit pause/resume commands.
-
-Primary modules:
-
-- `src/game/types.ts`: state, card, command, and event contracts.
-- `src/game/cards.ts`: deck definitions and balance constants.
-- `src/game/engine.ts`: seeded setup and deterministic state transitions.
-- `src/ui/flick-controller.ts`: pointer ownership and gesture interpretation.
-- `src/ui/render.ts`: DOM projection and accessible fallback controls.
-- `src/main.ts`: clock, lifecycle, fullscreen, sound, and application wiring.
 
 ## Acceptance criteria
 

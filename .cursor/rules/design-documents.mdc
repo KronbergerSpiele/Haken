@@ -1,0 +1,28 @@
+---
+alwaysApply: true
+---
+
+# Keep design documents authoritative
+
+Before planning, reviewing, or changing this repository, read and follow both
+canonical design documents:
+
+@DESIGN.md
+@TECHNICAL_DESIGN.md
+
+Keep the documents synchronized with every relevant change:
+
+- Update `DESIGN.md` in the same change whenever gameplay, game rules, balance,
+  player-facing content, controls, feedback, UX, accessibility requirements,
+  or acceptance criteria are introduced, changed, or removed.
+- Update `TECHNICAL_DESIGN.md` in the same change whenever an architectural or
+  technical decision is introduced, changed, superseded, or removed. This
+  includes module responsibilities, state and event contracts, algorithms,
+  dependencies, build and deployment, persistence and networking, platform
+  integrations, performance, security, accessibility implementation, and test
+  strategy.
+- Update both documents when a decision affects both game behavior and its
+  implementation.
+- Treat documentation updates as part of the definition of done. Do not defer
+  them to a later task, and do not document speculative decisions that were not
+  adopted.

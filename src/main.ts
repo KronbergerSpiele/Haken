@@ -12,7 +12,7 @@ let game: GameState = createGame();
 const ui: UiState = {
   countdown: null,
   selectedSlots: [null, null],
-  selectedZones: ['bauch', 'bauch'],
+  selectedZones: ['logik', 'logik'],
   muted: false,
 };
 let audioContext: AudioContext | null = null;

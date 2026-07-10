@@ -59,8 +59,8 @@ function createDeck(player: PlayerId, firstPlayer: PlayerId): CardInstance[] {
 
 function emptyPlayer(drawPile: CardInstance[]): PlayerState {
   return {
-    health: { kopf: BALANCE.zoneHealth, bauch: BALANCE.zoneHealth, beine: BALANCE.zoneHealth },
-    steam: BALANCE.startingSteam,
+    health: { kontext: BALANCE.zoneHealth, logik: BALANCE.zoneHealth, output: BALANCE.zoneHealth },
+    tokens: BALANCE.startingTokens,
     drawPile,
     discard: [],
     hand: Array.from({ length: BALANCE.handSize }, () => null),
@@ -94,7 +94,7 @@ export function createGame(seed = Date.now() >>> 0, now = 0): GameState {
     rngState: secondShuffle.rngState,
     time: now,
     pausedAt: null,
-    nextSteamAt: now + BALANCE.steamIntervalMs,
+    nextTokenAt: now + BALANCE.tokenIntervalMs,
     players: [emptyPlayer(firstShuffle.items), emptyPlayer(secondShuffle.items)],
     center: [],
     announcements: [],
@@ -205,11 +205,11 @@ function applySpecial(
 }
 
 function processResourceTimers(state: GameState, now: number): void {
-  while (state.nextSteamAt <= now) {
+  while (state.nextTokenAt <= now) {
     for (const player of state.players) {
-      player.steam = Math.min(BALANCE.maxSteam, player.steam + 1);
+      player.tokens = Math.min(BALANCE.maxTokens, player.tokens + 1);
     }
-    state.nextSteamAt += BALANCE.steamIntervalMs;
+    state.nextTokenAt += BALANCE.tokenIntervalMs;
   }
 
   for (const playerId of [0, 1] as const) {
@@ -325,7 +325,7 @@ function tickPlaying(state: GameState, now: number, events: GameEvent[]): void {
 }
 
 function shiftDeadlines(state: GameState, delta: number): void {
-  state.nextSteamAt += delta;
+  state.nextTokenAt += delta;
   for (const player of state.players) {
     player.refillAt = player.refillAt.map((deadline) => (deadline === null ? null : deadline + delta));
   }
@@ -337,7 +337,7 @@ function shiftDeadlines(state: GameState, delta: number): void {
 }
 
 function resolveZone(card: CardDefinition, requested?: Zone): Zone | null {
-  if (card.zone === 'none') return 'bauch';
+  if (card.zone === 'none') return 'logik';
   if (card.zone === 'choice') return requested && ZONES.includes(requested) ? requested : null;
   return card.zone;
 }
@@ -349,7 +349,7 @@ export function transition(current: GameState, command: GameCommand): Transition
   if (command.type === 'start' && state.phase === 'setup') {
     state.phase = 'playing';
     state.time = command.now;
-    state.nextSteamAt = command.now + BALANCE.steamIntervalMs;
+    state.nextTokenAt = command.now + BALANCE.tokenIntervalMs;
     return { state, events };
   }
 
@@ -396,11 +396,11 @@ export function transition(current: GameState, command: GameCommand): Transition
 
   const card = definition(cardInstance.definitionId);
   const zone = resolveZone(card, command.zone);
-  if (!zone || player.steam < card.cost) return { state, events };
+  if (!zone || player.tokens < card.cost) return { state, events };
 
   const travelMs = Math.max(BALANCE.minTravelMs, Math.min(BALANCE.maxTravelMs, command.travelMs));
   const landsAt = command.now + travelMs;
-  player.steam -= card.cost;
+  player.tokens -= card.cost;
   player.hand[command.slot] = null;
   player.refillAt[command.slot] = landsAt + BALANCE.refillDelayMs;
   state.center.push({

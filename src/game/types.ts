@@ -1,4 +1,4 @@
-export const ZONES = ['kopf', 'bauch', 'beine'] as const;
+export const ZONES = ['kontext', 'logik', 'output'] as const;
 
 export type Zone = (typeof ZONES)[number];
 export type PlayerId = 0 | 1;
@@ -27,7 +27,7 @@ export interface CardInstance {
 
 export interface PlayerState {
   health: Record<Zone, number>;
-  steam: number;
+  tokens: number;
   drawPile: CardInstance[];
   discard: CardInstance[];
   hand: Array<CardInstance | null>;
@@ -66,7 +66,7 @@ export interface GameState {
   rngState: number;
   time: number;
   pausedAt: number | null;
-  nextSteamAt: number;
+  nextTokenAt: number;
   players: [PlayerState, PlayerState];
   center: CenterCard[];
   announcements: Announcement[];

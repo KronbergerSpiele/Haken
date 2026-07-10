@@ -8,7 +8,7 @@ import { render } from './render';
 const ui: UiState = {
   countdown: null,
   selectedSlots: [null, null],
-  selectedZones: ['bauch', 'bauch'],
+  selectedZones: ['logik', 'logik'],
   muted: false,
 };
 
@@ -40,7 +40,7 @@ describe('mobile game rendering', () => {
 
   it('exposes lane and play controls for a selected choice card', () => {
     const game = transition(createGame(10), { type: 'start', now: 0 }).state;
-    game.players[0].hand[0] = { instanceId: 50_000, definitionId: 'doppelwumms' };
+    game.players[0].hand[0] = { instanceId: 50_000, definitionId: 'bundes-guardrail' };
     const selectedUi: UiState = {
       ...ui,
       selectedSlots: [0, null],

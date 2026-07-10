@@ -117,7 +117,7 @@ export class FlickController {
 
   private laneAt(clientX: number): Zone {
     const arena = this.root.querySelector<HTMLElement>('[data-arena]');
-    if (!arena) return 'bauch';
+    if (!arena) return 'logik';
     const rect = arena.getBoundingClientRect();
     const ratio = Math.max(0, Math.min(0.999, (clientX - rect.left) / Math.max(1, rect.width)));
     return ZONES[Math.floor(ratio * ZONES.length)]!;

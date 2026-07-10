@@ -2,41 +2,42 @@
 
 ## Product
 
-Haken is a local, two-player card brawl played simultaneously on one phone. One
-player sits at each end of a portrait-oriented device. Both flick cards from
-their staging areas into a shared three-lane arena; there are no turns, rounds,
-or active-player locks.
+Haken is a local battle between two fictional German AI models, K.I. Klaus and
+Bot Brigitte, played simultaneously on one phone. One player sits at each end of
+a portrait-oriented device. Both spend tokens and flick cards from their staging
+areas into a shared three-lane arena; there are no turns, rounds, or
+active-player locks.
 
-The presentation is fictional cartoon slapstick: grumbling rivals, impact stars,
-rubber-hose motion, and absurd card names. It contains no gore and does not
-imitate or demean real people.
+The presentation combines German bureaucratic humor with cartoon AI chaos:
+overheated servers, stern guardrails, terminal symbols, impact stars, and absurd
+model names. It contains no gore and does not imitate or demean real people.
 
 ## Match rules
 
 ### Objective
 
-Each fighter has three body zones:
+Each model has three system zones:
 
-- **Kopf** (head), symbol ▲
-- **Bauch** (belly), symbol ●
-- **Beine** (legs), symbol ║
+- **Kontext**, symbol ▣
+- **Logik**, symbol ⌘
+- **Output**, symbol ›_
 
 Every zone starts with 3 health. A zone is *kaputt* at zero health. Breaking two
 of the opponent's zones wins. Damage due in the same simulation step is applied
 as one batch. If both fighters break a second zone in that batch, the result is
 **Doppel-K.O.**
 
-### Dampf and staging
+### Tokens and staging
 
-- Each fighter starts with 3 Dampf, can hold 6, and gains 1 every 900 ms.
+- Each model starts with 3 tokens, can hold 6, and gains 1 every 1,200 ms.
 - The two decks are identical but shuffled independently from a reproducible
   match seed.
 - Four face-up cards are staged for each player.
-- A legal release reserves its Dampf immediately. The emptied slot receives a
-  new card 700 ms after the played card lands.
+- A legal release reserves its tokens immediately. The emptied slot receives a
+  new card 900 ms after the played card lands.
 - When the draw pile is empty, shuffle the discard pile into a new draw pile.
 - Dragging a card sideways recycles it for free and locks that slot for
-  1,200 ms. A recycled card goes to the discard pile.
+  1,500 ms. A recycled card goes to the discard pile.
 
 ### Flicking
 
@@ -47,7 +48,7 @@ their slots without changing game state.
 
 Fixed-zone cards curve into their printed lane. Wild and lane-selecting cards
 use the horizontal release position; the intended lane is highlighted during
-the drag. Travel lasts 180–350 ms, based on release speed. A card's timeout
+the drag. Travel lasts 220–480 ms, based on release speed. A card's timeout
 starts only when it lands.
 
 Pointer capture and pointer IDs isolate simultaneous drags. The same card cannot
@@ -63,7 +64,7 @@ remaining lifetime.
   in the lane absorbs the attack; otherwise its damage is applied.
 - Guards activate on landing, absorb one matching attack, and are discarded. An
   unused guard is discarded at the end of its duration.
-- Specials apply on landing, remain visible for 600 ms, and then discard.
+- Specials apply on landing, remain visible for 800 ms, and then discard.
 - Attacks do not cancel attacks. Exchanged hits and double knockouts are valid.
 
 The engine processes each timestamp in this order:
@@ -79,25 +80,27 @@ Commands are ordered by monotonic release time and stable card instance ID.
 Player assignment to the first ID alternates with the match seed. Pausing or
 hiding the page freezes travel, regeneration, refills, and center deadlines.
 
-### Initial 20-card deck
+### Initial 21-card deck
 
-- **Kopfnuss** ×3 — attack, Kopf, cost 2, damage 1, fuse 1,800 ms.
-- **Bauchklatscher** ×3 — attack, Bauch, cost 2, damage 1, fuse 1,600 ms.
-- **Schienbein-Schreck** ×3 — attack, Beine, cost 2, damage 1, fuse 1,400 ms.
-- **Doppelwumms** ×1 — attack, chosen lane, cost 4, damage 2, fuse 2,600 ms.
-- **Dickschädel** ×2 — guard, Kopf, cost 1, duration 3,000 ms.
-- **Bauch rein!** ×2 — guard, Bauch, cost 1, duration 2,800 ms.
-- **Hopser** ×2 — guard, Beine, cost 1, duration 2,400 ms.
-- **Retourkutsche** ×2 — special, chosen lane, cost 3. Discard the oldest armed
+- **Kontext-Kollaps** ×3 — attack, Kontext, cost 2, damage 1, fuse 2,700 ms.
+- **Denkfehler Deluxe** ×3 — attack, Logik, cost 2, damage 1, fuse 2,400 ms.
+- **Output-Salat** ×3 — attack, Output, cost 2, damage 1, fuse 2,100 ms.
+- **Tokensturm** ×1 — attack, chosen lane, cost 4, damage 2, fuse 3,900 ms.
+- **Kontext-Puffer** ×2 — guard, Kontext, cost 1, duration 4,200 ms.
+- **Plausibilitätscheck** ×2 — guard, Logik, cost 1, duration 3,900 ms.
+- **Output-Filter** ×2 — guard, Output, cost 1, duration 3,600 ms.
+- **Bundes-Guardrail** ×1 — general guard, cost 2. It can be flicked into any
+  chosen lane, remains for 3,000 ms, and absorbs one attack there.
+- **Prompt-Retoure** ×2 — special, chosen lane, cost 3. Discard the oldest armed
   enemy attack there and create a friendly 1-damage return attack with a
-  1,500 ms fuse. It visibly fizzles when there is no target.
-- **Ablenkungsmanöver** ×1 — special, chosen lane, cost 2. Move the oldest armed
-  enemy attack there to the next healthy zone in the order Kopf → Bauch → Beine.
-  It visibly fizzles when no alternative is healthy.
-- **Jetzt erst recht!** ×1 — special, cost 2. Reduce all currently armed friendly
-  attack deadlines by 600 ms, but never below 300 ms from now.
+  2,200 ms fuse. It visibly fizzles when there is no target.
+- **Kontext-Routing** ×1 — special, chosen lane, cost 2. Move the oldest armed
+  enemy attack there to the next healthy zone in the order Kontext → Logik →
+  Output. It visibly fizzles when no alternative is healthy.
+- **Turbo-Inferenz** ×1 — special, cost 2. Reduce all currently armed friendly
+  attack deadlines by 800 ms, but never below 500 ms from now.
 
-All values are balance constants. A typical match should last 60–120 seconds.
+All values are balance constants. A typical match should last 90–150 seconds.
 
 ## Screen and feedback
 
@@ -141,7 +144,7 @@ Primary modules:
 - A complete match is playable at 320×568 through 430×932 portrait sizes
   without document scrolling.
 - Every card leaves the center through resolution, consumption, or timeout.
-- Dampf cannot become negative and one staged card cannot be played twice.
+- Tokens cannot become negative and one staged card cannot be played twice.
 - Same seed and timestamped command sequence produce the same result.
 - Simultaneous lethal damage produces Doppel-K.O.
 - Hiding the page cannot resolve cards or regenerate resources.

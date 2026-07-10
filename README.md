@@ -25,19 +25,22 @@ and implementation contracts are in [DESIGN.md](DESIGN.md).
 
 ## Development
 
-Requires Node.js 22 or newer.
+Requires Node.js 22 or newer and pnpm 10. The pinned pnpm version can be
+activated with Corepack. Dependency resolution rejects package releases newer
+than seven days (`minimumReleaseAge: 10080`).
 
 ```bash
-npm install
-npm run dev
+corepack enable
+pnpm install
+pnpm dev
 ```
 
 Useful commands:
 
 ```bash
-npm test          # deterministic engine and DOM smoke tests
-npm run build     # type-check and create dist/
-npm run preview   # serve the production build locally
+pnpm test       # deterministic engine and DOM smoke tests
+pnpm build      # type-check and create dist/
+pnpm preview    # serve the production build locally
 ```
 
 ## Architecture

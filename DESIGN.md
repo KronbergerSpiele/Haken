@@ -20,7 +20,7 @@ Each model has three system zones:
 
 - **Kontext**, symbol ▣
 - **Logik**, symbol ⌘
-- **Output**, symbol ›_
+- **Ausgabe**, symbol ›_
 
 Every zone starts with 3 health. A zone is *kaputt* at zero health. Breaking two
 of the opponent's zones wins. Damage due in the same simulation step is applied
@@ -82,21 +82,21 @@ hiding the page freezes travel, regeneration, refills, and center deadlines.
 
 ### Initial 21-card deck
 
-- **Kontext-Kollaps** ×3 — attack, Kontext, cost 2, damage 1, fuse 2,700 ms.
-- **Denkfehler Deluxe** ×3 — attack, Logik, cost 2, damage 1, fuse 2,400 ms.
-- **Output-Salat** ×3 — attack, Output, cost 2, damage 1, fuse 2,100 ms.
-- **Tokensturm** ×1 — attack, chosen lane, cost 4, damage 2, fuse 3,900 ms.
-- **Kontext-Puffer** ×2 — guard, Kontext, cost 1, duration 4,200 ms.
-- **Plausibilitätscheck** ×2 — guard, Logik, cost 1, duration 3,900 ms.
-- **Output-Filter** ×2 — guard, Output, cost 1, duration 3,600 ms.
-- **Bundes-Guardrail** ×1 — general guard, cost 2. It can be flicked into any
+- **Kontextzertrümmerungshammer** ×3 — attack, Kontext, cost 2, damage 1, fuse 2,700 ms.
+- **Logikverdrehungsmaschine** ×3 — attack, Logik, cost 2, damage 1, fuse 2,400 ms.
+- **Ausgabeverwüstungskanone** ×3 — attack, Ausgabe, cost 2, damage 1, fuse 2,100 ms.
+- **Rechenleistungsüberlastungsgewitter** ×1 — attack, chosen lane, cost 4, damage 2, fuse 3,900 ms.
+- **Kontextzusammenprallschutzpolster** ×2 — guard, Kontext, cost 1, duration 4,200 ms.
+- **Logikfehlerabwehrschild** ×2 — guard, Logik, cost 1, duration 3,900 ms.
+- **Ausgabeschadensbegrenzungsfilter** ×2 — guard, Ausgabe, cost 1, duration 3,600 ms.
+- **Bundesrundumverteidigungszaun** ×1 — general guard, cost 2. It can be flicked into any
   chosen lane, remains for 3,000 ms, and absorbs one attack there.
 - **Prompt-Retoure** ×2 — special, chosen lane, cost 3. Discard the oldest armed
   enemy attack there and create a friendly 1-damage return attack with a
   2,200 ms fuse. It visibly fizzles when there is no target.
 - **Kontext-Routing** ×1 — special, chosen lane, cost 2. Move the oldest armed
   enemy attack there to the next healthy zone in the order Kontext → Logik →
-  Output. It visibly fizzles when no alternative is healthy.
+  Ausgabe. It visibly fizzles when no alternative is healthy.
 - **Turbo-Inferenz** ×1 — special, cost 2. Reduce all currently armed friendly
   attack deadlines by 800 ms, but never below 500 ms from now.
 

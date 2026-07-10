@@ -58,7 +58,7 @@ function handMarkup(state: GameState, player: PlayerId, selected: number | null)
         aria-pressed="${selected === slot}"
         aria-label="${escapeHtml(card.name)}, ${card.cost} Tokens. ${escapeHtml(card.description)}"
       >
-        <span class="card-kind">${card.kind === 'attack' ? 'ANGRIFF' : card.kind === 'guard' ? 'GUARD' : 'SPEZIAL'}</span>
+        <span class="card-kind">${card.kind === 'attack' ? 'ANGRIFF' : card.kind === 'guard' ? 'VERTEIDIGUNG' : 'SPEZIAL'}</span>
         <strong>${escapeHtml(card.shortName)}</strong>
         <span class="card-zone">${card.zone === 'choice' ? '◆' : card.zone === 'none' ? '✦' : ZONE_SYMBOLS[card.zone]}</span>
         <span class="card-cost ${affordable ? '' : 'too-costly'}">${card.cost}⚡</span>
@@ -155,7 +155,7 @@ function setupMarkup(ui: UiState): string {
     ${
       countdown === null
         ? `<ol class="how-to">
-            <li><b>1</b> Kontext, Logik oder Output crashen</li>
+            <li><b>1</b> Kontext, Logik oder Ausgabe zertrümmern</li>
             <li><b>2</b> Tokens laden, Karten schnippen</li>
             <li><b>3</b> Guardrails vor Ablauf platzieren</li>
           </ol>

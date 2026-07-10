@@ -31,10 +31,10 @@ function healthMarkup(state: GameState, player: PlayerId): string {
   }).join('');
 }
 
-function steamMarkup(steam: number): string {
+function tokenMarkup(tokens: number): string {
   return Array.from(
-    { length: BALANCE.maxSteam },
-    (_, index) => `<i class="${index < steam ? 'full' : ''}"></i>`,
+    { length: BALANCE.maxTokens },
+    (_, index) => `<i class="${index < tokens ? 'full' : ''}"></i>`,
   ).join('');
 }
 
@@ -51,14 +51,14 @@ function handMarkup(state: GameState, player: PlayerId, selected: number | null)
         return `<div class="card-slot empty" aria-label="Leerer Kartenplatz">${waiting}</div>`;
       }
       const card = CARD_BY_ID.get(instance.definitionId)!;
-      const affordable = state.players[player].steam >= card.cost;
+      const affordable = state.players[player].tokens >= card.cost;
       return `<button
         class="${cardClass(card)} ${selected === slot ? 'selected' : ''}"
         data-card data-player="${player}" data-slot="${slot}"
         aria-pressed="${selected === slot}"
-        aria-label="${escapeHtml(card.name)}, ${card.cost} Dampf. ${escapeHtml(card.description)}"
+        aria-label="${escapeHtml(card.name)}, ${card.cost} Tokens. ${escapeHtml(card.description)}"
       >
-        <span class="card-kind">${card.kind === 'attack' ? 'ANGRIFF' : card.kind === 'guard' ? 'BLOCK' : 'SPEZIAL'}</span>
+        <span class="card-kind">${card.kind === 'attack' ? 'ANGRIFF' : card.kind === 'guard' ? 'GUARD' : 'SPEZIAL'}</span>
         <strong>${escapeHtml(card.shortName)}</strong>
         <span class="card-zone">${card.zone === 'choice' ? '◆' : card.zone === 'none' ? '✦' : ZONE_SYMBOLS[card.zone]}</span>
         <span class="card-cost ${affordable ? '' : 'too-costly'}">${card.cost}⚡</span>
@@ -90,12 +90,12 @@ function fallbackMarkup(
 }
 
 function fighterMarkup(state: GameState, ui: UiState, player: PlayerId): string {
-  const playerLabel = player === 0 ? 'BLAU' : 'ROT';
+  const playerLabel = player === 0 ? 'K.I. KLAUS' : 'BOT BRIGITTE';
   return `<section class="fighter fighter--${player}" aria-label="Spieler ${player + 1}, ${playerLabel}">
     <div class="fighter-status">
-      <div class="fighter-name"><span>SPIELER ${player + 1}</span><b>${playerLabel}</b></div>
-      <div class="steam" aria-label="${state.players[player].steam} Dampf">
-        <span>DAMPF</span><span class="steam-pips">${steamMarkup(state.players[player].steam)}</span>
+      <div class="fighter-name"><span>MODELL ${player + 1}</span><b>${playerLabel}</b></div>
+      <div class="steam" aria-label="${state.players[player].tokens} Tokens">
+        <span>TOKENS</span><span class="steam-pips">${tokenMarkup(state.players[player].tokens)}</span>
       </div>
     </div>
     <div class="health">${healthMarkup(state, player)}</div>
@@ -148,16 +148,16 @@ function setupMarkup(ui: UiState): string {
   return `<main class="splash">
     <div class="sunburst"></div>
     <div class="logo">
-      <span>ZWEI SPIELER · EIN HANDY · KEINE ZÜGE</span>
+      <span>ZWEI DEUTSCHE KIs · EIN HANDY · KEINE ZÜGE</span>
       <h1>HAKEN!</h1>
-      <p>Das gleichzeitige Karten-Gerangel</p>
+      <p>Der große Token-Krawall</p>
     </div>
     ${
       countdown === null
         ? `<ol class="how-to">
-            <li><b>1</b> Zwei Zonen kaputtmachen</li>
-            <li><b>2</b> Karten zur Mitte schnippen</li>
-            <li><b>3</b> Blocken, bevor der Ring leer ist</li>
+            <li><b>1</b> Kontext, Logik oder Output crashen</li>
+            <li><b>2</b> Tokens laden, Karten schnippen</li>
+            <li><b>3</b> Guardrails vor Ablauf platzieren</li>
           </ol>
           <button class="start-button" data-start>LOS GEHT'S!</button>`
         : `<div class="countdown" aria-live="assertive">${countdown === 0 ? 'HAKEN!' : countdown}</div>`

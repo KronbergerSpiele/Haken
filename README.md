@@ -1,8 +1,9 @@
 # Haken
 
-Haken is a simultaneous, local two-player card brawl for one portrait-oriented
-phone. Sit at opposite ends, flick attacks and defenses into the shared arena,
-and break two of the other fighter's three zones. There are no turns.
+Haken is a simultaneous battle between two fictional German AI models on one
+portrait-oriented phone. Sit at opposite ends, generate tokens, flick attacks
+and guardrails into the shared arena, and crash two opposing system zones.
+There are no turns.
 
 The game is a static, framework-free TypeScript site. It has no accounts,
 backend, tracking, or network multiplayer.
@@ -12,9 +13,9 @@ backend, tracking, or network multiplayer.
 1. Put the phone between both players in portrait orientation.
 2. Press **Los geht's**. The browser will offer fullscreen mode.
 3. Flick a staged card toward the center. Fixed cards find their own lane;
-   Doppelwumms and selected specials use the lane at the release point.
-4. Attacks fire when their countdown empties. Matching blocks catch one attack.
-5. Break two zones—Kopf, Bauch, or Beine—to win.
+   Tokensturm, Bundes-Guardrail, and selected specials use the release lane.
+4. Attacks fire when their countdown empties. Matching guards catch one attack.
+5. Crash two zones—Kontext, Logik, or Output—to win.
 
 Both players can drag cards at exactly the same time. A sideways drag recycles
 an unwanted card. Tapping a card exposes accessible lane and **Spielen**
@@ -46,7 +47,7 @@ pnpm preview    # serve the production build locally
 ## Architecture
 
 - `src/game/types.ts` defines cards, players, center state, and commands.
-- `src/game/cards.ts` contains the symmetric 20-card deck and balance constants.
+- `src/game/cards.ts` contains the symmetric 21-card deck and balance constants.
 - `src/game/engine.ts` is the deterministic transition engine. It has no DOM
   dependency and resolves simultaneous damage in batches.
 - `src/ui/flick-controller.ts` owns independent Pointer Event gestures.

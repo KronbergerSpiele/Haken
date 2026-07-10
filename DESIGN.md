@@ -46,10 +46,11 @@ moves at least 28 CSS pixels toward the center or exceeds the configured release
 velocity. Weak, backward, unaffordable, and otherwise illegal flicks return to
 their slots without changing game state.
 
-Fixed-zone cards curve into their printed lane. Wild and lane-selecting cards
-use the horizontal release position; the intended lane is highlighted during
-the drag. Travel lasts 220–480 ms, based on release speed. A card's timeout
-starts only when it lands.
+Fixed-zone cards can only be released into their printed lane. Wild and
+lane-selecting cards can be released into any lane and use the horizontal
+release position. Only a valid intended lane is highlighted during the drag;
+releasing over another lane returns the card to its slot. Travel lasts 220–480
+ms, based on release speed. A card's timeout starts only when it lands.
 
 Pointer capture and pointer IDs isolate simultaneous drags. The same card cannot
 be claimed twice. A tap fallback lets a player select a card, select a lane when

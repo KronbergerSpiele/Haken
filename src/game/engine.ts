@@ -336,10 +336,15 @@ function shiftDeadlines(state: GameState, delta: number): void {
   for (const announcement of state.announcements) announcement.expiresAt += delta;
 }
 
+export function playableZones(card: CardDefinition): readonly Zone[] {
+  if (card.zone === 'choice' || card.zone === 'none') return ZONES;
+  return [card.zone];
+}
+
 function resolveZone(card: CardDefinition, requested?: Zone): Zone | null {
   if (card.zone === 'none') return 'logik';
   if (card.zone === 'choice') return requested && ZONES.includes(requested) ? requested : null;
-  return card.zone;
+  return requested === card.zone ? card.zone : null;
 }
 
 export function transition(current: GameState, command: GameCommand): Transition {

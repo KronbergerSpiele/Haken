@@ -1,7 +1,13 @@
 import { BALANCE, CARD_BY_ID, ZONE_LABELS, ZONE_SYMBOLS } from '../game/cards';
 import { cardForSlot } from '../game/engine';
 import { ZONES, type CardDefinition, type GameState, type PlayerId, type Zone } from '../game/types';
-import { cardGraphic, fighterAvatar, impactGraphic, zoneDoodle } from './graphics';
+import {
+  cardGraphic,
+  fighterAvatar,
+  impactGraphic,
+  zoneDoodle,
+  type AvatarMood,
+} from './graphics';
 
 export interface UiState {
   countdown: number | null;
@@ -91,12 +97,31 @@ function fallbackMarkup(
   </div>`;
 }
 
+function avatarReaction(state: GameState, player: PlayerId): { mood: AvatarMood; age: number } {
+  for (let index = state.announcements.length - 1; index >= 0; index -= 1) {
+    const announcement = state.announcements[index];
+    const age = Math.max(
+      0,
+      state.time - (announcement.expiresAt - BALANCE.announcementMs),
+    );
+    if (announcement.text === 'TREFFER') {
+      return { mood: announcement.player === player ? 'action' : 'hit', age };
+    }
+    if (announcement.text === 'GEBLOCKT') {
+      return { mood: announcement.player === player ? 'block' : 'bonk', age };
+    }
+    if (announcement.player === player) return { mood: 'action', age };
+  }
+  return { mood: 'ready', age: state.time % 4_200 };
+}
+
 function fighterMarkup(state: GameState, ui: UiState, player: PlayerId): string {
   const playerLabel = player === 0 ? 'K.I. KLAUS' : 'BOT BRIGITTE';
+  const reaction = avatarReaction(state, player);
   return `<section class="fighter fighter--${player}" aria-label="Spieler ${player + 1}, ${playerLabel}">
     <div class="fighter-status">
       <div class="fighter-identity">
-        ${fighterAvatar(player)}
+        ${fighterAvatar(player, reaction.mood, reaction.age)}
         <div class="fighter-name"><span>MODELL ${player + 1}</span><b>${playerLabel}</b></div>
       </div>
       <div class="steam" aria-label="${state.players[player].tokens} Tokens">

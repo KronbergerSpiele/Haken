@@ -260,39 +260,60 @@ button:focus-visible {
 
 .fighter-avatar--ready {
   animation: avatarHover 1.8s ease-in-out infinite alternate;
+  animation-delay: var(--avatar-delay, 0ms);
 }
 
 .fighter-avatar--brigitte.fighter-avatar--ready {
-  animation-delay: -0.9s;
+  animation-delay: calc(var(--avatar-delay, 0ms) - 900ms);
 }
 
 .fighter-avatar--winner {
   animation: avatarVictory 650ms ease-in-out infinite;
+  animation-delay: var(--avatar-delay, 0ms);
 }
 
 .fighter-avatar--bonk {
   animation: avatarDizzy 900ms ease-in-out infinite;
+  animation-delay: var(--avatar-delay, 0ms);
+}
+
+.fighter-avatar--hit {
+  animation: avatarHit 720ms steps(2, end) both;
+  animation-delay: var(--avatar-delay, 0ms);
+}
+
+.fighter-avatar--block {
+  animation: avatarBlock 850ms ease-out both;
+  animation-delay: var(--avatar-delay, 0ms);
+}
+
+.fighter-avatar--action {
+  animation: avatarAction 750ms ease-out both;
+  animation-delay: var(--avatar-delay, 0ms);
 }
 
 .avatar-eyes {
   transform-box: fill-box;
   transform-origin: center;
   animation: avatarBlink 4.2s linear infinite;
+  animation-delay: var(--avatar-delay, 0ms);
 }
 
 .fighter-avatar--brigitte .avatar-eyes {
-  animation-delay: -2.1s;
+  animation-delay: calc(var(--avatar-delay, 0ms) - 2100ms);
 }
 
 .avatar-steam {
   stroke-dasharray: 15 5;
   animation: steamPuff 1.5s linear infinite;
+  animation-delay: var(--avatar-delay, 0ms);
 }
 
 .avatar-clipboard {
   transform-box: fill-box;
   transform-origin: bottom left;
   animation: clipboardCheck 2.6s ease-in-out infinite;
+  animation-delay: var(--avatar-delay, 0ms);
 }
 
 .fighter-identity .fighter-avatar {
@@ -886,6 +907,62 @@ button:focus-visible {
   50% {
     rotate: 3deg;
     translate: 1px 0;
+  }
+}
+
+@keyframes avatarHit {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 0;
+    filter: none;
+  }
+  20% {
+    translate: -8px 1px;
+    rotate: -10deg;
+    filter: brightness(1.8) saturate(1.6);
+  }
+  45% {
+    translate: 7px -2px;
+    rotate: 9deg;
+  }
+  70% {
+    translate: -4px 1px;
+    rotate: -5deg;
+  }
+}
+
+@keyframes avatarBlock {
+  0%,
+  100% {
+    scale: 1;
+    filter: none;
+  }
+  25% {
+    scale: 0.9 1.1;
+  }
+  48% {
+    scale: 1.2 0.88;
+    filter: drop-shadow(0 0 5px var(--yellow));
+  }
+  72% {
+    scale: 0.97 1.03;
+  }
+}
+
+@keyframes avatarAction {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: 0;
+  }
+  30% {
+    translate: 0 -6px;
+    rotate: -8deg;
+  }
+  55% {
+    translate: 3px 2px;
+    rotate: 7deg;
   }
 }
 

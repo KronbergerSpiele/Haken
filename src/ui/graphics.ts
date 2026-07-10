@@ -1,16 +1,23 @@
 import type { CardDefinition, PlayerId, Zone } from '../game/types';
 
-function svg(className: string, body: string, viewBox = '0 0 64 64'): string {
-  return `<svg class="${className}" viewBox="${viewBox}" aria-hidden="true" focusable="false">${body}</svg>`;
+function svg(className: string, body: string, viewBox = '0 0 64 64', attributes = ''): string {
+  return `<svg class="${className}" viewBox="${viewBox}" ${attributes} aria-hidden="true" focusable="false">${body}</svg>`;
 }
 
-export function fighterAvatar(player: PlayerId, mood: 'ready' | 'winner' | 'bonk' = 'ready'): string {
+export type AvatarMood = 'ready' | 'winner' | 'bonk' | 'hit' | 'block' | 'action';
+
+export function fighterAvatar(
+  player: PlayerId,
+  mood: AvatarMood = 'ready',
+  animationAgeMs = 0,
+): string {
   const face =
-    mood === 'winner'
+    mood === 'winner' || mood === 'action'
       ? '<path d="M22 39q10 12 20 0" fill="none" stroke="currentColor" stroke-width="3"/><path d="m18 28 4-4 4 4m12 0 4-4 4 4" fill="none" stroke="currentColor" stroke-width="3"/>'
-      : mood === 'bonk'
+      : mood === 'bonk' || mood === 'hit'
         ? '<path d="m18 24 8 8m0-8-8 8m20-8 8 8m0-8-8 8M24 43q8-7 16 0" fill="none" stroke="currentColor" stroke-width="3"/>'
         : '<g class="avatar-eyes"><circle cx="23" cy="28" r="3"/><circle cx="41" cy="28" r="3"/></g><path d="M24 41q8 6 16 0" fill="none" stroke="currentColor" stroke-width="3"/>';
+  const animationStyle = `style="--avatar-delay:-${Math.max(0, animationAgeMs)}ms"`;
 
   if (player === 0) {
     return svg(
@@ -21,6 +28,8 @@ export function fighterAvatar(player: PlayerId, mood: 'ready' | 'winner' | 'bonk
        <path d="M17 15h30l-3-6H20z" fill="#ffc928" stroke="currentColor" stroke-width="3"/>
        ${face}
        <path d="M28 51h8" stroke="currentColor" stroke-width="3"/>`,
+      '0 0 64 64',
+      animationStyle,
     );
   }
 
@@ -34,6 +43,8 @@ export function fighterAvatar(player: PlayerId, mood: 'ready' | 'winner' | 'bonk
        <path d="M45 42h10v15H38V47z" fill="#fff" stroke="currentColor" stroke-width="3"/>
        <path d="m42 50 3 3 6-7" fill="none" stroke="#40a462" stroke-width="3"/>
      </g>`,
+    '0 0 64 64',
+    animationStyle,
   );
 }
 

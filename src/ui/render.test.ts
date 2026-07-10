@@ -52,6 +52,19 @@ describe('mobile game rendering', () => {
 
     expect(root.querySelector('.announcement')?.textContent).toContain('GEBLOCKT');
     expect(root.querySelector('.announcement .impact-graphic')).not.toBeNull();
+    expect(root.querySelector('.fighter--0 .fighter-avatar--block')).not.toBeNull();
+    expect(root.querySelector('.fighter--1 .fighter-avatar--bonk')).not.toBeNull();
+  });
+
+  it('makes both avatars react when an attack hits', () => {
+    const game = transition(createGame(10), { type: 'start', now: 0 }).state;
+    game.announcements = [
+      { id: 1, text: 'TREFFER', zone: 'kontext', player: 1, expiresAt: 1_100 },
+    ];
+    render(root, game, ui);
+
+    expect(root.querySelector('.fighter--0 .fighter-avatar--hit')).not.toBeNull();
+    expect(root.querySelector('.fighter--1 .fighter-avatar--action')).not.toBeNull();
   });
 
   it('exposes lane and play controls for a selected choice card', () => {

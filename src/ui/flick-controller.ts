@@ -66,6 +66,7 @@ export class FlickController {
     const drag = this.drags.get(event.pointerId);
     if (!drag) return;
     event.preventDefault();
+    const dx = event.clientX - drag.startX;
     const dy = event.clientY - drag.startY;
     drag.moved ||= Math.hypot(dx, dy) > 5;
     const localX = drag.player === 1 ? -dx : dx;
@@ -84,7 +85,6 @@ export class FlickController {
     const drag = this.drags.get(event.pointerId);
     if (!drag) return;
     event.preventDefault();
-    const dx = event.clientX - drag.startX;
     const dy = event.clientY - drag.startY;
     const elapsed = Math.max(16, performance.now() - drag.startedAt);
     const towardCenter = drag.player === 0 ? -dy : dy;

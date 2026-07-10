@@ -255,13 +255,12 @@ function shiftDeadlines(state: GameState, delta: number): void {
 }
 
 export function playableZones(card: CardDefinition): readonly Zone[] {
-  void card;
-  return ZONES;
+  return card.zone === 'choice' ? ZONES : [card.zone];
 }
 
 function resolveZone(card: CardDefinition, requested?: Zone): Zone | null {
-  void card;
-  return requested && ZONES.includes(requested) ? requested : null;
+  if (card.zone === 'choice') return requested && ZONES.includes(requested) ? requested : null;
+  return requested === card.zone ? card.zone : null;
 }
 
 export function transition(current: GameState, command: GameCommand): Transition {

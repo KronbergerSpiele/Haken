@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CARD_BY_ID } from './cards';
-import { createGame, transition } from './engine';
+import { createGame, playableZones, transition } from './engine';
 import type { CardInstance, GameState, PlayerId, Zone } from './types';
 
 let testInstanceId = 10_000;
@@ -66,8 +66,8 @@ describe('game setup', () => {
 describe('simultaneous play and resources', () => {
   it('accepts cards from both players at the same timestamp', () => {
     let state = started();
-    state = play(state, 0, 'system-hammer', 100, 'kontext');
-    state = play(state, 1, 'system-hammer', 100, 'logik');
+    state = play(state, 0, 'kontext-kollaps', 100, 'kontext');
+    state = play(state, 1, 'denkfehler', 100, 'logik');
 
     expect(state.center).toHaveLength(2);
     expect(state.center.map((card) => card.owner).sort()).toEqual([0, 1]);
@@ -77,8 +77,8 @@ describe('simultaneous play and resources', () => {
 
   it('rejects unaffordable cards without changing the slot', () => {
     const state = started();
-    state.players[0].tokens = 1;
-    stage(state, 0, 'system-hammer');
+    state.players[0].tokens = 3;
+    stage(state, 0, 'tokensturm');
     const card = state.players[0].hand[0];
     const next = transition(state, {
       type: 'play',
@@ -91,7 +91,28 @@ describe('simultaneous play and resources', () => {
 
     expect(next.center).toHaveLength(0);
     expect(next.players[0].hand[0]).toEqual(card);
-    expect(next.players[0].tokens).toBe(1);
+    expect(next.players[0].tokens).toBe(3);
+  });
+
+  it('only exposes and accepts the printed lane for fixed-zone cards', () => {
+    const state = started();
+    const card = CARD_BY_ID.get('kontext-kollaps')!;
+    expect(playableZones(card)).toEqual(['kontext']);
+    stage(state, 0, card.id);
+    const stagedCard = state.players[0].hand[0];
+
+    const next = transition(state, {
+      type: 'play',
+      now: 0,
+      player: 0,
+      slot: 0,
+      zone: 'output',
+      travelMs: 180,
+    }).state;
+
+    expect(next.center).toHaveLength(0);
+    expect(next.players[0].hand[0]).toEqual(stagedCard);
+    expect(next.players[0].tokens).toBe(3);
   });
 
   it.each<Zone>(['kontext', 'logik', 'output'])(
@@ -99,14 +120,14 @@ describe('simultaneous play and resources', () => {
     (zone) => {
       const state = started();
       state.players[0].tokens = 6;
-      const next = play(state, 0, 'system-hammer', 0, zone);
+      const next = play(state, 0, 'tokensturm', 0, zone);
 
       expect(next.center[0]?.zone).toBe(zone);
     },
   );
 
   it('regenerates tokens and refills played slots', () => {
-    const played = play(started(), 0, 'system-hammer', 0, 'logik');
+    const played = play(started(), 0, 'denkfehler', 0, 'logik');
     expect(played.players[0].hand[0]).toBeNull();
     const next = transition(played, { type: 'tick', now: 2_400 }).state;
     expect(next.players[0].hand[0]).not.toBeNull();
@@ -117,8 +138,8 @@ describe('simultaneous play and resources', () => {
 describe('center resolution', () => {
   it('uses the oldest matching guard to block an attack', () => {
     let state = started();
-    state = play(state, 1, 'guardrail', 0, 'kontext');
-    state = play(state, 0, 'system-hammer', 0, 'kontext');
+    state = play(state, 1, 'kontext-puffer', 0, 'kontext');
+    state = play(state, 0, 'kontext-kollaps', 0, 'kontext');
     state = transition(state, { type: 'tick', now: 3_000 }).state;
 
     expect(state.players[1].health.kontext).toBe(3);
@@ -126,11 +147,11 @@ describe('center resolution', () => {
     expect(state.announcements.some((item) => item.text === 'GEBLOCKT')).toBe(true);
   });
 
-  it('places a guard in any selected zone', () => {
+  it('places the wildcard guard in any selected zone', () => {
     let state = started();
-    state = play(state, 1, 'guardrail', 0, 'output');
-    state = play(state, 0, 'system-hammer', 0, 'output');
-    state = transition(state, { type: 'tick', now: 3_000 }).state;
+    state = play(state, 1, 'bundes-guardrail', 0, 'output');
+    state = play(state, 0, 'output-salat', 0, 'output');
+    state = transition(state, { type: 'tick', now: 2_500 }).state;
 
     expect(state.players[1].health.output).toBe(3);
     expect(state.announcements.some((item) => item.text === 'GEBLOCKT')).toBe(true);
@@ -138,9 +159,10 @@ describe('center resolution', () => {
 
   it('applies unblocked damage after the attack fuse', () => {
     let state = started();
-    state = play(state, 0, 'system-hammer', 0, 'output');
-    state = transition(state, { type: 'tick', now: 2_821 }).state;
-    expect(state.players[1].health.output).toBe(2);
+    state.players[0].tokens = 6;
+    state = play(state, 0, 'tokensturm', 0, 'output');
+    state = transition(state, { type: 'tick', now: 4_121 }).state;
+    expect(state.players[1].health.output).toBe(1);
   });
 
   it('applies simultaneous lethal damage as a double knockout', () => {
@@ -150,8 +172,8 @@ describe('center resolution', () => {
     state.players[1].health.kontext = 0;
     state.players[1].health.logik = 1;
     const cards: CardInstance[] = [
-      { instanceId: 80_000, definitionId: 'system-hammer' },
-      { instanceId: 80_001, definitionId: 'system-hammer' },
+      { instanceId: 80_000, definitionId: 'kontext-kollaps' },
+      { instanceId: 80_001, definitionId: 'kontext-kollaps' },
     ];
     state.center = cards.map((card, index) => ({
       centerId: index + 1,
@@ -174,7 +196,7 @@ describe('center resolution', () => {
 
 describe('pause behavior', () => {
   it('shifts every active deadline by the paused duration', () => {
-    let state = play(started(), 0, 'system-hammer', 0, 'kontext');
+    let state = play(started(), 0, 'kontext-kollaps', 0, 'kontext');
     state = transition(state, { type: 'pause', now: 100 }).state;
     state = transition(state, { type: 'resume', now: 1_100 }).state;
 

@@ -12,7 +12,7 @@ export interface CardDefinition {
   kind: CardKind;
   cost: number;
   copies: number;
-  zone: 'choice';
+  zone: Zone | 'choice';
   durationMs: number;
   damage?: number;
   description: string;

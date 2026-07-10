@@ -69,7 +69,7 @@ describe('mobile game rendering', () => {
 
   it('exposes lane and play controls for a selected choice card', () => {
     const game = transition(createGame(10), { type: 'start', now: 0 }).state;
-    game.players[0].hand[0] = { instanceId: 50_000, definitionId: 'guardrail' };
+    game.players[0].hand[0] = { instanceId: 50_000, definitionId: 'bundes-guardrail' };
     const selectedUi: UiState = {
       ...ui,
       selectedSlots: [0, null],
@@ -80,13 +80,19 @@ describe('mobile game rendering', () => {
     expect(root.querySelector('[data-play-selected="0"]')?.textContent).toContain('SPIELEN');
   });
 
-  it('shows that every card can use every lane', () => {
+  it('shows a fixed card target without offering other lanes', () => {
     const game = transition(createGame(10), { type: 'start', now: 0 }).state;
-    game.players[0].hand[0] = { instanceId: 50_001, definitionId: 'system-hammer' };
-    render(root, game, ui);
+    game.players[0].hand[0] = { instanceId: 50_001, definitionId: 'kontext-kollaps' };
+    const selectedUi: UiState = {
+      ...ui,
+      selectedSlots: [0, null],
+    };
+    render(root, game, selectedUi);
 
-    expect(root.querySelector('.fighter--0 [data-slot="0"] .card-zone')?.textContent).toBe('ALLE');
+    expect(root.querySelector('.fighter--0 [data-slot="0"] .card-zone')?.textContent).toBe('▣');
     expect(root.querySelector('.fighter--0 [data-slot="0"] .card-cost')?.textContent).toBe('2⚡');
+    expect(root.querySelectorAll('[data-choose-zone][data-player="0"]')).toHaveLength(0);
+    expect(root.querySelector('.fighter--0 .fallback-target')?.textContent).toContain('Kontext');
   });
 
   it('announces the final result and offers a rematch', () => {

@@ -4,8 +4,9 @@ import type { GameCommand, GameEvent, GameState, PlayerId, Zone } from './game/t
 import { FlickController } from './ui/flick-controller';
 import { render, type UiState } from './ui/render';
 
-const root = document.querySelector<HTMLElement>('#app');
-if (!root) throw new Error('App root is missing');
+const rootElement = document.querySelector<HTMLElement>('#app');
+if (!rootElement) throw new Error('App root is missing');
+const root: HTMLElement = rootElement;
 
 let game: GameState = createGame();
 const ui: UiState = {

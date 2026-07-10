@@ -13,9 +13,9 @@ backend, tracking, or network multiplayer.
 1. Put the phone between both players in portrait orientation.
 2. Press **Los geht's**. The browser will offer fullscreen mode.
 3. Flick a staged card toward the center. Fixed cards find their own lane;
-   Tokensturm, Bundes-Guardrail, and selected specials use the release lane.
+   Rechenleistungsüberlastungsgewitter, Bundesrundumverteidigungszaun, and selected specials use the release lane.
 4. Attacks fire when their countdown empties. Matching guards catch one attack.
-5. Crash two zones—Kontext, Logik, or Output—to win.
+5. Crash two zones—Kontext, Logik, or Ausgabe—to win.
 
 Both players can drag cards at exactly the same time. A sideways drag recycles
 an unwanted card. Tapping a card exposes accessible lane and **Spielen**

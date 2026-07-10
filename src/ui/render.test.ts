@@ -24,6 +24,8 @@ describe('mobile game rendering', () => {
     render(root, createGame(10), ui);
     expect(root.querySelector('h1')?.textContent).toBe('HAKEN!');
     expect(root.querySelectorAll('.how-to li')).toHaveLength(3);
+    expect(root.querySelectorAll('.splash-bots .fighter-avatar')).toHaveLength(2);
+    expect(root.querySelectorAll('.splash-bots .fighter-avatar--ready')).toHaveLength(2);
     expect(root.querySelector('[data-start]')).not.toBeNull();
   });
 
@@ -34,8 +36,35 @@ describe('mobile game rendering', () => {
     expect(root.querySelectorAll('.fighter')).toHaveLength(2);
     expect(root.querySelectorAll('[data-card][data-player="0"]')).toHaveLength(4);
     expect(root.querySelectorAll('[data-card][data-player="1"]')).toHaveLength(4);
+    expect(root.querySelectorAll('[data-card] .card-graphic')).toHaveLength(8);
+    expect(root.querySelectorAll('.fighter-identity .fighter-avatar')).toHaveLength(2);
+    expect(root.querySelectorAll('.zone-doodle')).toHaveLength(3);
     expect(root.querySelectorAll('[data-lane]')).toHaveLength(3);
     expect(root.querySelector('[data-pause]')).not.toBeNull();
+  });
+
+  it('turns combat announcements into comic impact graphics', () => {
+    const game = transition(createGame(10), { type: 'start', now: 0 }).state;
+    game.announcements = [
+      { id: 1, text: 'GEBLOCKT', zone: 'logik', player: 0, expiresAt: 1_000 },
+    ];
+    render(root, game, ui);
+
+    expect(root.querySelector('.announcement')?.textContent).toContain('GEBLOCKT');
+    expect(root.querySelector('.announcement .impact-graphic')).not.toBeNull();
+    expect(root.querySelector('.fighter--0 .fighter-avatar--block')).not.toBeNull();
+    expect(root.querySelector('.fighter--1 .fighter-avatar--bonk')).not.toBeNull();
+  });
+
+  it('makes both avatars react when an attack hits', () => {
+    const game = transition(createGame(10), { type: 'start', now: 0 }).state;
+    game.announcements = [
+      { id: 1, text: 'TREFFER', zone: 'kontext', player: 1, expiresAt: 1_100 },
+    ];
+    render(root, game, ui);
+
+    expect(root.querySelector('.fighter--0 .fighter-avatar--hit')).not.toBeNull();
+    expect(root.querySelector('.fighter--1 .fighter-avatar--action')).not.toBeNull();
   });
 
   it('exposes lane and play controls for a selected choice card', () => {
@@ -70,6 +99,8 @@ describe('mobile game rendering', () => {
     render(root, game, ui);
 
     expect(root.querySelector('[role="dialog"]')?.textContent).toContain('DOPPEL-K.O.');
+    expect(root.querySelectorAll('.result-bots .fighter-avatar')).toHaveLength(2);
+    expect(root.querySelectorAll('.result-bots .fighter-avatar--bonk')).toHaveLength(2);
     expect(root.querySelector('[data-restart]')).not.toBeNull();
   });
 });

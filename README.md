@@ -1,9 +1,9 @@
 # Haken
 
 Haken is a simultaneous battle between two fictional German AI models on one
-portrait-oriented phone. Sit at opposite ends, generate tokens, flick attacks
-and guardrails into the shared arena, and crash two opposing system zones.
-There are no turns.
+portrait-oriented phone. Sit at opposite ends and flick attacks and guardrails
+into any of three lanes. Crash two opposing system zones to win. There are no
+turns and only two card types.
 
 The game is a static, framework-free TypeScript site. It has no accounts,
 backend, tracking, or network multiplayer.
@@ -12,15 +12,13 @@ backend, tracking, or network multiplayer.
 
 1. Put the phone between both players in portrait orientation.
 2. Press **Los geht's**. The browser will offer fullscreen mode.
-3. Flick a staged card toward the center. Fixed cards can only be played into
-   their printed lane; Rechenleistungsüberlastungsgewitter,
-   Bundesrundumverteidigungszaun, and selected specials can use any release lane.
-4. Attacks fire when their countdown empties. Matching guards catch one attack.
+3. Flick any staged card toward the lane you want to target.
+4. Attacks fire when their countdown empties. A guardrail in that lane catches
+   one attack.
 5. Crash two zones—Kontext, Logik, or Ausgabe—to win.
 
-Both players can drag cards at exactly the same time. A sideways drag recycles
-an unwanted card. Tapping a card exposes accessible lane and **Spielen**
-controls for players who do not want to flick.
+Both players can drag cards at exactly the same time. Tapping a card exposes
+accessible lane and **Spielen** controls for players who do not want to flick.
 
 The complete rules, balance values, card catalog, timing model, and UX
 requirements are in the [game design document](DESIGN.md). Architecture and
@@ -50,7 +48,7 @@ pnpm preview    # serve the production build locally
 ## Architecture
 
 - `src/game/types.ts` defines cards, players, center state, and commands.
-- `src/game/cards.ts` contains the symmetric 22-card deck and balance constants.
+- `src/game/cards.ts` contains the symmetric two-type deck and balance constants.
 - `src/game/engine.ts` is the deterministic transition engine. It has no DOM
   dependency and resolves simultaneous damage in batches.
 - `src/ui/flick-controller.ts` owns independent Pointer Event gestures.

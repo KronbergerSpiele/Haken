@@ -1,5 +1,5 @@
 import { BALANCE, CARD_BY_ID, ZONE_LABELS, ZONE_SYMBOLS } from '../game/cards';
-import { cardForSlot, effectiveCardCost } from '../game/engine';
+import { cardForSlot } from '../game/engine';
 import { ZONES, type CardDefinition, type GameState, type PlayerId, type Zone } from '../game/types';
 import {
   cardGraphic,
@@ -58,20 +58,18 @@ function handMarkup(state: GameState, player: PlayerId, selected: number | null)
         return `<div class="card-slot empty" aria-label="Leerer Kartenplatz">${waiting}</div>`;
       }
       const card = CARD_BY_ID.get(instance.definitionId)!;
-      const cost = effectiveCardCost(state, player, card);
-      const surcharged = cost > card.cost;
-      const affordable = state.players[player].tokens >= cost;
+      const affordable = state.players[player].tokens >= card.cost;
       return `<button
-        class="${cardClass(card)} ${selected === slot ? 'selected' : ''} ${surcharged ? 'surcharged' : ''}"
+        class="${cardClass(card)} ${selected === slot ? 'selected' : ''}"
         data-card data-player="${player}" data-slot="${slot}"
         aria-pressed="${selected === slot}"
-        aria-label="${escapeHtml(card.name)}, ${cost} Tokens${surcharged ? ', inklusive 1 Token Aufschlag' : ''}. ${escapeHtml(card.description)}"
+        aria-label="${escapeHtml(card.name)}, ${card.cost} Tokens. ${escapeHtml(card.description)}"
       >
-        <span class="card-kind">${card.kind === 'attack' ? 'ANGRIFF' : card.kind === 'guard' ? 'VERTEIDIGUNG' : 'SPEZIAL'}</span>
+        <span class="card-kind">${card.kind === 'attack' ? 'ANGRIFF' : 'VERTEIDIGUNG'}</span>
         ${cardGraphic(card)}
         <strong>${escapeHtml(card.shortName)}</strong>
-        <span class="card-zone">${card.zone === 'choice' ? '◆' : card.zone === 'none' ? '✦' : ZONE_SYMBOLS[card.zone]}</span>
-        <span class="card-cost ${affordable ? '' : 'too-costly'}">${cost}⚡${surcharged ? '<small>+1</small>' : ''}</span>
+        <span class="card-zone">ALLE</span>
+        <span class="card-cost ${affordable ? '' : 'too-costly'}">${card.cost}⚡</span>
       </button>`;
     })
     .join('');
@@ -86,13 +84,10 @@ function fallbackMarkup(
   if (selectedSlot === null) return '<div class="fallback-hint">Karte antippen oder schnippen</div>';
   const card = cardForSlot(state, player, selectedSlot);
   if (!card) return '';
-  const chooseLane = card.zone === 'choice';
-  const laneButtons = chooseLane
-    ? `<div class="lane-choices" aria-label="Ziel wählen">${ZONES.map(
-        (zone) =>
-          `<button data-choose-zone="${zone}" data-player="${player}" class="${selectedZone === zone ? 'selected' : ''}">${ZONE_SYMBOLS[zone]}</button>`,
-      ).join('')}</div>`
-    : '';
+  const laneButtons = `<div class="lane-choices" aria-label="Ziel wählen">${ZONES.map(
+    (zone) =>
+      `<button data-choose-zone="${zone}" data-player="${player}" class="${selectedZone === zone ? 'selected' : ''}">${ZONE_SYMBOLS[zone]}</button>`,
+  ).join('')}</div>`;
   return `<div class="fallback-play">
     ${laneButtons}
     <button class="play-button" data-play-selected="${player}">SPIELEN</button>
@@ -119,9 +114,6 @@ function avatarReaction(state: GameState, player: PlayerId): { mood: AvatarMood;
 
 function fighterMarkup(state: GameState, ui: UiState, player: PlayerId): string {
   const playerLabel = player === 0 ? 'K.I. KLAUS' : 'BOT BRIGITTE';
-  const hasSurcharge =
-    state.players[player].costPenaltyExpiresAt !== null &&
-    state.players[player].costPenaltyExpiresAt! > state.time;
   const reaction = avatarReaction(state, player);
   return `<section class="fighter fighter--${player}" aria-label="Spieler ${player + 1}, ${playerLabel}">
     <div class="fighter-status">
@@ -131,7 +123,6 @@ function fighterMarkup(state: GameState, ui: UiState, player: PlayerId): string 
       </div>
       <div class="steam" aria-label="${state.players[player].tokens} Tokens">
         <span>TOKENS</span><span class="steam-pips">${tokenMarkup(state.players[player].tokens)}</span>
-        ${hasSurcharge ? '<strong class="surcharge-status">+1 NÄCHSTE KARTE</strong>' : ''}
       </div>
     </div>
     <div class="health">${healthMarkup(state, player)}</div>
@@ -201,9 +192,9 @@ function setupMarkup(ui: UiState): string {
     ${
       countdown === null
         ? `<ol class="how-to">
-            <li><b>1</b> Kontext, Logik oder Ausgabe zertrümmern</li>
-            <li><b>2</b> Tokens laden, Karten schnippen</li>
-            <li><b>3</b> Guardrails vor Ablauf platzieren</li>
+            <li><b>1</b> Zertrümmere zwei gegnerische Zonen</li>
+            <li><b>2</b> Schnippe jede Karte in eine beliebige Spur</li>
+            <li><b>3</b> Angriff trifft · Schutz blockt</li>
           </ol>
           <button class="start-button" data-start>LOS GEHT'S!</button>`
         : `<div class="countdown" aria-live="assertive">${countdown === 0 ? 'HAKEN!' : countdown}</div>`

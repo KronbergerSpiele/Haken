@@ -61,7 +61,6 @@ function emptyPlayer(drawPile: CardInstance[]): PlayerState {
   return {
     health: { kontext: BALANCE.zoneHealth, logik: BALANCE.zoneHealth, output: BALANCE.zoneHealth },
     tokens: BALANCE.startingTokens,
-    costPenaltyExpiresAt: null,
     drawPile,
     discard: [],
     hand: Array.from({ length: BALANCE.handSize }, () => null),
@@ -133,82 +132,6 @@ function discardCenterCard(state: GameState, center: CenterCard): void {
   if (center.card && !center.generated) state.players[center.owner].discard.push(center.card);
 }
 
-function oldestAttack(state: GameState, owner: PlayerId, zone: Zone): CenterCard | undefined {
-  return state.center
-    .filter(
-      (center) =>
-        center.owner === owner &&
-        center.zone === zone &&
-        center.status === 'active' &&
-        definition(center.definitionId).kind === 'attack',
-    )
-    .sort((left, right) => left.landsAt - right.landsAt || left.centerId - right.centerId)[0];
-}
-
-function applySpecial(
-  state: GameState,
-  center: CenterCard,
-  landedAt: number,
-  events: GameEvent[],
-): void {
-  const card = definition(center.definitionId);
-  const enemy = otherPlayer(center.owner);
-  let text = 'VERPUFFT';
-
-  if (card.effect === 'counter') {
-    const target = oldestAttack(state, enemy, center.zone);
-    if (target) {
-      discardCenterCard(state, target);
-      state.center.push({
-        centerId: state.nextCenterId,
-        card: null,
-        definitionId: 'retour-angriff',
-        owner: center.owner,
-        zone: center.zone,
-        status: 'active',
-        releasedAt: landedAt,
-        landsAt: landedAt,
-        expiresAt: landedAt + BALANCE.returnFuseMs,
-        generated: true,
-      });
-      state.nextCenterId += 1;
-      text = 'KONTER';
-    }
-  } else if (card.effect === 'redirect') {
-    const target = oldestAttack(state, enemy, center.zone);
-    if (target) {
-      const currentIndex = ZONES.indexOf(target.zone);
-      const alternatives = [1, 2]
-        .map((offset) => ZONES[(currentIndex + offset) % ZONES.length]!)
-        .filter((zone) => state.players[center.owner].health[zone] > 0);
-      const nextZone = alternatives[0];
-      if (nextZone) {
-        target.zone = nextZone;
-        text = 'UMGELEITET';
-      }
-    }
-  } else if (card.effect === 'haste') {
-    const attacks = state.center.filter(
-      (item) =>
-        item.owner === center.owner &&
-        item.status === 'active' &&
-        item.expiresAt !== null &&
-        definition(item.definitionId).kind === 'attack',
-    );
-    for (const attack of attacks) {
-      attack.expiresAt = Math.max(landedAt + BALANCE.hasteMinimumMs, attack.expiresAt! - BALANCE.hasteMs);
-    }
-    if (attacks.length > 0) text = 'ZACK';
-  } else if (card.effect === 'surcharge') {
-    state.players[enemy].costPenaltyExpiresAt =
-      landedAt + (card.effectDurationMs ?? BALANCE.surchargeMs);
-    text = 'AUFSCHLAG';
-  }
-
-  addAnnouncement(state, text, center.zone, center.owner, landedAt);
-  events.push({ type: 'special', player: center.owner, zone: center.zone, text });
-}
-
 function processResourceTimers(state: GameState, now: number): void {
   while (state.nextTokenAt <= now) {
     for (const player of state.players) {
@@ -219,9 +142,6 @@ function processResourceTimers(state: GameState, now: number): void {
 
   for (const playerId of [0, 1] as const) {
     const player = state.players[playerId];
-    if (player.costPenaltyExpiresAt !== null && player.costPenaltyExpiresAt <= now) {
-      player.costPenaltyExpiresAt = null;
-    }
     for (let slot = 0; slot < BALANCE.handSize; slot += 1) {
       const refillAt = player.refillAt[slot];
       if (refillAt !== null && refillAt <= now) drawIntoSlot(state, playerId, slot);
@@ -240,7 +160,6 @@ function processLandings(state: GameState, now: number, events: GameEvent[]): vo
     center.status = 'active';
     center.expiresAt = center.landsAt + card.durationMs;
     events.push({ type: 'landed', player: center.owner, zone: center.zone });
-    if (card.kind === 'special') applySpecial(state, center, center.landsAt, events);
   }
 }
 
@@ -296,14 +215,6 @@ function processAttacks(state: GameState, now: number, events: GameEvent[]): voi
   }
 }
 
-function processExpiredSpecials(state: GameState, now: number): void {
-  const expired = state.center.filter((center) => {
-    const card = definition(center.definitionId);
-    return center.status === 'active' && card.kind === 'special' && center.expiresAt! <= now;
-  });
-  for (const special of expired) discardCenterCard(state, special);
-}
-
 function checkVictory(state: GameState, events: GameEvent[]): void {
   const broken = state.players.map(
     (player) => ZONES.filter((zone) => player.health[zone] === 0).length,
@@ -328,7 +239,6 @@ function tickPlaying(state: GameState, now: number, events: GameEvent[]): void {
   processLandings(state, now, events);
   processExpiredGuards(state, now);
   processAttacks(state, now, events);
-  processExpiredSpecials(state, now);
   checkVictory(state, events);
 }
 
@@ -336,7 +246,6 @@ function shiftDeadlines(state: GameState, delta: number): void {
   state.nextTokenAt += delta;
   for (const player of state.players) {
     player.refillAt = player.refillAt.map((deadline) => (deadline === null ? null : deadline + delta));
-    if (player.costPenaltyExpiresAt !== null) player.costPenaltyExpiresAt += delta;
   }
   for (const center of state.center) {
     center.landsAt += delta;
@@ -346,14 +255,13 @@ function shiftDeadlines(state: GameState, delta: number): void {
 }
 
 export function playableZones(card: CardDefinition): readonly Zone[] {
-  if (card.zone === 'choice' || card.zone === 'none') return ZONES;
-  return [card.zone];
+  void card;
+  return ZONES;
 }
 
 function resolveZone(card: CardDefinition, requested?: Zone): Zone | null {
-  if (card.zone === 'none') return 'logik';
-  if (card.zone === 'choice') return requested && ZONES.includes(requested) ? requested : null;
-  return requested === card.zone ? card.zone : null;
+  void card;
+  return requested && ZONES.includes(requested) ? requested : null;
 }
 
 export function transition(current: GameState, command: GameCommand): Transition {
@@ -390,7 +298,7 @@ export function transition(current: GameState, command: GameCommand): Transition
     return { state, events };
   }
 
-  if (state.phase !== 'playing' || (command.type !== 'play' && command.type !== 'recycle')) {
+  if (state.phase !== 'playing' || command.type !== 'play') {
     return { state, events };
   }
 
@@ -400,23 +308,14 @@ export function transition(current: GameState, command: GameCommand): Transition
   const cardInstance = player.hand[command.slot];
   if (!cardInstance) return { state, events };
 
-  if (command.type === 'recycle') {
-    player.hand[command.slot] = null;
-    player.discard.push(cardInstance);
-    player.refillAt[command.slot] = command.now + BALANCE.recycleDelayMs;
-    events.push({ type: 'recycled', player: command.player });
-    return { state, events };
-  }
-
   const card = definition(cardInstance.definitionId);
   const zone = resolveZone(card, command.zone);
-  const cost = effectiveCardCost(state, command.player, card);
+  const cost = card.cost;
   if (!zone || player.tokens < cost) return { state, events };
 
   const travelMs = Math.max(BALANCE.minTravelMs, Math.min(BALANCE.maxTravelMs, command.travelMs));
   const landsAt = command.now + travelMs;
   player.tokens -= cost;
-  player.costPenaltyExpiresAt = null;
   player.hand[command.slot] = null;
   player.refillAt[command.slot] = landsAt + BALANCE.refillDelayMs;
   state.center.push({
@@ -439,13 +338,4 @@ export function transition(current: GameState, command: GameCommand): Transition
 export function cardForSlot(state: GameState, player: PlayerId, slot: number): CardDefinition | null {
   const card = state.players[player].hand[slot];
   return card ? definition(card.definitionId) : null;
-}
-
-export function effectiveCardCost(
-  state: GameState,
-  player: PlayerId,
-  card: CardDefinition,
-): number {
-  const penalty = state.players[player].costPenaltyExpiresAt;
-  return card.cost + (penalty !== null && penalty > state.time ? BALANCE.surchargeAmount : 0);
 }

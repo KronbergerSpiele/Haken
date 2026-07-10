@@ -66,8 +66,8 @@ describe('game setup', () => {
 describe('simultaneous play and resources', () => {
   it('accepts cards from both players at the same timestamp', () => {
     let state = started();
-    state = play(state, 0, 'kontext-kollaps', 100, 'kontext');
-    state = play(state, 1, 'denkfehler', 100, 'logik');
+    state = play(state, 0, 'system-hammer', 100, 'kontext');
+    state = play(state, 1, 'system-hammer', 100, 'logik');
 
     expect(state.center).toHaveLength(2);
     expect(state.center.map((card) => card.owner).sort()).toEqual([0, 1]);
@@ -77,8 +77,8 @@ describe('simultaneous play and resources', () => {
 
   it('rejects unaffordable cards without changing the slot', () => {
     const state = started();
-    state.players[0].tokens = 3;
-    stage(state, 0, 'tokensturm');
+    state.players[0].tokens = 1;
+    stage(state, 0, 'system-hammer');
     const card = state.players[0].hand[0];
     const next = transition(state, {
       type: 'play',
@@ -91,25 +91,7 @@ describe('simultaneous play and resources', () => {
 
     expect(next.center).toHaveLength(0);
     expect(next.players[0].hand[0]).toEqual(card);
-    expect(next.players[0].tokens).toBe(3);
-  });
-
-  it('rejects a fixed-zone card played into another zone', () => {
-    const state = started();
-    stage(state, 0, 'kontext-kollaps');
-    const card = state.players[0].hand[0];
-    const next = transition(state, {
-      type: 'play',
-      now: 0,
-      player: 0,
-      slot: 0,
-      zone: 'output',
-      travelMs: 180,
-    }).state;
-
-    expect(next.center).toHaveLength(0);
-    expect(next.players[0].hand[0]).toEqual(card);
-    expect(next.players[0].tokens).toBe(3);
+    expect(next.players[0].tokens).toBe(1);
   });
 
   it.each<Zone>(['kontext', 'logik', 'output'])(
@@ -117,27 +99,26 @@ describe('simultaneous play and resources', () => {
     (zone) => {
       const state = started();
       state.players[0].tokens = 6;
-      const next = play(state, 0, 'tokensturm', 0, zone);
+      const next = play(state, 0, 'system-hammer', 0, zone);
 
       expect(next.center[0]?.zone).toBe(zone);
     },
   );
 
-  it('regenerates tokens and refills recycled slots', () => {
-    const state = started();
-    const recycled = transition(state, { type: 'recycle', now: 0, player: 0, slot: 0 }).state;
-    expect(recycled.players[0].hand[0]).toBeNull();
-    const next = transition(recycled, { type: 'tick', now: 2_400 }).state;
+  it('regenerates tokens and refills played slots', () => {
+    const played = play(started(), 0, 'system-hammer', 0, 'logik');
+    expect(played.players[0].hand[0]).toBeNull();
+    const next = transition(played, { type: 'tick', now: 2_400 }).state;
     expect(next.players[0].hand[0]).not.toBeNull();
-    expect(next.players[0].tokens).toBe(5);
+    expect(next.players[0].tokens).toBe(3);
   });
 });
 
 describe('center resolution', () => {
   it('uses the oldest matching guard to block an attack', () => {
     let state = started();
-    state = play(state, 1, 'kontext-puffer', 0, 'kontext');
-    state = play(state, 0, 'kontext-kollaps', 0, 'kontext');
+    state = play(state, 1, 'guardrail', 0, 'kontext');
+    state = play(state, 0, 'system-hammer', 0, 'kontext');
     state = transition(state, { type: 'tick', now: 3_000 }).state;
 
     expect(state.players[1].health.kontext).toBe(3);
@@ -145,12 +126,11 @@ describe('center resolution', () => {
     expect(state.announcements.some((item) => item.text === 'GEBLOCKT')).toBe(true);
   });
 
-  it('places the general guard in any selected zone', () => {
+  it('places a guard in any selected zone', () => {
     let state = started();
-    state.players[1].tokens = 6;
-    state = play(state, 1, 'bundes-guardrail', 0, 'output');
-    state = play(state, 0, 'output-salat', 0, 'output');
-    state = transition(state, { type: 'tick', now: 2_500 }).state;
+    state = play(state, 1, 'guardrail', 0, 'output');
+    state = play(state, 0, 'system-hammer', 0, 'output');
+    state = transition(state, { type: 'tick', now: 3_000 }).state;
 
     expect(state.players[1].health.output).toBe(3);
     expect(state.announcements.some((item) => item.text === 'GEBLOCKT')).toBe(true);
@@ -158,76 +138,9 @@ describe('center resolution', () => {
 
   it('applies unblocked damage after the attack fuse', () => {
     let state = started();
-    state.players[0].tokens = 6;
-    state = play(state, 0, 'tokensturm', 0, 'output');
-    state = transition(state, { type: 'tick', now: 4_121 }).state;
-    expect(state.players[1].health.output).toBe(1);
-  });
-
-  it('counters an armed attack with a generated return attack', () => {
-    let state = play(started(), 0, 'kontext-kollaps', 0, 'kontext');
-    state = transition(state, { type: 'tick', now: 220 }).state;
-    state.players[1].tokens = 6;
-    state = play(state, 1, 'prompt-retoure', 300, 'kontext');
-    state = transition(state, { type: 'tick', now: 520 }).state;
-
-    expect(state.center.some((card) => card.definitionId === 'kontext-kollaps')).toBe(false);
-    expect(
-      state.center.some((card) => card.definitionId === 'retour-angriff' && card.owner === 1),
-    ).toBe(true);
-  });
-
-  it('redirects the oldest attack to the next healthy zone', () => {
-    let state = play(started(), 0, 'kontext-kollaps', 0, 'kontext');
-    state = transition(state, { type: 'tick', now: 220 }).state;
-    state = play(state, 1, 'kontext-routing', 300, 'kontext');
-    state = transition(state, { type: 'tick', now: 520 }).state;
-
-    expect(state.center.find((card) => card.definitionId === 'kontext-kollaps')?.zone).toBe('logik');
-  });
-
-  it('hastens active friendly attacks but leaves at least 300 ms', () => {
-    let state = play(started(), 0, 'kontext-kollaps', 0, 'kontext');
-    state = transition(state, { type: 'tick', now: 220 }).state;
-    state.players[0].tokens = 6;
-    state = play(state, 0, 'turbo-inferenz', 300, 'logik', 1);
-    state = transition(state, { type: 'tick', now: 520 }).state;
-
-    expect(state.center.find((card) => card.definitionId === 'kontext-kollaps')?.expiresAt).toBe(2_120);
-  });
-
-  it('adds one token to the next enemy card cost and then clears the surcharge', () => {
-    let state = play(started(), 0, 'buerokratieaufschlag', 0);
-    state = transition(state, { type: 'tick', now: 220 }).state;
-    expect(state.players[1].costPenaltyExpiresAt).toBe(8_220);
-
-    state.players[1].tokens = 3;
-    state = play(state, 1, 'denkfehler', 300);
-
-    expect(state.players[1].tokens).toBe(0);
-    expect(state.players[1].costPenaltyExpiresAt).toBeNull();
-    expect(state.center.some((card) => card.definitionId === 'denkfehler')).toBe(true);
-  });
-
-  it('keeps the surcharge when a card is unaffordable and expires it after eight seconds', () => {
-    let state = play(started(), 0, 'buerokratieaufschlag', 0);
-    state = transition(state, { type: 'tick', now: 220 }).state;
-    state.players[1].tokens = 2;
-    stage(state, 1, 'denkfehler');
-
-    state = transition(state, {
-      type: 'play',
-      now: 300,
-      player: 1,
-      slot: 0,
-      zone: 'logik',
-      travelMs: 180,
-    }).state;
-    expect(state.players[1].tokens).toBe(2);
-    expect(state.players[1].costPenaltyExpiresAt).toBe(8_220);
-
-    state = transition(state, { type: 'tick', now: 8_220 }).state;
-    expect(state.players[1].costPenaltyExpiresAt).toBeNull();
+    state = play(state, 0, 'system-hammer', 0, 'output');
+    state = transition(state, { type: 'tick', now: 2_821 }).state;
+    expect(state.players[1].health.output).toBe(2);
   });
 
   it('applies simultaneous lethal damage as a double knockout', () => {
@@ -237,8 +150,8 @@ describe('center resolution', () => {
     state.players[1].health.kontext = 0;
     state.players[1].health.logik = 1;
     const cards: CardInstance[] = [
-      { instanceId: 80_000, definitionId: 'kontext-kollaps' },
-      { instanceId: 80_001, definitionId: 'kontext-kollaps' },
+      { instanceId: 80_000, definitionId: 'system-hammer' },
+      { instanceId: 80_001, definitionId: 'system-hammer' },
     ];
     state.center = cards.map((card, index) => ({
       centerId: index + 1,
@@ -261,7 +174,7 @@ describe('center resolution', () => {
 
 describe('pause behavior', () => {
   it('shifts every active deadline by the paused duration', () => {
-    let state = play(started(), 0, 'kontext-kollaps', 0, 'kontext');
+    let state = play(started(), 0, 'system-hammer', 0, 'kontext');
     state = transition(state, { type: 'pause', now: 100 }).state;
     state = transition(state, { type: 'resume', now: 1_100 }).state;
 

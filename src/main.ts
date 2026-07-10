@@ -29,9 +29,7 @@ function feedback(events: GameEvent[]): void {
     navigator.vibrate?.(events.some((event) => event.type === 'hit') ? 45 : 20);
   }
   if (ui.muted || events.length === 0) return;
-  const important = events.find((event) =>
-    ['hit', 'blocked', 'special', 'finished'].includes(event.type),
-  );
+  const important = events.find((event) => ['hit', 'blocked', 'finished'].includes(event.type));
   if (!important) return;
 
   audioContext ??= new AudioContext();
@@ -88,10 +86,6 @@ const flicks = new FlickController(root, {
   onPlay: (player, slot, zone, travelMs) => {
     ui.selectedSlots[player] = null;
     dispatch({ type: 'play', now: now(), player, slot, zone, travelMs });
-  },
-  onRecycle: (player, slot) => {
-    ui.selectedSlots[player] = null;
-    dispatch({ type: 'recycle', now: now(), player, slot });
   },
 });
 
@@ -155,7 +149,6 @@ root.addEventListener('click', (event) => {
     const card = cardForSlot(game, player, slot);
     if (!card) return;
     ui.selectedSlots[player] = ui.selectedSlots[player] === slot ? null : slot;
-    if (card.zone !== 'choice' && card.zone !== 'none') ui.selectedZones[player] = card.zone;
     draw();
   }
 });

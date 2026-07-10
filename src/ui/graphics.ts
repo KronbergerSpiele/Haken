@@ -50,32 +50,12 @@ export function fighterAvatar(
 
 export function cardGraphic(card: CardDefinition): string {
   const graphicById: Record<string, string> = {
-    'kontext-kollaps':
+    'system-hammer':
       '<path d="m14 42 22-22 8 8-22 22zM35 15l7-7 14 14-7 7z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="m10 18 8 4-7 5m35 14 8 4-7 5" fill="none" stroke="currentColor" stroke-width="3"/>',
-    denkfehler:
-      '<path d="M12 35c0-15 9-25 20-25s20 10 20 25c0 9-7 17-20 17S12 44 12 35Z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="m18 31 9-8 8 10 11-9M20 42l8-6 7 8 10-7" fill="none" stroke="currentColor" stroke-width="3"/>',
-    'output-salat':
-      '<path d="M8 31h20l15-12v30L28 37H8z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="m48 20 7-7m-6 18h11m-12 9 8 8" stroke="currentColor" stroke-width="3"/>',
-    tokensturm:
-      '<path d="M14 38c-9-12 6-23 16-14 5-14 27-7 24 8 12 6 2 20-8 18H18c-11 0-15-9-4-12Z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="m34 30-8 12h8l-4 14 12-18h-8z" fill="#ffc928" stroke="currentColor" stroke-width="2"/>',
-    'kontext-puffer':
-      '<path d="M10 19q22-13 44 0v27q-22 13-44 0z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="M17 23q15-8 30 0v19q-15 8-30 0z" fill="#8ed0e9" stroke="currentColor" stroke-width="2"/>',
-    'plausi-check':
+    guardrail:
       '<path d="M32 6 53 15v16c0 14-10 23-21 27C21 54 11 45 11 31V15z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="m20 31 8 8 17-19" fill="none" stroke="#40a462" stroke-width="5"/>',
-    'output-filter':
-      '<path d="M8 10h48L39 32v18l-14 7V32z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="M18 18h28M23 25h18" stroke="currentColor" stroke-width="3"/>',
-    'bundes-guardrail':
-      '<path d="M7 17h50M7 34h50M13 10v42m13-42v42m13-42v42m13-42v42" stroke="currentColor" stroke-width="4"/><path d="m8 52 6-8 6 8 6-8 6 8 6-8 6 8 6-8 6 8" fill="#ffc928" stroke="currentColor" stroke-width="2"/>',
-    'prompt-retoure':
-      '<path d="M14 17h36v30H14z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="m15 19 17 14 17-14M27 50 16 55l3-11" fill="none" stroke="currentColor" stroke-width="3"/>',
-    'kontext-routing':
-      '<path d="M9 17h18q9 0 9 9v18M28 38l8 8 8-8M55 17H43q-7 0-7 9" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="9" cy="17" r="5" fill="#ffc928" stroke="currentColor" stroke-width="2"/><circle cx="55" cy="17" r="5" fill="#ffc928" stroke="currentColor" stroke-width="2"/>',
-    'turbo-inferenz':
-      '<path d="M36 7c12 5 19 16 17 28L36 50 17 31C16 19 24 10 36 7Z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><circle cx="37" cy="24" r="6" fill="#8ed0e9" stroke="currentColor" stroke-width="2"/><path d="m20 37-8 5 10 2-3 9 10-8" fill="#ffc928" stroke="currentColor" stroke-width="3"/>',
-    'retour-angriff':
-      '<path d="M52 19H25q-13 0-13 13t13 13h14" fill="none" stroke="currentColor" stroke-width="5"/><path d="m43 9 10 10-10 10M34 36l10 9-10 9" fill="#fff0bd" stroke="currentColor" stroke-width="3"/>',
   };
-  return svg('card-graphic', graphicById[card.id] ?? graphicById[card.kind] ?? '');
+  return svg('card-graphic', graphicById[card.id] ?? '');
 }
 
 export function zoneDoodle(zone: Zone): string {

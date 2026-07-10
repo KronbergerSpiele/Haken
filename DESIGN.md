@@ -36,8 +36,6 @@ as one batch. If both fighters break a second zone in that batch, the result is
 - A legal release reserves its tokens immediately. The emptied slot receives a
   new card 900 ms after the played card lands.
 - When the draw pile is empty, shuffle the discard pile into a new draw pile.
-- Dragging a card sideways recycles it for free and locks that slot for
-  1,500 ms. A recycled card goes to the discard pile.
 
 ### Flicking
 
@@ -46,11 +44,9 @@ moves at least 28 CSS pixels toward the center or exceeds the configured release
 velocity. Weak, backward, unaffordable, and otherwise illegal flicks return to
 their slots without changing game state.
 
-Fixed-zone cards can only be released into their printed lane. Wild and
-lane-selecting cards can be released into any lane and use the horizontal
-release position. Only a valid intended lane is highlighted during the drag;
-releasing over another lane returns the card to its slot. Travel lasts 220–480
-ms, based on release speed. A card's timeout starts only when it lands.
+Every card can be released into any lane and uses the horizontal release
+position. The intended lane is highlighted during the drag. Travel lasts
+220–480 ms, based on release speed. A card's timeout starts only when it lands.
 
 Pointer capture and pointer IDs isolate simultaneous drags. The same card cannot
 be claimed twice. A tap fallback lets a player select a card, select a lane when
@@ -65,17 +61,15 @@ remaining lifetime.
   in the lane absorbs the attack; otherwise its damage is applied.
 - Guards activate on landing, absorb one matching attack, and are discarded. An
   unused guard is discarded at the end of its duration.
-- Specials apply on landing, remain visible for 800 ms, and then discard.
 - Attacks do not cancel attacks. Exchanged hits and double knockouts are valid.
 
 The engine processes each timestamp in this order:
 
 1. land due cards;
-2. apply landing special effects;
-3. expire guards;
-4. resolve due attacks;
-5. apply the complete damage batch;
-6. determine the result.
+2. expire guards;
+3. resolve due attacks;
+4. apply the complete damage batch;
+5. determine the result.
 
 Commands are ordered by monotonic release time and stable card instance ID.
 Player assignment to the first ID alternates with the match seed. Pausing or
@@ -83,26 +77,8 @@ hiding the page freezes travel, regeneration, refills, and center deadlines.
 
 ### Initial 22-card deck
 
-- **Kontextzertrümmerungshammer** ×3 — attack, Kontext, cost 2, damage 1, fuse 2,700 ms.
-- **Logikverdrehungsmaschine** ×3 — attack, Logik, cost 2, damage 1, fuse 2,400 ms.
-- **Ausgabeverwüstungskanone** ×3 — attack, Ausgabe, cost 2, damage 1, fuse 2,100 ms.
-- **Rechenleistungsüberlastungsgewitter** ×1 — attack, chosen lane, cost 4, damage 2, fuse 3,900 ms.
-- **Kontextzusammenprallschutzpolster** ×2 — guard, Kontext, cost 1, duration 4,200 ms.
-- **Logikfehlerabwehrschild** ×2 — guard, Logik, cost 1, duration 3,900 ms.
-- **Ausgabeschadensbegrenzungsfilter** ×2 — guard, Ausgabe, cost 1, duration 3,600 ms.
-- **Bundesrundumverteidigungszaun** ×1 — general guard, cost 2. It can be flicked into any
-  chosen lane, remains for 3,000 ms, and absorbs one attack there.
-- **Prompt-Retoure** ×2 — special, chosen lane, cost 3. Discard the oldest armed
-  enemy attack there and create a friendly 1-damage return attack with a
-  2,200 ms fuse. It visibly fizzles when there is no target.
-- **Kontext-Routing** ×1 — special, chosen lane, cost 2. Move the oldest armed
-  enemy attack there to the next healthy zone in the order Kontext → Logik →
-  Ausgabe. It visibly fizzles when no alternative is healthy.
-- **Turbo-Inferenz** ×1 — special, cost 2. Reduce all currently armed friendly
-  attack deadlines by 800 ms, but never below 500 ms from now.
-- **Bürokratieaufschlag** ×1 — special, cost 1. The next enemy card costs 1
-  additional token. The surcharge does not stack, is consumed only by a
-  successful play, and expires after 8,000 ms.
+- **System-Hammer** ×12 — attack, any chosen lane, cost 2, damage 1, fuse 2,600 ms.
+- **Guardrail** ×10 — guard, any chosen lane, cost 1, duration 4,000 ms.
 
 All values are balance constants. A typical match should last 90–150 seconds.
 
@@ -112,15 +88,16 @@ The board fills `100dvh` and respects safe-area insets. The upper player's
 controls are rotated 180 degrees. The shared center uses mirrored labels so each
 side can read status. Landscape orientation displays a request to rotate.
 
-The first match teaches three facts: break two zones, flick attacks, and answer
-before the ring empties. A mirrored three-second countdown follows. A start
-button requests browser fullscreen; refusal does not prevent play.
+The first match teaches the complete rules: break two zones, every card works
+in every lane, attacks hit, and guards block. A mirrored three-second countdown
+follows. A start button requests browser fullscreen; refusal does not prevent
+play.
 
-Each result combines motion, text, symbol, and color: `TREFFER`, `GEBLOCKT`,
-`UMGELEITET`, `KONTER`, or `VERPUFFT`. Sound and vibration are optional and
-never required. Reduced-motion mode replaces travel and shake effects with
-short fades. Large controls, high contrast, semantic buttons, visible focus,
-and live status announcements support non-gesture and assistive use.
+Each result combines motion, text, symbol, and color: `TREFFER` or `GEBLOCKT`.
+Sound and vibration are optional and never required. Reduced-motion mode
+replaces travel and shake effects with short fades. Large controls, high
+contrast, semantic buttons, visible focus, and live status announcements
+support non-gesture and assistive use.
 
 ## Acceptance criteria
 

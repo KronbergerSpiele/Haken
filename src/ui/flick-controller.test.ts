@@ -47,32 +47,14 @@ describe('flick zone targeting', () => {
       }) as DOMRect;
   });
 
-  it('returns a fixed-zone card after a flick into another zone', () => {
-    const onPlay = vi.fn();
-    new FlickController(root, {
-      canDrag: () => true,
-      playableZones: () => ['kontext'],
-      onPlay,
-      onRecycle: vi.fn(),
-    });
-
-    pointer(card, 'pointerdown', 50, 200);
-    pointer(card, 'pointermove', 250, 100);
-    expect(root.querySelector('[data-lane="output"]')?.classList.contains('aimed')).toBe(false);
-    pointer(card, 'pointerup', 250, 100);
-
-    expect(onPlay).not.toHaveBeenCalled();
-  });
-
   it.each<Zone>(['kontext', 'logik', 'output'])(
-    'plays a generic card in the %s zone',
+    'plays any card in the %s zone',
     (zone) => {
       const onPlay = vi.fn();
       new FlickController(root, {
         canDrag: () => true,
         playableZones: () => ['kontext', 'logik', 'output'],
         onPlay,
-        onRecycle: vi.fn(),
       });
       const clientX = { kontext: 50, logik: 150, output: 250 }[zone];
 

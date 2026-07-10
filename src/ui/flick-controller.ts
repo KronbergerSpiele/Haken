@@ -16,7 +16,6 @@ interface FlickCallbacks {
   canDrag: (player: PlayerId, slot: number) => boolean;
   playableZones: (player: PlayerId, slot: number) => readonly Zone[];
   onPlay: (player: PlayerId, slot: number, zone: Zone, travelMs: number) => void;
-  onRecycle: (player: PlayerId, slot: number) => void;
 }
 
 export class FlickController {
@@ -91,15 +90,12 @@ export class FlickController {
     const elapsed = Math.max(16, performance.now() - drag.startedAt);
     const towardCenter = drag.player === 0 ? -dy : dy;
     const velocity = towardCenter / elapsed;
-    const recycle = Math.abs(dx) >= 60 && towardCenter < BALANCE.minFlickDistance;
     const validFlick = towardCenter >= BALANCE.minFlickDistance || velocity >= 0.35;
 
     this.clearDrag(drag);
     if (drag.moved) this.suppressClicksUntil = performance.now() + 300;
 
-    if (recycle) {
-      this.callbacks.onRecycle(drag.player, drag.slot);
-    } else if (validFlick) {
+    if (validFlick) {
       const zone = this.laneAt(event.clientX);
       if (!this.callbacks.playableZones(drag.player, drag.slot).includes(zone)) return;
       const travelMs = Math.round(BALANCE.maxTravelMs - Math.min(1.4, Math.max(0, velocity)) * 120);

@@ -2,8 +2,7 @@ export const ZONES = ['kontext', 'logik', 'output'] as const;
 
 export type Zone = (typeof ZONES)[number];
 export type PlayerId = 0 | 1;
-export type CardKind = 'attack' | 'guard' | 'special';
-export type SpecialEffect = 'counter' | 'redirect' | 'haste' | 'surcharge';
+export type CardKind = 'attack' | 'guard';
 export type GamePhase = 'setup' | 'playing' | 'paused' | 'finished';
 
 export interface CardDefinition {
@@ -13,11 +12,9 @@ export interface CardDefinition {
   kind: CardKind;
   cost: number;
   copies: number;
-  zone: Zone | 'choice' | 'none';
+  zone: 'choice';
   durationMs: number;
-  effectDurationMs?: number;
   damage?: number;
-  effect?: SpecialEffect;
   description: string;
 }
 
@@ -29,7 +26,6 @@ export interface CardInstance {
 export interface PlayerState {
   health: Record<Zone, number>;
   tokens: number;
-  costPenaltyExpiresAt: number | null;
   drawPile: CardInstance[];
   discard: CardInstance[];
   hand: Array<CardInstance | null>;
@@ -87,13 +83,12 @@ export type GameCommand =
       zone?: Zone;
       travelMs: number;
     }
-  | { type: 'recycle'; now: number; player: PlayerId; slot: number }
   | { type: 'tick'; now: number }
   | { type: 'pause'; now: number }
   | { type: 'resume'; now: number };
 
 export interface GameEvent {
-  type: 'played' | 'recycled' | 'landed' | 'hit' | 'blocked' | 'special' | 'finished';
+  type: 'played' | 'landed' | 'hit' | 'blocked' | 'finished';
   player?: PlayerId;
   zone?: Zone;
   text?: string;

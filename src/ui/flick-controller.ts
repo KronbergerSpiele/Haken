@@ -66,7 +66,6 @@ export class FlickController {
     const drag = this.drags.get(event.pointerId);
     if (!drag) return;
     event.preventDefault();
-    const dx = event.clientX - drag.startX;
     const dy = event.clientY - drag.startY;
     drag.moved ||= Math.hypot(dx, dy) > 5;
     const localX = drag.player === 1 ? -dx : dx;

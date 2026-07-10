@@ -94,6 +94,35 @@ describe('simultaneous play and resources', () => {
     expect(next.players[0].tokens).toBe(3);
   });
 
+  it('rejects a fixed-zone card played into another zone', () => {
+    const state = started();
+    stage(state, 0, 'kontext-kollaps');
+    const card = state.players[0].hand[0];
+    const next = transition(state, {
+      type: 'play',
+      now: 0,
+      player: 0,
+      slot: 0,
+      zone: 'output',
+      travelMs: 180,
+    }).state;
+
+    expect(next.center).toHaveLength(0);
+    expect(next.players[0].hand[0]).toEqual(card);
+    expect(next.players[0].tokens).toBe(3);
+  });
+
+  it.each<Zone>(['kontext', 'logik', 'output'])(
+    'allows a choice card to target the %s zone',
+    (zone) => {
+      const state = started();
+      state.players[0].tokens = 6;
+      const next = play(state, 0, 'tokensturm', 0, zone);
+
+      expect(next.center[0]?.zone).toBe(zone);
+    },
+  );
+
   it('regenerates tokens and refills recycled slots', () => {
     const state = started();
     const recycled = transition(state, { type: 'recycle', now: 0, player: 0, slot: 0 }).state;

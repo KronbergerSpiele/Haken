@@ -14,6 +14,7 @@ interface Drag {
 
 interface FlickCallbacks {
   canDrag: (player: PlayerId, slot: number) => boolean;
+  playableZones: (player: PlayerId, slot: number) => readonly Zone[];
   onPlay: (player: PlayerId, slot: number, zone: Zone, travelMs: number) => void;
   onRecycle: (player: PlayerId, slot: number) => void;
 }
@@ -74,8 +75,10 @@ export class FlickController {
     drag.element.style.transform = `translate3d(${localX}px, ${localY}px, 0) rotate(${localX * 0.04}deg) scale(1.06)`;
 
     const lane = this.laneAt(event.clientX);
+    const playableZones = this.callbacks.playableZones(drag.player, drag.slot);
     this.root.querySelectorAll('[data-lane]').forEach((item) => {
-      item.classList.toggle('aimed', (item as HTMLElement).dataset.lane === lane);
+      const itemLane = (item as HTMLElement).dataset.lane as Zone;
+      item.classList.toggle('aimed', itemLane === lane && playableZones.includes(itemLane));
     });
   };
 
@@ -97,8 +100,10 @@ export class FlickController {
     if (recycle) {
       this.callbacks.onRecycle(drag.player, drag.slot);
     } else if (validFlick) {
+      const zone = this.laneAt(event.clientX);
+      if (!this.callbacks.playableZones(drag.player, drag.slot).includes(zone)) return;
       const travelMs = Math.round(BALANCE.maxTravelMs - Math.min(1.4, Math.max(0, velocity)) * 120);
-      this.callbacks.onPlay(drag.player, drag.slot, this.laneAt(event.clientX), travelMs);
+      this.callbacks.onPlay(drag.player, drag.slot, zone, travelMs);
     }
   };
 

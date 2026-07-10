@@ -1,5 +1,5 @@
 import './styles.css';
-import { cardForSlot, createGame, transition } from './game/engine';
+import { cardForSlot, createGame, playableZones, transition } from './game/engine';
 import type { GameCommand, GameEvent, GameState, PlayerId, Zone } from './game/types';
 import { FlickController } from './ui/flick-controller';
 import { render, type UiState } from './ui/render';
@@ -81,6 +81,10 @@ function startCountdown(): void {
 const flicks = new FlickController(root, {
   canDrag: (player, slot) =>
     game.phase === 'playing' && game.players[player].hand[slot] !== null,
+  playableZones: (player, slot) => {
+    const card = cardForSlot(game, player, slot);
+    return card ? playableZones(card) : [];
+  },
   onPlay: (player, slot, zone, travelMs) => {
     ui.selectedSlots[player] = null;
     dispatch({ type: 'play', now: now(), player, slot, zone, travelMs });

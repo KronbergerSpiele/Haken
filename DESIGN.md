@@ -44,9 +44,11 @@ moves at least 28 CSS pixels toward the center or exceeds the configured release
 velocity. Weak, backward, unaffordable, and otherwise illegal flicks return to
 their slots without changing game state.
 
-Every card can be released into any lane and uses the horizontal release
-position. The intended lane is highlighted during the drag. Travel lasts
-220–480 ms, based on release speed. A card's timeout starts only when it lands.
+Fixed-zone cards can only be released into their printed lane. The two wildcard
+cards can be released into any lane and use the horizontal release position.
+Only a valid intended lane is highlighted during the drag; releasing over
+another lane returns the card to its slot. Travel lasts 220–480 ms, based on
+release speed. A card's timeout starts only when it lands.
 
 Pointer capture and pointer IDs isolate simultaneous drags. The same card cannot
 be claimed twice. A tap fallback lets a player select a card, select a lane when
@@ -77,8 +79,18 @@ hiding the page freezes travel, regeneration, refills, and center deadlines.
 
 ### Initial 22-card deck
 
-- **System-Hammer** ×12 — attack, any chosen lane, cost 2, damage 1, fuse 2,600 ms.
-- **Guardrail** ×10 — guard, any chosen lane, cost 1, duration 4,000 ms.
+- **Kontextzertrümmerungshammer** ×3 — attack, Kontext, cost 2, damage 1, fuse 2,700 ms.
+- **Logikverdrehungsmaschine** ×3 — attack, Logik, cost 2, damage 1, fuse 2,400 ms.
+- **Ausgabeverwüstungskanone** ×3 — attack, Ausgabe, cost 2, damage 1, fuse 2,100 ms.
+- **Rechenleistungsüberlastungsgewitter** ×2 — attack, chosen lane, cost 4,
+  damage 2, fuse 3,900 ms.
+- **Kontextzusammenprallschutzpolster** ×3 — guard, Kontext, cost 1,
+  duration 4,200 ms.
+- **Logikfehlerabwehrschild** ×3 — guard, Logik, cost 1, duration 3,900 ms.
+- **Ausgabeschadensbegrenzungsfilter** ×3 — guard, Ausgabe, cost 1,
+  duration 3,600 ms.
+- **Bundesrundumverteidigungszaun** ×2 — guard, chosen lane, cost 2,
+  duration 3,000 ms.
 
 All values are balance constants. A typical match should last 90–150 seconds.
 
@@ -88,10 +100,10 @@ The board fills `100dvh` and respects safe-area insets. The upper player's
 controls are rotated 180 degrees. The shared center uses mirrored labels so each
 side can read status. Landscape orientation displays a request to rotate.
 
-The first match teaches the complete rules: break two zones, every card works
-in every lane, attacks hit, and guards block. A mirrored three-second countdown
-follows. A start button requests browser fullscreen; refusal does not prevent
-play.
+The first match teaches the complete rules: break two zones, match fixed cards
+to their printed lane, and spend more for flexible wildcard cards. A mirrored
+three-second countdown follows. A start button requests browser fullscreen;
+refusal does not prevent play.
 
 Each result combines motion, text, symbol, and color: `TREFFER` or `GEBLOCKT`.
 Sound and vibration are optional and never required. Reduced-motion mode

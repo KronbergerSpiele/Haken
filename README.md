@@ -1,9 +1,9 @@
 # Haken
 
 Haken is a simultaneous battle between two fictional German AI models on one
-portrait-oriented phone. Sit at opposite ends and flick attacks and guardrails
-into any of three lanes. Crash two opposing system zones to win. There are no
-turns and only two card types.
+portrait-oriented phone. Sit at opposite ends and flick attacks and defenses
+into three system lanes. Most cards belong to one lane; costly wildcard cards
+can target any lane. Crash two opposing system zones to win. There are no turns.
 
 The game is a static, framework-free TypeScript site. It has no accounts,
 backend, tracking, or network multiplayer.
@@ -12,8 +12,9 @@ backend, tracking, or network multiplayer.
 
 1. Put the phone between both players in portrait orientation.
 2. Press **Los geht's**. The browser will offer fullscreen mode.
-3. Flick any staged card toward the lane you want to target.
-4. Attacks fire when their countdown empties. A guardrail in that lane catches
+3. Flick a staged card toward its printed lane. Cards marked **Freie Wahl** can
+   target any lane.
+4. Attacks fire when their countdown empties. A defense in that lane catches
    one attack.
 5. Crash two zones—Kontext, Logik, or Ausgabe—to win.
 
@@ -48,7 +49,7 @@ pnpm preview    # serve the production build locally
 ## Architecture
 
 - `src/game/types.ts` defines cards, players, center state, and commands.
-- `src/game/cards.ts` contains the symmetric two-type deck and balance constants.
+- `src/game/cards.ts` contains the symmetric tactical deck and balance constants.
 - `src/game/engine.ts` is the deterministic transition engine. It has no DOM
   dependency and resolves simultaneous damage in batches.
 - `src/ui/flick-controller.ts` owns independent Pointer Event gestures.

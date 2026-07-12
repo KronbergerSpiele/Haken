@@ -49,6 +49,10 @@ function cardClass(card: CardDefinition): string {
   return `card card--${card.kind}`;
 }
 
+function cardZoneLabel(card: CardDefinition): string {
+  return card.zone === 'choice' ? '◆' : ZONE_SYMBOLS[card.zone];
+}
+
 function handMarkup(state: GameState, player: PlayerId, selected: number | null): string {
   return state.players[player].hand
     .map((instance, slot) => {
@@ -68,7 +72,7 @@ function handMarkup(state: GameState, player: PlayerId, selected: number | null)
         <span class="card-kind">${card.kind === 'attack' ? 'ANGRIFF' : 'VERTEIDIGUNG'}</span>
         ${cardGraphic(card)}
         <strong>${escapeHtml(card.shortName)}</strong>
-        <span class="card-zone">ALLE</span>
+        <span class="card-zone">${cardZoneLabel(card)}</span>
         <span class="card-cost ${affordable ? '' : 'too-costly'}">${card.cost}⚡</span>
       </button>`;
     })
@@ -84,10 +88,13 @@ function fallbackMarkup(
   if (selectedSlot === null) return '<div class="fallback-hint">Karte antippen oder schnippen</div>';
   const card = cardForSlot(state, player, selectedSlot);
   if (!card) return '';
-  const laneButtons = `<div class="lane-choices" aria-label="Ziel wählen">${ZONES.map(
-    (zone) =>
-      `<button data-choose-zone="${zone}" data-player="${player}" class="${selectedZone === zone ? 'selected' : ''}">${ZONE_SYMBOLS[zone]}</button>`,
-  ).join('')}</div>`;
+  const laneButtons =
+    card.zone === 'choice'
+      ? `<div class="lane-choices" aria-label="Ziel wählen">${ZONES.map(
+          (zone) =>
+            `<button data-choose-zone="${zone}" data-player="${player}" class="${selectedZone === zone ? 'selected' : ''}">${ZONE_SYMBOLS[zone]}</button>`,
+        ).join('')}</div>`
+      : `<span class="fallback-target">Ziel: ${ZONE_SYMBOLS[card.zone]} ${ZONE_LABELS[card.zone]}</span>`;
   return `<div class="fallback-play">
     ${laneButtons}
     <button class="play-button" data-play-selected="${player}">SPIELEN</button>
@@ -193,8 +200,8 @@ function setupMarkup(ui: UiState): string {
       countdown === null
         ? `<ol class="how-to">
             <li><b>1</b> Zertrümmere zwei gegnerische Zonen</li>
-            <li><b>2</b> Schnippe jede Karte in eine beliebige Spur</li>
-            <li><b>3</b> Angriff trifft · Schutz blockt</li>
+            <li><b>2</b> Farbe und Symbol zeigen die Zielspur</li>
+            <li><b>3</b> Freie Wahl ist flexibel, aber teurer</li>
           </ol>
           <button class="start-button" data-start>LOS GEHT'S!</button>`
         : `<div class="countdown" aria-live="assertive">${countdown === 0 ? 'HAKEN!' : countdown}</div>`

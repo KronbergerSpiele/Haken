@@ -50,10 +50,22 @@ export function fighterAvatar(
 
 export function cardGraphic(card: CardDefinition): string {
   const graphicById: Record<string, string> = {
-    'system-hammer':
+    'kontext-kollaps':
       '<path d="m14 42 22-22 8 8-22 22zM35 15l7-7 14 14-7 7z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="m10 18 8 4-7 5m35 14 8 4-7 5" fill="none" stroke="currentColor" stroke-width="3"/>',
-    guardrail:
+    denkfehler:
+      '<path d="M12 35c0-15 9-25 20-25s20 10 20 25c0 9-7 17-20 17S12 44 12 35Z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="m18 31 9-8 8 10 11-9M20 42l8-6 7 8 10-7" fill="none" stroke="currentColor" stroke-width="3"/>',
+    'output-salat':
+      '<path d="M8 31h20l15-12v30L28 37H8z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="m48 20 7-7m-6 18h11m-12 9 8 8" stroke="currentColor" stroke-width="3"/>',
+    tokensturm:
+      '<path d="M14 38c-9-12 6-23 16-14 5-14 27-7 24 8 12 6 2 20-8 18H18c-11 0-15-9-4-12Z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="m34 30-8 12h8l-4 14 12-18h-8z" fill="#ffc928" stroke="currentColor" stroke-width="2"/>',
+    'kontext-puffer':
+      '<path d="M10 19q22-13 44 0v27q-22 13-44 0z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="M17 23q15-8 30 0v19q-15 8-30 0z" fill="#8ed0e9" stroke="currentColor" stroke-width="2"/>',
+    'plausi-check':
       '<path d="M32 6 53 15v16c0 14-10 23-21 27C21 54 11 45 11 31V15z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="m20 31 8 8 17-19" fill="none" stroke="#40a462" stroke-width="5"/>',
+    'output-filter':
+      '<path d="M8 10h48L39 32v18l-14 7V32z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/><path d="M18 18h28M23 25h18" stroke="currentColor" stroke-width="3"/>',
+    'bundes-guardrail':
+      '<path d="M7 17h50M7 34h50M13 10v42m13-42v42m13-42v42m13-42v42" stroke="currentColor" stroke-width="4"/><path d="m8 52 6-8 6 8 6-8 6 8 6-8 6 8 6-8 6 8" fill="#ffc928" stroke="currentColor" stroke-width="2"/>',
   };
   return svg('card-graphic', graphicById[card.id] ?? '');
 }

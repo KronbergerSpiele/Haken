@@ -131,13 +131,17 @@ root.addEventListener('click', (event) => {
     const player = Number(target.dataset.playSelected) as PlayerId;
     const slot = ui.selectedSlots[player];
     if (slot !== null) {
+      const card = cardForSlot(game, player, slot);
+      if (!card) return;
+      const zones = playableZones(card);
+      const zone = zones.length === 1 ? zones[0]! : ui.selectedZones[player];
       ui.selectedSlots[player] = null;
       dispatch({
         type: 'play',
         now: now(),
         player,
         slot,
-        zone: ui.selectedZones[player],
+        zone,
         travelMs: 250,
       });
     }

@@ -154,6 +154,11 @@ a session until loading succeeds. Its share action uses the Web Share API when
 available and otherwise copies the absolute game URL to the clipboard; a
 selectable text fallback is provided if both APIs are unavailable.
 
+The application shell keeps document scrolling disabled for full-viewport game
+sessions. The launcher root is the dedicated vertical scroll container, so an
+expanding catalog remains reachable on short screens without changing a game's
+fixed-viewport layout.
+
 Game routes use a query parameter on the deployment root:
 
 ```text

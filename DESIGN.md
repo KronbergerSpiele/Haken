@@ -280,6 +280,8 @@ announcements support non-gesture and assistive use.
 
 - The launcher lists every registered game and communicates its player and
   device requirements before play.
+- The launcher scrolls vertically when its game cards exceed the available
+  viewport, including on small portrait phones.
 - Every registered game has a copyable deep link that works when opened in a
   new tab from the deployed repository subpath.
 - Launcher selection, browser Back/Forward, direct game links, and unknown game

@@ -72,6 +72,20 @@ Actions** as the source. After the workflow succeeds, the game is available at:
 
 <https://kronbergerspiele.github.io/Haken/>
 
+## Pull request previews
+
+Every pull request against `main` gets a temporary preview deployment via
+[`.github/workflows/preview-pages.yml`](.github/workflows/preview-pages.yml).
+The workflow runs the same tests and build as production, publishes the result
+to GitHub Pages, and posts a sticky comment on the pull request with the
+preview link. You can also open the link from the **Pages Preview** check on the
+PR.
+
+Previews are removed automatically when the pull request closes. Because the
+build uses relative asset URLs, each preview works at the path GitHub assigns
+without extra configuration—handy for trying changes on a phone before merge.
+Add `?game=haken` to the preview URL to open Haken directly.
+
 ## Browser support
 
 Current Safari and Chromium-based mobile browsers are supported. Fullscreen,

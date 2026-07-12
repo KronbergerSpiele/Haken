@@ -1399,10 +1399,23 @@ button:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
+  flex-wrap: wrap;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board__score {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  opacity: 0.9;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-board__score {
+  font-size: 0.55rem;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-board__turn {
@@ -1556,23 +1569,30 @@ button:focus-visible {
   padding: 1px;
 }
 
-[data-theme='zoff-in-the-sky'] .zoff-eat-glyph {
-  display: grid;
-  place-items: center;
+[data-theme='zoff-in-the-sky'] .zoff-eat-glyph,
+[data-theme='zoff-in-the-sky'] .zoff-eat-icon {
+  display: block;
   width: 0.72rem;
   height: 0.72rem;
   border: 1px solid var(--ink);
-  font-size: 0.45rem;
-  font-style: normal;
-  font-weight: 900;
-  line-height: 1;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
-[data-theme='zoff-in-the-sky'] .zoff-eat-glyph--prey {
+[data-theme='zoff-in-the-sky'] .zoff-eat-icon__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: 400% 300%;
+  background-position: var(--zoff-sprite-x) var(--zoff-sprite-y);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eat-icon--prey {
   background: var(--green);
 }
 
-[data-theme='zoff-in-the-sky'] .zoff-eat-glyph--predator {
+[data-theme='zoff-in-the-sky'] .zoff-eat-icon--predator {
   background: var(--red);
 }
 
@@ -1652,6 +1672,182 @@ button:focus-visible {
   height: 100%;
   font-size: 0.65rem;
   text-transform: uppercase;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-pile--draggable {
+  cursor: grab;
+  touch-action: none;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-pile--draggable:active {
+  cursor: grabbing;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-cell--drag-target {
+  box-shadow: inset 0 0 0 3px rgb(110 200 255 / 85%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-cell--drag-aimed {
+  box-shadow: inset 0 0 0 4px var(--green);
+  transform: scale(1.03);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-drag-preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  width: clamp(48px, 14vw, 72px);
+  aspect-ratio: 3 / 4;
+  pointer-events: none;
+  border: 3px solid var(--ink);
+  background: #fff;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 28%);
+  opacity: 0.94;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: 16px;
+  text-align: center;
+  background: rgb(255 240 189 / 78%);
+  pointer-events: none;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlay__burst {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 3px solid var(--ink);
+  background: #fff;
+  box-shadow: var(--zoff-shadow);
+  animation: zoff-chain-pop 0.55s ease-out;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlay__burst .zoff-eat-icon {
+  width: 2.4rem;
+  height: 2.4rem;
+  animation: zoff-chain-bite 0.55s ease-out;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-chain-bite {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--red);
+  animation: zoff-chain-arrow 0.55s ease-out;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlay__label {
+  margin: 0;
+  font-family: 'Archivo Black', Impact, sans-serif;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlay__names {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+@keyframes zoff-chain-pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.2;
+  }
+
+  70% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes zoff-chain-bite {
+  0% {
+    transform: scale(0.5) rotate(-8deg);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.12) rotate(4deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+@keyframes zoff-chain-arrow {
+  0% {
+    transform: translateX(-8px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+[data-theme='zoff-in-the-sky'].zoff-root--turn-flip .zoff-handoff,
+[data-theme='zoff-in-the-sky'].zoff-root--turn-flip .zoff-game {
+  animation: zoff-turn-flip 0.5s ease-out;
+  transform-origin: center center;
+}
+
+@keyframes zoff-turn-flip {
+  0% {
+    transform: perspective(900px) rotateY(88deg);
+    opacity: 0.35;
+  }
+
+  100% {
+    transform: perspective(900px) rotateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes zoff-turn-fade {
+  0% {
+    opacity: 0.2;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='zoff-in-the-sky'].zoff-root--turn-flip .zoff-handoff,
+  [data-theme='zoff-in-the-sky'].zoff-root--turn-flip .zoff-game {
+    animation: zoff-turn-fade 0.2s ease-out;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-eating-overlay__burst,
+  [data-theme='zoff-in-the-sky'] .zoff-eating-overlay__burst .zoff-eat-icon,
+  [data-theme='zoff-in-the-sky'] .zoff-chain-bite {
+    animation: none;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-cell--drag-aimed {
+    transform: none;
+  }
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-pile-actions {

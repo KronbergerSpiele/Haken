@@ -1,9 +1,10 @@
-import { canPlacePendingAt, getVisibleDiscard } from './reducer';
-import type { GameEvent, GameState, GridCell, PlayerId, Species } from './model';
+import { canPlacePendingAt, countPlayerHidden, getVisibleDiscard } from './reducer';
+import type { GameEvent, GameState, Grid, GridCell, PlayerId, Species } from './model';
 import { GRID_COLS, GRID_ROWS } from './model';
 import {
   cardBackMarkup,
   cardFaceMarkup,
+  eatingChainOverlayMarkup,
   eatingRelationLabel,
   eatConnectorMarkup,
   findAdjacentEatLinks,
@@ -11,6 +12,7 @@ import {
   speciesValueLabel,
   eatingIndicatorsMarkup,
 } from './graphics';
+import { cardValue } from './cards';
 import { escapeHtml } from '../../graphics/primitives';
 
 export interface UiState {
@@ -19,6 +21,8 @@ export interface UiState {
   statusMessage: string;
   chainFeedback: string | null;
   removedCardCount: number;
+  turnFlipActive: boolean;
+  eatingOverlay: readonly Species[] | null;
 }
 
 export const INITIAL_UI: UiState = {
@@ -27,7 +31,27 @@ export const INITIAL_UI: UiState = {
   statusMessage: '',
   chainFeedback: null,
   removedCardCount: 0,
+  turnFlipActive: false,
+  eatingOverlay: null,
 };
+
+export function visibleSubtotal(grid: Grid): number {
+  let sum = 0;
+  for (const row of grid) {
+    for (const cell of row) {
+      if (cell !== null && cell.faceUp) {
+        sum += cardValue(cell.card.species);
+      }
+    }
+  }
+  return sum;
+}
+
+export function formatBoardScore(state: GameState, player: PlayerId): string {
+  const visible = visibleSubtotal(state.players[player].grid);
+  const hidden = countPlayerHidden(state, player);
+  return `Sichtbar ${visible} · ${hidden} verdeckt`;
+}
 
 function playerName(player: PlayerId): string {
   return `Spieler ${player + 1}`;
@@ -154,7 +178,8 @@ function boardMarkup(
 
   return `<section class="zoff-board ${options.compact ? 'zoff-board--compact' : 'zoff-board--active'}" aria-label="Spielfeld ${playerName(player)}">
     <header class="zoff-board__header">
-      <span>${playerName(player)}</span>
+      <span class="zoff-board__player">${playerName(player)}</span>
+      <span class="zoff-board__score" aria-label="${escapeHtml(formatBoardScore(state, player))}">${escapeHtml(formatBoardScore(state, player))}</span>
       ${player === state.activePlayer ? '<b class="zoff-board__turn">Am Zug</b>' : ''}
     </header>
     <div class="zoff-grid">${rows}</div>
@@ -171,12 +196,15 @@ function pileMarkup(state: GameState, interactive: boolean): string {
     (state.phase === 'awaitingAction' || state.phase === 'finalTurn') &&
     top !== null;
 
+  const canDraw =
+    interactive && (state.phase === 'awaitingAction' || state.phase === 'finalTurn');
+
   return `<section class="zoff-piles" aria-label="Stapel">
-    <div class="zoff-pile zoff-pile--deck" aria-label="Ziehstapel, ${state.drawPile.length} Karten">
+    <div class="zoff-pile zoff-pile--deck${canDraw ? ' zoff-pile--draggable' : ''}" data-drag-deck aria-label="Ziehstapel, ${state.drawPile.length} Karten">
       ${cardBackMarkup({ compact: true })}
       <span class="zoff-pile-count">${state.drawPile.length}</span>
     </div>
-    <div class="zoff-pile zoff-pile--discard" aria-label="Ablagestapel">
+    <div class="zoff-pile zoff-pile--discard${canTake ? ' zoff-pile--draggable' : ''}" data-drag-discard aria-label="Ablagestapel">
       ${discardContent}
     </div>
     <div class="zoff-pile-actions">
@@ -272,6 +300,10 @@ function resultMarkup(state: GameState, ui: UiState): string {
 
 function playMarkup(state: GameState, ui: UiState): string {
   const opponent: PlayerId = state.activePlayer === 0 ? 1 : 0;
+  const overlay =
+    ui.eatingOverlay && ui.eatingOverlay.length >= 3
+      ? eatingChainOverlayMarkup(ui.eatingOverlay)
+      : '';
 
   return `<div class="zoff-game">
     ${boardMarkup(state, opponent, { compact: true, interactive: false, ui })}
@@ -279,23 +311,33 @@ function playMarkup(state: GameState, ui: UiState): string {
     ${privateDecisionMarkup(state, ui)}
     ${boardMarkup(state, state.activePlayer, { compact: false, interactive: true, ui })}
     <div class="zoff-status" aria-live="polite">${escapeHtml(ui.statusMessage || phaseInstructions(state, ui))}</div>
+    ${overlay}
     <div class="zoff-landscape-warning"><b>Handy drehen</b><span>Zoff spielt man hochkant.</span></div>
     ${state.phase === 'finished' ? resultMarkup(state, ui) : ''}
   </div>`;
 }
 
+export function applyPresentationClasses(root: HTMLElement, state: GameState, ui: UiState): void {
+  root.classList.toggle('zoff-root--handoff', state.phase !== 'setup' && !ui.handoffConfirmed);
+  root.classList.toggle('zoff-root--playing', ui.handoffConfirmed && state.phase !== 'setup');
+  root.classList.toggle('zoff-root--turn-flip', ui.turnFlipActive);
+}
+
 export function render(root: HTMLElement, state: GameState, ui: UiState): void {
   if (state.phase === 'setup') {
     root.innerHTML = setupMarkup();
+    applyPresentationClasses(root, state, ui);
     return;
   }
 
   if (!ui.handoffConfirmed) {
     root.innerHTML = handoffMarkup(state);
+    applyPresentationClasses(root, state, ui);
     return;
   }
 
   root.innerHTML = playMarkup(state, ui);
+  applyPresentationClasses(root, state, ui);
 }
 
 export function formatChainEvent(event: Extract<GameEvent, { type: 'chainRemoved' }>): string {

@@ -26,21 +26,6 @@ export const SPECIES_LABELS: Readonly<Record<Species, string>> = {
   mosquito: 'Mücke',
 };
 
-const SPECIES_SHORT_LABELS: Readonly<Record<Species, string>> = {
-  whale: 'Wa',
-  elephant: 'El',
-  crocodile: 'Kr',
-  'polar-bear': 'Ei',
-  lion: 'Lö',
-  seal: 'Ro',
-  fox: 'Fu',
-  perch: 'Ba',
-  hedgehog: 'Ig',
-  fish: 'Fi',
-  mouse: 'Ma',
-  mosquito: 'Mü',
-};
-
 export function speciesLabel(species: Species): string {
   return SPECIES_LABELS[species];
 }
@@ -73,8 +58,12 @@ export function predatorsOf(species: Species): Species[] {
   return [...PREDATOR_GRAPH[species]];
 }
 
-function indicatorGlyph(species: Species): string {
-  return SPECIES_SHORT_LABELS[species];
+export function speciesIconMarkup(
+  species: Species,
+  variant: 'prey' | 'predator',
+): string {
+  const label = speciesLabel(species);
+  return `<span class="zoff-eat-icon zoff-eat-icon--${variant}" style="${speciesSpriteStyle(species)}" role="img" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}"><span class="zoff-eat-icon__art" style="background-image:url('${animalsUrl}')"></span></span>`;
 }
 
 export function eatingRelationLabel(species: Species): string {
@@ -104,12 +93,31 @@ export function eatingIndicatorsMarkup(species: Species): string {
       : 'keine Jäger';
 
   return `<div class="zoff-eat-indicators" aria-hidden="true">
-    <span class="zoff-eat-indicators__prey" title="${escapeHtml(preyText)}">
-      ${prey.map((entry) => `<i class="zoff-eat-glyph zoff-eat-glyph--prey" aria-hidden="true">${indicatorGlyph(entry)}</i>`).join('')}
+    <span class="zoff-eat-indicators__prey" title="${escapeHtml(preyText)}" aria-label="Beute: ${escapeHtml(preyText)}">
+      ${prey.map((entry) => speciesIconMarkup(entry, 'prey')).join('')}
     </span>
-    <span class="zoff-eat-indicators__predators" title="${escapeHtml(predatorText)}">
-      ${predators.map((entry) => `<i class="zoff-eat-glyph zoff-eat-glyph--predator" aria-hidden="true">${indicatorGlyph(entry)}</i>`).join('')}
+    <span class="zoff-eat-indicators__predators" title="${escapeHtml(predatorText)}" aria-label="Jäger: ${escapeHtml(predatorText)}">
+      ${predators.map((entry) => speciesIconMarkup(entry, 'predator')).join('')}
     </span>
+  </div>`;
+}
+
+export function eatingChainOverlayMarkup(species: readonly Species[]): string {
+  const steps = species
+    .map(
+      (entry, index) =>
+        `${speciesIconMarkup(entry, 'prey')}${
+          index < species.length - 1
+            ? '<span class="zoff-chain-bite" aria-hidden="true">→</span>'
+            : ''
+        }`,
+    )
+    .join('');
+  const names = species.map((entry) => speciesLabel(entry)).join(' → ');
+  return `<div class="zoff-eating-overlay" role="status" aria-live="polite" aria-label="Fresskette: ${escapeHtml(names)}">
+    <div class="zoff-eating-overlay__burst" aria-hidden="true">${steps}</div>
+    <p class="zoff-eating-overlay__label">Fresskette!</p>
+    <p class="zoff-eating-overlay__names">${escapeHtml(names)}</p>
   </div>`;
 }
 

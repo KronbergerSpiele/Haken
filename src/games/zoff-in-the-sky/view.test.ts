@@ -3,8 +3,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { canEat } from './cards';
 import { createGame, transition } from './reducer';
-import { INITIAL_UI, render } from './view';
-import { findAdjacentEatLinks, preyOf, predatorsOf, speciesLabel } from './graphics';
+import { INITIAL_UI, formatBoardScore, render, visibleSubtotal } from './view';
+import {
+  eatingIndicatorsMarkup,
+  findAdjacentEatLinks,
+  preyOf,
+  predatorsOf,
+  speciesLabel,
+} from './graphics';
 
 describe('zoff graphics helpers', () => {
   it('maps species to German labels and sprite order', () => {
@@ -23,6 +29,24 @@ describe('zoff graphics helpers', () => {
   it('flags chains of three or more adjacent eats', () => {
     const links = findAdjacentEatLinks(['mosquito', 'mouse', 'fox', null, null]);
     expect(links.some((link) => link.chainLength >= 3)).toBe(true);
+  });
+
+  it('renders eating indicators as sprite icons without abbreviation text', () => {
+    const markup = eatingIndicatorsMarkup('fox');
+    expect(markup).toContain('zoff-eat-icon');
+    expect(markup).not.toContain('>Fu<');
+    expect(markup).not.toContain('zoff-eat-glyph');
+    expect(markup).toContain('role="img"');
+  });
+});
+
+describe('zoff visible score helpers', () => {
+  it('sums only face-up occupied card values', () => {
+    const game = transition(createGame(22), { type: 'start' }).state;
+    const grid = game.players[0].grid;
+    const total = visibleSubtotal(grid);
+    expect(typeof total).toBe('number');
+    expect(formatBoardScore(game, 0)).toMatch(/Sichtbar -?\d+ · \d+ verdeckt/);
   });
 });
 
@@ -43,11 +67,38 @@ describe('zoff view rendering', () => {
 
   it('shows a pass-device handoff before revealing the board', () => {
     const game = transition(createGame(12), { type: 'start' }).state;
-    render(root, game, INITIAL_UI);
+    render(root, game, { ...INITIAL_UI, turnFlipActive: true });
     expect(root.querySelector('.zoff-handoff')).not.toBeNull();
+    expect(root.classList.contains('zoff-root--turn-flip')).toBe(true);
+    expect(root.classList.contains('zoff-root--handoff')).toBe(true);
     expect(root.querySelector('.zoff-game')).toBeNull();
     expect(root.textContent).toContain('Spieler');
     expect(root.querySelector('[data-confirm-handoff]')).not.toBeNull();
+  });
+
+  it('shows visible subtotals and hidden counts in board headers', () => {
+    const game = transition(createGame(12), { type: 'start' }).state;
+    render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
+    const scores = [...root.querySelectorAll('.zoff-board__score')];
+    expect(scores).toHaveLength(2);
+    expect(scores.every((score) => /Sichtbar -?\d+ · \d+ verdeckt/.test(score.textContent ?? ''))).toBe(
+      true,
+    );
+  });
+
+  it('renders an eating overlay when chain feedback is active', () => {
+    const game = transition(createGame(12), { type: 'start' }).state;
+    render(root, game, {
+      ...INITIAL_UI,
+      handoffConfirmed: true,
+      eatingOverlay: ['mosquito', 'mouse', 'fox'],
+      chainFeedback: 'Fresskette in Reihe 1: Mücke → Maus → Fuchs',
+    });
+    const overlay = root.querySelector('.zoff-eating-overlay');
+    expect(overlay).not.toBeNull();
+    expect(overlay?.getAttribute('aria-live')).toBe('polite');
+    expect(overlay?.querySelectorAll('.zoff-eat-icon').length).toBeGreaterThanOrEqual(3);
+    expect(overlay?.textContent).toContain('Fresskette!');
   });
 
   it('renders active and compact boards with public piles after handoff', () => {
@@ -95,11 +146,11 @@ describe('zoff view rendering', () => {
     expect(root.querySelector('.zoff-cell--gap.zoff-cell--placeable')).toBeNull();
   });
 
-  it('marks gaps and face-up cards with eating indicators', () => {
+  it('marks gaps and face-up cards with eating indicator icons', () => {
     const game = transition(createGame(16), { type: 'start' }).state;
     render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
     expect(root.querySelector('.zoff-cell--gap, .zoff-cell--hidden, .zoff-cell--face-up')).not.toBeNull();
-    expect(root.querySelector('.zoff-eat-indicators, .zoff-card-back')).not.toBeNull();
+    expect(root.querySelector('.zoff-eat-icon, .zoff-card-back')).not.toBeNull();
     expect(
       [...root.querySelectorAll<HTMLElement>('.zoff-cell--face-up')].some((cell) =>
         cell.getAttribute('aria-label')?.includes('Frisst:'),

@@ -10,6 +10,27 @@ import { createInputService } from '../../engine/input';
 import { RuntimeClock } from '../../engine/runtime';
 import { ZoffSession } from './session';
 
+function dispatchPointer(
+  type: 'pointerdown' | 'pointermove' | 'pointerup' | 'pointercancel',
+  target: EventTarget,
+  init: PointerEventInit,
+): void {
+  const event = new PointerEvent(type, { bubbles: true, cancelable: true, ...init });
+  target.dispatchEvent(event);
+}
+
+function mountPlayableSession(root: HTMLElement, seed = 7): ZoffSession {
+  const session = new ZoffSession(createContext(seed)) as ZoffSession;
+  session.mount(root);
+  root.querySelector<HTMLButtonElement>('[data-start]')!.click();
+  root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
+  root.setPointerCapture = vi.fn();
+  root.releasePointerCapture = vi.fn();
+  root.hasPointerCapture = vi.fn(() => true);
+  document.elementsFromPoint = (() => []) as typeof document.elementsFromPoint;
+  return session;
+}
+
 function createContext(seed = 42): SessionContext {
   return {
     seed,
@@ -53,7 +74,74 @@ describe('zoff session', () => {
     expect(root.querySelector('.zoff-handoff')).not.toBeNull();
     expect(root.querySelector('[data-draw]')).toBeNull();
     root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
+    expect(root.classList.contains('zoff-root--turn-flip')).toBe(true);
     expect(root.querySelector('[data-draw]')).not.toBeNull();
+  });
+
+  it('exposes draggable pile sources after handoff', () => {
+    session = new ZoffSession(createContext()) as ZoffSession;
+    session.mount(root);
+    root.querySelector<HTMLButtonElement>('[data-start]')!.click();
+    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
+    expect(root.querySelector('[data-drag-deck]')).not.toBeNull();
+    expect(root.querySelector('[data-drag-discard]')).not.toBeNull();
+  });
+
+  it('does not expose misleading keyboard semantics on draggable piles', () => {
+    session = mountPlayableSession(root);
+    const deck = root.querySelector('[data-drag-deck]')!;
+    const discard = root.querySelector('[data-drag-discard]')!;
+    expect(deck.getAttribute('role')).toBeNull();
+    expect(deck.getAttribute('tabindex')).toBeNull();
+    expect(discard.getAttribute('role')).toBeNull();
+    expect(discard.getAttribute('tabindex')).toBeNull();
+  });
+
+  it('renders place targets on drag start and completes deck drag placement', () => {
+    session = mountPlayableSession(root, 7);
+    const deck = root.querySelector('[data-drag-deck]')!;
+
+    dispatchPointer('pointerdown', deck, { pointerId: 11, clientX: 10, clientY: 10, button: 0 });
+
+    expect(root.querySelectorAll('[data-place]').length).toBeGreaterThan(0);
+    expect(root.querySelector('.zoff-private-decision')).not.toBeNull();
+    const preview = root.querySelector('.zoff-drag-preview');
+    expect(preview).not.toBeNull();
+    expect(root.contains(preview)).toBe(true);
+
+    const placeTarget = root.querySelector('[data-place]') as HTMLElement;
+    const elementsFromPoint = vi.spyOn(document, 'elementsFromPoint').mockReturnValue([placeTarget]);
+
+    dispatchPointer('pointermove', window, { pointerId: 11, clientX: 40, clientY: 40, button: 0 });
+    dispatchPointer('pointerup', window, { pointerId: 11, clientX: 40, clientY: 40, button: 0 });
+
+    expect(root.querySelector('.zoff-private-decision')).toBeNull();
+    expect(root.querySelector('.zoff-drag-preview')).toBeNull();
+    elementsFromPoint.mockRestore();
+  });
+
+  it('keeps pending decision after drag release outside a legal target', () => {
+    session = mountPlayableSession(root, 7);
+    const deck = root.querySelector('[data-drag-deck]')!;
+
+    dispatchPointer('pointerdown', deck, { pointerId: 12, clientX: 10, clientY: 10, button: 0 });
+    dispatchPointer('pointermove', window, { pointerId: 12, clientX: 40, clientY: 40, button: 0 });
+    dispatchPointer('pointerup', window, { pointerId: 12, clientX: 0, clientY: 0, button: 0 });
+
+    expect(root.querySelector('.zoff-private-decision')).not.toBeNull();
+    expect(root.querySelector('.zoff-drag-preview')).toBeNull();
+  });
+
+  it('keeps pending decision after pointer cancel during drag', () => {
+    session = mountPlayableSession(root, 7);
+    const deck = root.querySelector('[data-drag-deck]')!;
+
+    dispatchPointer('pointerdown', deck, { pointerId: 13, clientX: 10, clientY: 10, button: 0 });
+    dispatchPointer('pointermove', window, { pointerId: 13, clientX: 40, clientY: 40, button: 0 });
+    dispatchPointer('pointercancel', window, { pointerId: 13, clientX: 40, clientY: 40, button: 0 });
+
+    expect(root.querySelector('.zoff-private-decision')).not.toBeNull();
+    expect(root.querySelector('.zoff-drag-preview')).toBeNull();
   });
 
   it('dispatches reducer commands for draw and place', () => {

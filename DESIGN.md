@@ -39,7 +39,8 @@ single-round duel for two people on one portrait phone, inspired by Skyjo grid
 play and the non-transitive animal hierarchy from Frank's Zoo (*Zoff im Zoo*).
 Players alternate turns, manage hidden three-by-five grids, and try to finish
 with the lowest total value. The tone is playful sky-high zoo chaos with
-hand-drawn animal cards and no text on the artwork.
+stylized flat geometric animal cards—exaggerated silhouettes, bold outlines,
+and a limited palette—and no text on the artwork.
 
 ## Haken — match rules
 
@@ -255,19 +256,45 @@ The active player sees their full grid and a compact read-only opponent grid.
 Inspected draw cards use pass-device privacy: only the active player may view
 the drawn card before placing or discarding it.
 
-Each card shows playful hand-drawn bold-outline animal art. Local optimized
-assets are text-free on the card faces; a separate card back is used for hidden
-slots.
+Turn handoff and confirmation use a polished **board flip** transition so the
+active side reads upright after each change. Reduced-motion mode replaces the
+flip with a short fade or static state change that preserves the same
+information.
+
+Each card shows stylized flat geometric animal art: exaggerated silhouettes,
+bold outlines, and a limited palette in a board-game illustration style. Local
+optimized assets are text-free on the card faces; a separate card back is used
+for hidden slots.
 
 Eating relationships are communicated twice:
 
-- **Compact edge indicators** on each face-up card: the left edge lists prey the
-  card can eat; the right edge lists predators that can eat it.
+- **Compact edge indicators** on each face-up card: miniature animal-art icons on
+  the left edge show prey the card can eat; icons on the right edge show
+  predators that can eat it. These are pictorial cues, not text abbreviations.
 - **Contextual valid-link connectors** that emphasize legal eat pairs among
   currently adjacent face-up neighbors.
 
-Accessible labels state the relationships in words. Icons and color are never
-the only cue for who eats whom.
+Accessible labels and tooltips state the full species names and relationships
+in words. Color is never the only cue for who eats whom.
+
+Each board header shows a **current score** while the round is in progress:
+the sum of values on face-up cards plus a hidden-card count (for example,
+`12 + 3 hidden`). This is an interim tally only; it is explicitly not the
+final score while hidden cards remain. The exact total appears only after the
+automatic full reveal at round end.
+
+The draw pile and discard pile support **Pointer Event drag-and-drop** onto
+legal grid slots. A floating card preview follows the pointer; legal targets
+receive clear placement feedback. Dragging from the deck begins draw inspection
+with the same privacy rules as the existing flow. Dropping outside a legal slot
+leaves the pending decision available—it does not discard, cancel, or commit
+the action. Tap, button, and keyboard controls remain complete fallbacks with
+identical rules.
+
+After deterministic chain resolution, removed runs receive a playful eating
+animation—icon bites, pops, or similar emphasis on the cleared cards.
+Animations are presentation-only and never change or delay rule outcomes.
+Reduced-motion mode replaces motion with static text emphasis of the removal.
 
 Sound and vibration are optional and never required. Reduced-motion mode keeps
 chain removal and turn changes readable without relying on motion alone. Large
@@ -331,7 +358,19 @@ announcements support non-gesture and assistive use.
   turn before automatic full reveal, chain resolution, and scoring.
 - Lowest total value wins; equal totals are a draw.
 - Same seed and command sequence produce the same grid, chains, and score.
-- Eating indicators and accessible labels express predator and prey relations
-  without relying on color or icons alone.
+- Turn handoff uses a board flip transition; reduced-motion substitutes a short
+  fade or static state change with the same information.
+- Eating edge indicators use miniature animal-art icons for prey (left) and
+  predators (right), not text abbreviations; accessible labels and tooltips
+  state full species names and relationships without relying on color alone.
+- Board headers show visible subtotal plus hidden-card count during play; the
+  exact final score appears only after the end-of-round full reveal.
+- Draw and discard piles support pointer drag-and-drop to legal grid slots with
+  floating preview and legal-target feedback; dragging the deck starts
+  inspection; dropping outside a legal slot leaves the pending decision
+  available; tap, button, and keyboard paths remain complete fallbacks.
+- Chain removal plays a presentation-only eating animation after deterministic
+  resolution; reduced-motion uses static text emphasis instead.
 - All twelve species and the card back render from bundled local artwork with
+  stylized flat geometric, exaggerated, bold-outline, limited-palette faces and
   no text on card faces.

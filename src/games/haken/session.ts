@@ -135,6 +135,14 @@ export class HakenSession implements GameSession {
     this.root.appendChild(button);
   }
 
+  private requestFullscreenBestEffort(): void {
+    try {
+      void Promise.resolve(document.documentElement.requestFullscreen?.()).catch(() => undefined);
+    } catch {
+      // Fullscreen is optional; refusal or API quirks must not block play.
+    }
+  }
+
   private startCountdown(): void {
     if (this.countdownTimer !== null) window.clearInterval(this.countdownTimer);
     let value = 3;
@@ -160,8 +168,8 @@ export class HakenSession implements GameSession {
     if (!target || !this.root) return;
 
     if (target.matches('[data-start]')) {
-      void document.documentElement.requestFullscreen?.().catch(() => undefined);
       this.startCountdown();
+      this.requestFullscreenBestEffort();
       return;
     }
     if (target.matches('[data-restart]')) {

@@ -314,6 +314,12 @@ Zoff in the Sky is a self-contained turn-based game module at
   active player from seed parity (`seed % 2`).
 - Draw-pile exhaustion recycles every discard card except the visible top into
   a newly shuffled draw pile, preserving that top as the only discard card.
+- `canPlacePendingAt` enforces stock safety: during a normal turn, when the draw
+  pile is empty, the pending card came from discard, and taking it left discard
+  empty, gap targets are rejected so placement must replace an occupied card and
+  restore a visible discard. During `finalTurn`, gap placement is allowed
+  because scoring follows immediately. The reducer and view share this query for
+  legality and placeable highlighting.
 
 ### Chains and scoring
 
@@ -387,11 +393,12 @@ The following automated boundaries are required:
   simultaneous-event ordering, plus DOM smoke tests for pointer and non-gesture
   play;
 - Zoff in the Sky adds reducer tests for shuffle/recycle with preserved discard
-  top, opening discard, seeded initial reveals, Skyjo turn legality, private
+  top, opening discard, seeded initial reveals, Zoff turn legality, stock-safety
+  gap rejection with occupied replacement, final-turn gap allowance, private
   inspected draw visibility, face-up and hidden replacement, full-run chain
   removal, final-turn handoff after placement or reveal, scoring, and draws,
-  plus DOM smoke tests in `view.test.ts` and lifecycle cleanup in
-  `session.test.ts`;
+  plus DOM smoke tests in `view.test.ts`—including stock-unsafe gaps not marked
+  placeable—and lifecycle cleanup in `session.test.ts`;
 - end-to-end smoke tests launch Haken, leave it, launch it again, and confirm
   that no duplicate listeners, animation loops, or effects survive; the same
   cleanup guarantees apply when launching and leaving Zoff in the Sky.

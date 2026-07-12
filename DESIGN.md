@@ -218,6 +218,12 @@ an occupied slot—whether the old card is face up or still hidden—sends the
 replaced card face up to the discard pile. Placing into an empty gap discards
 nothing.
 
+**Stock safety** — during a normal turn, when the draw pile is empty and taking
+the visible discard leaves the discard pile empty, that pending discard cannot
+be placed into a gap; it must replace an occupied card so a visible discard
+remains. During the owed final turn, gap placement is allowed because scoring
+follows immediately.
+
 When the draw pile is empty, recycle all discard cards except the current
 visible top into a newly shuffled draw pile, leaving that top card as the only
 discard.
@@ -313,6 +319,8 @@ announcements support non-gesture and assistive use.
   placed cards are face up; placements into gaps do not discard.
 - Draw-pile recycle keeps the visible discard top and shuffles the rest back
   into the draw pile.
+- When stock is exhausted, a held sole discard must replace an occupied card
+  during a normal turn; gap placement is allowed on the owed final turn.
 - Horizontal chains remove entire qualifying runs of three or more in one step;
   multiple qualifying rows resolve in player and row order; gaps remain with no
   falling or snapping.

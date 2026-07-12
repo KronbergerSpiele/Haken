@@ -34,7 +34,14 @@ The presentation combines German bureaucratic humor with cartoon AI chaos:
 overheated servers, stern guardrails, terminal symbols, impact stars, and absurd
 model names. It contains no gore and does not imitate or demean real people.
 
-## Match rules
+Zoff in the Sky is the second game in the collection. It is a local,
+single-round duel for two people on one portrait phone, inspired by Skyjo grid
+play and the non-transitive animal hierarchy from Frank's Zoo (*Zoff im Zoo*).
+Players alternate turns, manage hidden three-by-five grids, and try to finish
+with the lowest total value. The tone is playful sky-high zoo chaos with
+hand-drawn animal cards and no text on the artwork.
+
+## Haken — match rules
 
 ### Objective
 
@@ -116,7 +123,7 @@ hiding the page freezes travel, regeneration, refills, and center deadlines.
 
 All values are balance constants. A typical match should last 90–150 seconds.
 
-## Screen and feedback
+## Haken — screen and feedback
 
 The board fills `100dvh` and respects safe-area insets. The upper player's
 controls are rotated 180 degrees. The shared center uses mirrored labels so each
@@ -133,7 +140,130 @@ replaces travel and shake effects with short fades. Large controls, high
 contrast, semantic buttons, visible focus, and live status announcements
 support non-gesture and assistive use.
 
+## Zoff in the Sky — match rules
+
+### Objective
+
+Each player owns a personal three-row by five-column grid of fifteen slots.
+Every slot starts hidden. The player with the lower sum of face-up card values
+after one scored round wins. Equal totals are a draw.
+
+### Setup
+
+- Two players share one device in portrait orientation.
+- The match is a single round; there is no match clock.
+- Shuffle a fifty-nine-card deck from a reproducible match seed: five copies of
+  each of eleven ordinary species plus four Mosquitoes.
+- Deal fifteen cards face down into each grid, filling every slot.
+- Reveal exactly two hidden cards per player.
+- Place the remaining cards face down as the draw pile. Start with an empty
+  discard pile.
+
+### Species, values, and deck
+
+Twelve species appear in the deck. Values apply only for end-of-round scoring:
+
+| Species | Value |
+| --- | --- |
+| Mosquito | −1 |
+| Fish, Mouse, Whale | 0 |
+| Hedgehog, Perch | 1 |
+| Fox, Lion, Seal | 2 |
+| Crocodile, Polar Bear | 3 |
+| Elephant | 4 |
+
+There is no Joker. Mosquito and Elephant have no special combo rules from
+Frank's Zoo.
+
+### Predator graph
+
+Eating uses the original Frank's Zoo non-transitive predator graph restricted
+to these twelve species. Each species lists the predators that outrank it in
+the source game:
+
+| Species | Outranked by (predators) |
+| --- | --- |
+| Mosquito | Mouse, Fish |
+| Mouse | Hedgehog, Fox |
+| Fish | Hedgehog, Crocodile, Seal, Polar Bear, Whale |
+| Hedgehog | Fox |
+| Fox | Lion, Crocodile, Polar Bear, Elephant |
+| Lion | Crocodile, Elephant |
+| Crocodile | Polar Bear, Elephant |
+| Polar Bear | Elephant, Whale |
+| Elephant | Mouse, Whale |
+| Whale | Seal |
+| Seal | Perch |
+| Perch | — |
+
+In a left-to-right chain, each face-up card on the right eats its immediate
+left neighbor when the right card's species is a listed predator of the left
+card's species.
+
+### Turn structure
+
+Players alternate turns. On a turn the active player chooses exactly one of
+these options:
+
+1. **Take discard** — remove the top discard card, if any, and place it into
+   one of the active player's occupied slots or empty gaps. A replaced face-up
+   card goes to the discard pile. Placing into an empty gap discards nothing.
+2. **Inspect draw** — privately look at the top draw card without showing the
+   opponent, then either:
+   - place that card into an occupied slot or gap with the same replacement
+     and discard rules as option 1; or
+   - discard the drawn card face up and reveal one still-hidden card in the
+     active player's grid.
+
+When the draw pile is empty, shuffle the discard pile to form a new draw pile.
+
+### Horizontal chains
+
+After any placement or reveal, scan each row left to right. For every maximal
+contiguous run of three or more face-up cards, repeatedly remove a card when
+its immediate right neighbor's species is a listed predator of the left species.
+Stop when no such eat remains inside that run. Gaps break contiguity, so chain
+resolution never crosses an empty slot. Removed cards do not fall, slide, or
+snap closed; gaps stay empty and may be filled on later turns.
+
+### Final turn and scoring
+
+When a player reveals the last hidden card in their own grid, the opponent
+receives exactly one more turn. After that turn, reveal every remaining hidden
+card, resolve all horizontal chains on both grids, sum each player's face-up
+values, and end the round. The lower sum wins; equal sums are a draw.
+
+## Zoff in the Sky — screen and feedback
+
+The board fills `100dvh` and respects safe-area insets. Landscape orientation
+displays a request to rotate.
+
+The active player sees their full grid and a compact read-only opponent grid.
+Inspected draw cards use pass-device privacy: only the active player may view
+the drawn card before placing or discarding it.
+
+Each card shows playful hand-drawn bold-outline animal art. Local optimized
+assets are text-free on the card faces; a separate card back is used for hidden
+slots.
+
+Eating relationships are communicated twice:
+
+- **Compact edge indicators** on each face-up card: the left edge lists prey the
+  card can eat; the right edge lists predators that can eat it.
+- **Contextual valid-link connectors** that emphasize legal eat pairs among
+  currently adjacent face-up neighbors.
+
+Accessible labels state the relationships in words. Icons and color are never
+the only cue for who eats whom.
+
+Sound and vibration are optional and never required. Reduced-motion mode keeps
+chain removal and turn changes readable without relying on motion alone. Large
+controls, high contrast, semantic buttons, visible focus, and live status
+announcements support non-gesture and assistive use.
+
 ## Acceptance criteria
+
+### Collection
 
 - The launcher lists every registered game and communicates its player and
   device requirements before play.
@@ -145,6 +275,11 @@ support non-gesture and assistive use.
   game without reloading the page.
 - Shared presentation components remain consistent, while each game can provide
   its own theme and game-specific artwork.
+- Reduced motion and muted sound preserve all gameplay information.
+- A production build works from a GitHub repository subpath.
+
+### Haken
+
 - Two people can drag different cards at once; neither blocks the other.
 - A complete match is playable at 320×568 through 430×932 portrait sizes
   without document scrolling.
@@ -154,5 +289,26 @@ support non-gesture and assistive use.
 - Simultaneous lethal damage produces Doppel-K.O.
 - Hiding the page cannot resolve cards or regenerate resources.
 - Tap controls can complete a match without flick gestures.
-- Reduced motion and muted sound preserve all gameplay information.
-- A production build works from a GitHub repository subpath.
+
+### Zoff in the Sky
+
+- A complete single-round match is playable at 320×568 through 430×932 portrait
+  sizes without document scrolling.
+- Each grid uses fifteen fixed slots; gaps remain after chain removal and can
+  be filled later.
+- A turn accepts only the documented discard, inspect-and-place, or
+  inspect-discard-and-reveal actions.
+- Inspected draw cards stay private to the active player until placed or
+  discarded.
+- Replaced occupied cards enter the discard pile; placements into gaps do not.
+- Horizontal chains resolve only inside contiguous face-up runs of three or more
+  cards; repeated left-to-right predator eats remove cards and leave gaps with
+  no falling or snapping.
+- Revealing the last hidden card in a grid grants the opponent exactly one
+  further turn before automatic full reveal, chain resolution, and scoring.
+- Lowest total value wins; equal totals are a draw.
+- Same seed and command sequence produce the same grid, chains, and score.
+- Eating indicators and accessible labels express predator and prey relations
+  without relying on color or icons alone.
+- All twelve species and the card back render from bundled local artwork with
+  no text on card faces.

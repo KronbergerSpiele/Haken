@@ -2,8 +2,8 @@
 
 This document defines the target architecture for a browser-based mini-game
 engine and its games. Haken is the first game implemented on the engine.
-Player-visible behavior, game rules, balance, and acceptance criteria are
-defined in [the game design document](DESIGN.md).
+Zoff in the Sky is the second. Player-visible behavior, game rules, balance,
+and acceptance criteria are defined in [the game design document](DESIGN.md).
 
 ## Goals and boundaries
 
@@ -64,21 +64,28 @@ src/
     feedback.ts            # optional sound and vibration adapters
   games/
     haken/
-      index.ts             # Haken manifest and session factory
+      session.ts           # Haken manifest and session factory
       model.ts             # Haken-only state and event contracts
       cards.ts             # deck definitions and balance constants
       reducer.ts           # deterministic Haken transitions
       controls.ts          # flick and accessible fallback interpretation
       view.ts              # Haken DOM projection
       graphics.ts          # Haken-specific art built from shared primitives
+    zoff-in-the-sky/
+      session.ts           # Zoff manifest and session factory
+      model.ts             # grid, deck, phase, and command contracts
+      species.ts           # species values and Frank's Zoo predator table
+      reducer.ts           # deterministic turn, chain, and scoring transitions
+      controls.ts          # tap/keyboard command interpretation
+      view.ts              # active and compact opponent grid projection
+      graphics.ts          # bundled animal sprites and eating indicators
+      assets/              # optimized local card-face and card-back artwork
   main.ts                  # composition root only
 ```
 
-The existing `src/game/*` and `src/ui/*` modules are the Haken implementation
-before extraction. Migration moves them under `src/games/haken/`; reusable
-pointer, lifecycle, and presentation behavior moves to `src/engine/` and
-`src/graphics/`. The migration must preserve Haken's rules and deterministic
-tests.
+Haken already lives under `src/games/haken/`. Shared pointer, lifecycle, and
+presentation behavior lives in `src/engine/` and `src/graphics/`. Zoff in the
+Sky follows the same plug-in layout as a self-contained turn-based module.
 
 ## Game plug-in contract
 
@@ -150,6 +157,7 @@ Game routes use a query parameter on the deployment root:
 ```text
 ./                         launcher
 ./?game=haken              Haken
+./?game=zoff-in-the-sky    Zoff in the Sky
 ```
 
 Path routes such as `/games/haken` are not used because a static GitHub Pages
@@ -193,9 +201,10 @@ Each animation frame drains due commands, asks the active game to advance to
 the frame time, and renders any resulting state.
 
 The engine does not impose a fixed update model: turn-based games can advance
-only on commands, while real-time games can process absolute deadlines. Games
-must not use `Date.now()`, `Math.random()`, `setTimeout()`, or `setInterval()`
-for rule decisions. Random choices use the session's seeded generator. Given a
+only on commands, while real-time games can process absolute deadlines. Zoff in
+the Sky advances only on player commands and has no gameplay timers. Games must
+not use `Date.now()`, `Math.random()`, `setTimeout()`, or `setInterval()` for
+rule decisions. Random choices use the session's seeded generator. Given a
 seed and the same timestamped command stream, a game must produce the same state
 and semantic events.
 
@@ -244,10 +253,11 @@ serialization compatibility, abuse controls, and backend deployment.
 
 Graphics APIs return nodes or structured descriptors, not unsanitized HTML.
 Bundled SVG paths are trusted source code; player-provided text is inserted with
-`textContent`. Effects are presentation-only: their callbacks cannot mutate
-game state. Rule outcomes first produce semantic game events, then the view maps
-those events to effects. Skipped or disabled effects therefore cannot alter a
-match.
+`textContent`. Zoff in the Sky ships text-free card faces and a card back as
+static bundled assets referenced from its module. Effects are presentation-only:
+their callbacks cannot mutate game state. Rule outcomes first produce semantic
+game events, then the view maps those events to effects. Skipped or disabled
+effects therefore cannot alter a match.
 
 The library uses DOM/SVG initially because it integrates with the existing
 accessible interface and is adequate for small boards. A Canvas renderer is not
@@ -270,6 +280,53 @@ Fullscreen, vibration, and generated sound are progressive enhancements.
 Service adapters report unavailable or denied capabilities without failing
 session creation. Audio starts only after user interaction and respects mute.
 No platform service contains game rules.
+
+## Zoff in the Sky module
+
+Zoff in the Sky is a self-contained turn-based game module at
+`src/games/zoff-in-the-sky/`. It does not share rules code with Haken.
+
+### State and phases
+
+- Each player grid is a fixed fifteen-slot array indexed in row-major order.
+  Slots hold face-down cards, face-up cards, or `null` gaps after chain removal.
+- Match state is a pure reducer model with discriminated phases such as setup,
+  active turn, private inspected draw, final opponent turn, reveal, chain
+  resolution, and finished.
+- The private inspected draw exists only while the active player is viewing a
+  drawn card; it is excluded from opponent-visible snapshots.
+- A dedicated final-turn flag records when one grid has no hidden cards and the
+  opponent still owes exactly one turn.
+
+### Deck and randomness
+
+- The fifty-nine-card deck is built from species copy counts, then shuffled with
+  the session seed through the shared seeded random source.
+- Draw-pile exhaustion recycles the discard pile with another deterministic
+  shuffle from the same generator state contract as Haken.
+
+### Chains and scoring
+
+- Chain resolution scans each row for maximal contiguous face-up runs of three
+  or more cards, then repeatedly removes a card when its right neighbor's
+  species is a listed Frank's Zoo predator of the left species. Resolution
+  leaves gaps and does not compact the grid.
+- Scoring sums face-up species values only after the terminal reveal phase.
+
+### Presentation
+
+- The session applies a namespaced `zoff-in-the-sky` theme scope and CSS tokens.
+- The view renders the active player's full grid, a compact opponent grid, pass-
+  device privacy for inspected draws, compact edge eating indicators, and stronger
+  contextual valid-link connectors. Accessible labels mirror the predator and
+  prey relations.
+
+### Registration and assets
+
+- The game is registered explicitly in `app/catalog.ts` with lazy dynamic import
+  of its session factory, matching the Haken chunk pattern.
+- Card artwork is bundled under the module's `assets/` directory and referenced
+  as static build inputs; there is no runtime asset fetch.
 
 ## Accessibility
 
@@ -315,8 +372,13 @@ The following automated boundaries are required:
 - each game has reducer tests proving determinism and its documented
   simultaneous-event ordering, plus DOM smoke tests for pointer and non-gesture
   play;
+- Zoff in the Sky adds reducer tests for shuffle/recycle, Skyjo turn legality,
+  private inspected draw visibility, gap replacement, horizontal chain removal,
+  final-turn handoff, scoring, and draws, plus DOM smoke tests for pass-device
+  privacy, eating indicators, accessible labels, and lifecycle cleanup;
 - end-to-end smoke tests launch Haken, leave it, launch it again, and confirm
-  that no duplicate listeners, animation loops, or effects survive.
+  that no duplicate listeners, animation loops, or effects survive; the same
+  cleanup guarantees apply when launching and leaving Zoff in the Sky.
 
 `pnpm test` runs deterministic unit and DOM tests. `pnpm build` type-checks and
 builds all registered games. GitHub Pages deployment runs both commands before

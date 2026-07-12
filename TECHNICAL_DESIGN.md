@@ -72,13 +72,15 @@ src/
       view.ts              # Haken DOM projection
       graphics.ts          # Haken-specific art built from shared primitives
     zoff-in-the-sky/
-      session.ts           # Zoff manifest and session factory
-      model.ts             # grid, deck, phase, and command contracts
-      species.ts           # species values and Frank's Zoo predator table
+      session.ts           # session factory, click/keyboard command routing
+      model.ts             # nested grid, deck, phase, and command contracts
+      cards.ts             # species values, deck composition, predator graph
       reducer.ts           # deterministic turn, chain, and scoring transitions
-      controls.ts          # tap/keyboard command interpretation
       view.ts              # active and compact opponent grid projection
       graphics.ts          # bundled animal sprites and eating indicators
+      reducer.test.ts
+      view.test.ts
+      session.test.ts
       assets/              # optimized local card-face and card-back artwork
   main.ts                  # composition root only
 ```
@@ -288,34 +290,46 @@ Zoff in the Sky is a self-contained turn-based game module at
 
 ### State and phases
 
-- Each player grid is a fixed fifteen-slot array indexed in row-major order.
-  Slots hold face-down cards, face-up cards, or `null` gaps after chain removal.
-- Match state is a pure reducer model with discriminated phases such as setup,
-  active turn, private inspected draw, final opponent turn, reveal, chain
-  resolution, and finished.
-- The private inspected draw exists only while the active player is viewing a
-  drawn card; it is excluded from opponent-visible snapshots.
-- A dedicated final-turn flag records when one grid has no hidden cards and the
+- Each player board stores a nested `3 × 5` grid of `(GridCell | null)[][]`.
+  A `GridCell` holds a card instance and a `faceUp` flag; `null` is a gap after
+  chain removal.
+- Match state is a pure reducer model with discriminated phases: `setup`,
+  `awaitingAction`, `holdingDiscard`, `inspectingDraw`, `finalTurn`, and
+  `finished`.
+- `pendingCard` holds a taken discard or inspected draw between action selection
+  and placement. The inspected draw is private to the active player in the view
+  until placed or discarded.
+- `inFinalTurn` records that one grid has no hidden occupied cells and the
   opponent still owes exactly one turn.
 
 ### Deck and randomness
 
-- The fifty-nine-card deck is built from species copy counts, then shuffled with
-  the session seed through the shared seeded random source.
-- Draw-pile exhaustion recycles the discard pile with another deterministic
-  shuffle from the same generator state contract as Haken.
+- The fifty-nine-card deck is built from species copy counts in `cards.ts`.
+- The reducer owns deterministic `rngState`, initialized from the session seed
+  in `createGame`. Internal `randomStep` / `shuffle` advance `rngState` for
+  the opening deal, seeded initial reveals, and discard recycling. The module
+  does not call the shared `SessionContext.random` service for rule decisions.
+- On `start`, the reducer reveals two seeded-random hidden cells per player,
+  deals one opening face-up discard from the draw pile, and sets the first
+  active player from seed parity (`seed % 2`).
+- Draw-pile exhaustion recycles every discard card except the visible top into
+  a newly shuffled draw pile, preserving that top as the only discard card.
 
 ### Chains and scoring
 
-- Chain resolution scans each row for maximal contiguous face-up runs of three
-  or more cards, then repeatedly removes a card when its right neighbor's
-  species is a listed Frank's Zoo predator of the left species. Resolution
-  leaves gaps and does not compact the grid.
-- Scoring sums face-up species values only after the terminal reveal phase.
+- Chain resolution scans player `0` then player `1`, row by row left to right.
+  Each maximal contiguous run of three or more face-up cards where every right
+  neighbor eats its immediate left neighbor is removed in one step. The reducer
+  does not iteratively remove single cards inside a qualifying run. Gaps are
+  not compacted.
+- After the final opponent turn, the reducer reveals all remaining hidden
+  cells, resolves chains once more, then scores every occupied slot.
 
 ### Presentation
 
 - The session applies a namespaced `zoff-in-the-sky` theme scope and CSS tokens.
+- `session.ts` routes click and keyboard input into reducer commands; there is no
+  separate `controls.ts`.
 - The view renders the active player's full grid, a compact opponent grid, pass-
   device privacy for inspected draws, compact edge eating indicators, and stronger
   contextual valid-link connectors. Accessible labels mirror the predator and
@@ -372,10 +386,12 @@ The following automated boundaries are required:
 - each game has reducer tests proving determinism and its documented
   simultaneous-event ordering, plus DOM smoke tests for pointer and non-gesture
   play;
-- Zoff in the Sky adds reducer tests for shuffle/recycle, Skyjo turn legality,
-  private inspected draw visibility, gap replacement, horizontal chain removal,
-  final-turn handoff, scoring, and draws, plus DOM smoke tests for pass-device
-  privacy, eating indicators, accessible labels, and lifecycle cleanup;
+- Zoff in the Sky adds reducer tests for shuffle/recycle with preserved discard
+  top, opening discard, seeded initial reveals, Skyjo turn legality, private
+  inspected draw visibility, face-up and hidden replacement, full-run chain
+  removal, final-turn handoff after placement or reveal, scoring, and draws,
+  plus DOM smoke tests in `view.test.ts` and lifecycle cleanup in
+  `session.test.ts`;
 - end-to-end smoke tests launch Haken, leave it, launch it again, and confirm
   that no duplicate listeners, animation loops, or effects survive; the same
   cleanup guarantees apply when launching and leaving Zoff in the Sky.

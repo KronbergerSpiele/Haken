@@ -145,8 +145,8 @@ support non-gesture and assistive use.
 ### Objective
 
 Each player owns a personal three-row by five-column grid of fifteen slots.
-Every slot starts hidden. The player with the lower sum of face-up card values
-after one scored round wins. Equal totals are a draw.
+Every slot starts hidden. The player with the lower sum of card values on their
+grid after one scored round wins. Equal totals are a draw.
 
 ### Setup
 
@@ -154,10 +154,11 @@ after one scored round wins. Equal totals are a draw.
 - The match is a single round; there is no match clock.
 - Shuffle a fifty-nine-card deck from a reproducible match seed: five copies of
   each of eleven ordinary species plus four Mosquitoes.
-- Deal fifteen cards face down into each grid, filling every slot.
-- Reveal exactly two hidden cards per player.
-- Place the remaining cards face down as the draw pile. Start with an empty
-  discard pile.
+- Deal fifteen cards face down into each grid, filling every slot. Place the
+  remaining cards face down as the draw pile.
+- Reveal exactly two hidden cards per player at seeded-random positions.
+- Turn one draw-pile card face up as the opening discard.
+- Choose the first player deterministically from match-seed parity.
 
 ### Species, values, and deck
 
@@ -177,24 +178,23 @@ Frank's Zoo.
 
 ### Predator graph
 
-Eating uses the original Frank's Zoo non-transitive predator graph restricted
-to these twelve species. Each species lists the predators that outrank it in
-the source game:
+Eating uses the verified non-transitive predator graph below. Each row lists
+the predators that can eat that prey species:
 
-| Species | Outranked by (predators) |
+| Prey | Predators |
 | --- | --- |
-| Mosquito | Mouse, Fish |
-| Mouse | Hedgehog, Fox |
-| Fish | Hedgehog, Crocodile, Seal, Polar Bear, Whale |
+| Mosquito | Mouse, Hedgehog, Fish |
+| Mouse | Hedgehog, Polar Bear, Seal, Lion, Crocodile, Fox |
 | Hedgehog | Fox |
-| Fox | Lion, Crocodile, Polar Bear, Elephant |
-| Lion | Crocodile, Elephant |
-| Crocodile | Polar Bear, Elephant |
+| Fox | Polar Bear, Crocodile, Lion, Elephant |
+| Fish | Perch, Whale, Seal, Crocodile |
+| Perch | Polar Bear, Seal, Crocodile, Whale |
+| Crocodile | Elephant |
+| Lion | Elephant |
+| Seal | Polar Bear, Whale |
 | Polar Bear | Elephant, Whale |
-| Elephant | Mouse, Whale |
-| Whale | Seal |
-| Seal | Perch |
-| Perch | — |
+| Elephant | Mouse |
+| Whale | — |
 
 In a left-to-right chain, each face-up card on the right eats its immediate
 left neighbor when the right card's species is a listed predator of the left
@@ -205,32 +205,39 @@ card's species.
 Players alternate turns. On a turn the active player chooses exactly one of
 these options:
 
-1. **Take discard** — remove the top discard card, if any, and place it into
-   one of the active player's occupied slots or empty gaps. A replaced face-up
-   card goes to the discard pile. Placing into an empty gap discards nothing.
+1. **Take discard** — remove the visible top discard card and hold it for
+   placement into one of the active player's occupied slots or empty gaps.
 2. **Inspect draw** — privately look at the top draw card without showing the
    opponent, then either:
-   - place that card into an occupied slot or gap with the same replacement
-     and discard rules as option 1; or
+   - place that card into an occupied slot or gap; or
    - discard the drawn card face up and reveal one still-hidden card in the
      active player's grid.
 
-When the draw pile is empty, shuffle the discard pile to form a new draw pile.
+**Placement** — a held discard or drawn card is always placed face up. Replacing
+an occupied slot—whether the old card is face up or still hidden—sends the
+replaced card face up to the discard pile. Placing into an empty gap discards
+nothing.
+
+When the draw pile is empty, recycle all discard cards except the current
+visible top into a newly shuffled draw pile, leaving that top card as the only
+discard.
 
 ### Horizontal chains
 
-After any placement or reveal, scan each row left to right. For every maximal
-contiguous run of three or more face-up cards, repeatedly remove a card when
-its immediate right neighbor's species is a listed predator of the left species.
-Stop when no such eat remains inside that run. Gaps break contiguity, so chain
-resolution never crosses an empty slot. Removed cards do not fall, slide, or
-snap closed; gaps stay empty and may be filled on later turns.
+After any placement or reveal, resolve chains on both grids in player order,
+scanning each row left to right. Remove the entire maximal contiguous run of
+three or more face-up cards where every card to the right eats its immediate
+left neighbor. Each qualifying run is cleared in one step; individual cards are
+not removed one at a time. Gaps break contiguity, so chain resolution never
+crosses an empty slot. Removed cards do not fall, slide, or snap closed; gaps
+stay empty and may be filled on later turns.
 
 ### Final turn and scoring
 
-When a player reveals the last hidden card in their own grid, the opponent
-receives exactly one more turn. After that turn, reveal every remaining hidden
-card, resolve all horizontal chains on both grids, sum each player's face-up
+Whenever a player's grid has no hidden occupied cards after their action—including
+replacing their final hidden card with a face-up placement—the opponent receives
+exactly one more turn. After that turn, reveal every remaining hidden card,
+resolve all horizontal chains on both grids, sum each player's occupied slot
 values, and end the round. The lower sum wins; equal sums are a draw.
 
 ## Zoff in the Sky — screen and feedback
@@ -300,12 +307,18 @@ announcements support non-gesture and assistive use.
   inspect-discard-and-reveal actions.
 - Inspected draw cards stay private to the active player until placed or
   discarded.
-- Replaced occupied cards enter the discard pile; placements into gaps do not.
-- Horizontal chains resolve only inside contiguous face-up runs of three or more
-  cards; repeated left-to-right predator eats remove cards and leave gaps with
-  no falling or snapping.
-- Revealing the last hidden card in a grid grants the opponent exactly one
-  further turn before automatic full reveal, chain resolution, and scoring.
+- Setup deals an opening face-up discard, two seeded-random initial reveals per
+  player, and a first player chosen from match-seed parity.
+- Replaced occupied cards—face up or hidden—enter the discard pile face up;
+  placed cards are face up; placements into gaps do not discard.
+- Draw-pile recycle keeps the visible discard top and shuffles the rest back
+  into the draw pile.
+- Horizontal chains remove entire qualifying runs of three or more in one step;
+  multiple qualifying rows resolve in player and row order; gaps remain with no
+  falling or snapping.
+- Clearing every hidden occupied card after an action—including a face-up
+  replacement of the last hidden card—grants the opponent exactly one further
+  turn before automatic full reveal, chain resolution, and scoring.
 - Lowest total value wins; equal totals are a draw.
 - Same seed and command sequence produce the same grid, chains, and score.
 - Eating indicators and accessible labels express predator and prey relations

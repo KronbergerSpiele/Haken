@@ -391,20 +391,42 @@ function accept(state: GameState, events: GameEvent[]): Transition {
   return { state, events };
 }
 
+export function canPlacePendingAt(
+  state: GameState,
+  player: PlayerId,
+  row: number,
+  col: number,
+): boolean {
+  if (!PLACE_PHASES.has(state.phase as 'holdingDiscard' | 'inspectingDraw')) return false;
+  if (player !== state.activePlayer) return false;
+  if (!state.pendingCard) return false;
+  if (!isValidCoord(row, col)) return false;
+
+  const target = state.players[player].grid[row]![col];
+  if (
+    !state.inFinalTurn &&
+    state.pendingCard.source === 'discard' &&
+    state.drawPile.length === 0 &&
+    state.discard.length === 0 &&
+    target === null
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 function handlePlace(
   state: GameState,
   command: Extract<GameCommand, { type: 'place' }>,
   events: GameEvent[],
 ): Transition | null {
-  if (!PLACE_PHASES.has(state.phase as 'holdingDiscard' | 'inspectingDraw')) return null;
-  if (command.player !== state.activePlayer) return null;
-  if (!state.pendingCard) return null;
-  if (!isValidCoord(command.row, command.col)) return null;
+  if (!canPlacePendingAt(state, command.player, command.row, command.col)) return null;
 
   const actingPlayer = command.player;
+  const pendingCard = state.pendingCard!;
   const hiddenBefore = countHidden(state.players[actingPlayer].grid);
-  const { card } = state.pendingCard;
-  placeCard(state, actingPlayer, command.row, command.col, card, events);
+  placeCard(state, actingPlayer, command.row, command.col, pendingCard.card, events);
   const hiddenAfter = countHidden(state.players[actingPlayer].grid);
   const triggeredFinal = hiddenBefore > 0 && hiddenAfter === 0;
   afterBoardChange(state, actingPlayer, triggeredFinal, events);

@@ -65,8 +65,34 @@ describe('zoff view rendering', () => {
     let game = transition(createGame(15), { type: 'start' }).state;
     game = transition(game, { type: 'draw', player: game.activePlayer }).state;
     render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
-    expect(root.querySelector('.zoff-private-draw')).not.toBeNull();
-    expect(root.querySelector('[data-discard-reveal]')).not.toBeNull();
+    expect(root.querySelector('.zoff-private-decision')).not.toBeNull();
+    expect(root.querySelector('.zoff-private-decision .zoff-private-draw')).not.toBeNull();
+    expect(root.querySelector('.zoff-private-decision [data-discard-reveal]')).not.toBeNull();
+  });
+
+  it('does not mark stock-unsafe gaps as placeable while occupied targets remain selectable', () => {
+    let game = transition(createGame(43), { type: 'start' }).state;
+    const active = game.activePlayer;
+    for (let col = 0; col < 5; col += 1) {
+      game.players[active].grid[0]![col] =
+        col === 0
+          ? { card: { instanceId: col, species: 'lion' }, faceUp: true }
+          : null;
+    }
+    game.drawPile = [];
+    game.discard = [{ instanceId: 50, species: 'fox' }];
+    game = transition(game, { type: 'takeDiscard', player: active }).state;
+
+    render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
+
+    const placeButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-place]')];
+    expect(placeButtons.some((button) => button.dataset.row === '0' && button.dataset.col === '1')).toBe(
+      false,
+    );
+    expect(placeButtons.some((button) => button.dataset.row === '0' && button.dataset.col === '0')).toBe(
+      true,
+    );
+    expect(root.querySelector('.zoff-cell--gap.zoff-cell--placeable')).toBeNull();
   });
 
   it('marks gaps and face-up cards with eating indicators', () => {
@@ -92,6 +118,8 @@ describe('zoff view rendering', () => {
       chainFeedback: 'Fresskette in Reihe 2: Mücke → Maus → Fuchs',
     });
     expect(root.querySelector('.zoff-result')).not.toBeNull();
+    expect(root.querySelector('.zoff-result')?.getAttribute('aria-modal')).toBeNull();
+    expect(root.querySelector('#zoff-result-heading')).not.toBeNull();
     expect(root.textContent).toContain('Spieler 1 gewinnt');
     expect(root.textContent).toContain('4 Karten durch Fressketten entfernt');
     expect(root.querySelector('[data-restart]')).not.toBeNull();

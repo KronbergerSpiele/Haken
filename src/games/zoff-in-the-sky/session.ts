@@ -16,6 +16,7 @@ export class ZoffSession implements GameSession {
   private root: HTMLElement | null = null;
   private disposed = false;
   private matchRemovedCards = 0;
+  private focusResultReplay = false;
   private readonly clickHandler: (event: Event) => void;
   private readonly keyHandler: (event: KeyboardEvent) => void;
 
@@ -70,6 +71,10 @@ export class ZoffSession implements GameSession {
     if (!this.root || this.disposed) return;
     render(this.root, this.game, this.ui);
     this.ensureCollectionButton();
+    if (this.focusResultReplay) {
+      this.focusResultReplay = false;
+      this.root.querySelector<HTMLButtonElement>('[data-restart]')?.focus();
+    }
   }
 
   private ensureCollectionButton(): void {
@@ -114,6 +119,7 @@ export class ZoffSession implements GameSession {
         this.context.announce(this.ui.statusMessage);
       }
       if (event.type === 'finished') {
+        this.focusResultReplay = true;
         this.ui.removedCardCount = this.matchRemovedCards;
         const winner =
           event.result.winner === null

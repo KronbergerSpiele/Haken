@@ -1,4 +1,4 @@
-import { getVisibleDiscard } from './reducer';
+import { canPlacePendingAt, getVisibleDiscard } from './reducer';
 import type { GameEvent, GameState, GridCell, PlayerId, Species } from './model';
 import { GRID_COLS, GRID_ROWS } from './model';
 import {
@@ -7,7 +7,6 @@ import {
   eatingRelationLabel,
   eatConnectorMarkup,
   findAdjacentEatLinks,
-  privateDrawMarkup,
   speciesLabel,
   speciesValueLabel,
   eatingIndicatorsMarkup,
@@ -87,7 +86,8 @@ function gridCellMarkup(
     player === state.activePlayer &&
     state.pendingCard !== null &&
     (state.phase === 'holdingDiscard' || state.phase === 'inspectingDraw') &&
-    !options.ui.discardRevealMode;
+    !options.ui.discardRevealMode &&
+    canPlacePendingAt(state, player, row, col);
 
   const canReveal =
     options.interactive &&
@@ -202,6 +202,19 @@ function pendingActionsMarkup(state: GameState, ui: UiState): string {
   return `<button type="button" class="zoff-action" data-discard-reveal>Verwerfen und aufdecken</button>`;
 }
 
+function privateDecisionMarkup(state: GameState, ui: UiState): string {
+  if (state.phase !== 'inspectingDraw' || !ui.handoffConfirmed || !state.pendingCard) return '';
+  const species = state.pendingCard.card.species;
+  const actions = pendingActionsMarkup(state, ui);
+  return `<section class="zoff-private-decision" aria-label="Entscheidung zur gezogenen Karte">
+    <div class="zoff-private-draw" aria-label="Gezogene Karte nur für den aktiven Spieler">
+      <p class="zoff-private-draw__hint">Nur du siehst diese Karte.</p>
+      ${cardFaceMarkup(species)}
+    </div>
+    ${actions ? `<div class="zoff-private-decision__actions">${actions}</div>` : ''}
+  </section>`;
+}
+
 function handoffMarkup(state: GameState): string {
   return `<main class="zoff-handoff">
     <p class="zoff-handoff__kicker">Gerät übergeben</p>
@@ -247,9 +260,9 @@ function resultMarkup(state: GameState, ui: UiState): string {
       : 'Keine Fressketten in dieser Runde.';
   const feedback = ui.chainFeedback ? `<p class="zoff-result__chains">${escapeHtml(ui.chainFeedback)}</p>` : '';
 
-  return `<div class="zoff-result" role="dialog" aria-modal="true" aria-label="Ergebnis">
+  return `<div class="zoff-result" role="region" aria-labelledby="zoff-result-heading">
     <span class="zoff-result__kicker">Runde vorbei</span>
-    <h2>${escapeHtml(winnerText)}</h2>
+    <h2 id="zoff-result-heading">${escapeHtml(winnerText)}</h2>
     <p class="zoff-result__scores">${escapeHtml(scoreLine)}</p>
     <p class="zoff-result__chains-summary">${escapeHtml(chainLine)}</p>
     ${feedback}
@@ -259,15 +272,11 @@ function resultMarkup(state: GameState, ui: UiState): string {
 
 function playMarkup(state: GameState, ui: UiState): string {
   const opponent: PlayerId = state.activePlayer === 0 ? 1 : 0;
-  const pending = state.pendingCard?.card ?? null;
-  const showPrivateDraw =
-    ui.handoffConfirmed && state.phase === 'inspectingDraw' && pending !== null;
 
   return `<div class="zoff-game">
     ${boardMarkup(state, opponent, { compact: true, interactive: false, ui })}
     ${pileMarkup(state, true)}
-    ${showPrivateDraw ? privateDrawMarkup(pending.species) : ''}
-    ${pendingActionsMarkup(state, ui)}
+    ${privateDecisionMarkup(state, ui)}
     ${boardMarkup(state, state.activePlayer, { compact: false, interactive: true, ui })}
     <div class="zoff-status" aria-live="polite">${escapeHtml(ui.statusMessage || phaseInstructions(state, ui))}</div>
     <div class="zoff-landscape-warning"><b>Handy drehen</b><span>Zoff spielt man hochkant.</span></div>

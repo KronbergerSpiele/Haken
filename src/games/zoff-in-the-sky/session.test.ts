@@ -99,4 +99,25 @@ describe('zoff session', () => {
     root.querySelector<HTMLButtonElement>('[data-exit-collection]')!.click();
     expect(context.requestExit).toHaveBeenCalled();
   });
+
+  it('focuses the replay button when the match finishes', () => {
+    session = new ZoffSession(createContext(30)) as ZoffSession;
+    session.mount(root);
+    root.querySelector<HTMLButtonElement>('[data-start]')!.click();
+    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
+
+    const internal = session as unknown as {
+      game: { phase: string; result: { scores: [number, number]; winner: 0 } };
+      ui: { handoffConfirmed: boolean };
+      focusResultReplay: boolean;
+      draw(): void;
+    };
+    internal.game.phase = 'finished';
+    internal.game.result = { scores: [2, 4], winner: 0 };
+    internal.ui.handoffConfirmed = true;
+    internal.focusResultReplay = true;
+    internal.draw();
+
+    expect(document.activeElement).toBe(root.querySelector('[data-restart]'));
+  });
 });

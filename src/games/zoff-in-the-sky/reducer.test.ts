@@ -10,7 +10,7 @@ import {
 } from './cards';
 import type { GameState, PlayerId, Species } from './model';
 import { GRID_COLS, GRID_ROWS } from './model';
-import { countPlayerHidden, createGame, getVisibleDiscard, inspectPendingCard, transition } from './reducer';
+import { canPlacePendingAt, countPlayerHidden, createGame, getVisibleDiscard, inspectPendingCard, transition } from './reducer';
 
 function started(seed = 42): GameState {
   return transition(createGame(seed), { type: 'start' }).state;
@@ -600,5 +600,54 @@ describe('invalid commands and deck recycle', () => {
     state.discard = [{ instanceId: 9, species: 'perch' }];
     const before = structuredClone(state);
     expect(transition(state, { type: 'draw', player: state.activePlayer }).state).toEqual(before);
+  });
+
+  it('rejects gap placement of the sole discard during a normal turn when stock is exhausted', () => {
+    let state = started(43);
+    const active = state.activePlayer;
+    setFaceUpRow(state, active, 0, ['lion', null, null, null, null]);
+    state.drawPile = [];
+    state.discard = [{ instanceId: 50, species: 'fox' }];
+
+    const holding = takeDiscard(state, active);
+    expect(holding.drawPile).toHaveLength(0);
+    expect(holding.discard).toHaveLength(0);
+    expect(canPlacePendingAt(holding, active, 0, 1)).toBe(false);
+    expect(transition(holding, { type: 'place', player: active, row: 0, col: 1 }).state).toEqual(
+      holding,
+    );
+
+    const replaced = place(holding, 0, 0, active);
+    expect(replaced.discard).toHaveLength(1);
+    expect(replaced.discard[0]!.species).toBe('lion');
+    expect(replaced.phase).toBe('awaitingAction');
+  });
+
+  it('allows gap placement of the sole discard during the owed final turn', () => {
+    let state = started(44);
+    const active: PlayerId = 0;
+    state.activePlayer = active;
+    state.phase = 'finalTurn';
+    state.inFinalTurn = true;
+    setFaceUpRow(state, active, 0, ['mosquito', null, null, null, null]);
+    for (let row = 1; row < GRID_ROWS; row += 1) {
+      for (let col = 0; col < GRID_COLS; col += 1) {
+        state.players[active].grid[row]![col] = null;
+      }
+    }
+    for (let row = 0; row < GRID_ROWS; row += 1) {
+      for (let col = 0; col < GRID_COLS; col += 1) {
+        state.players[1].grid[row]![col] = null;
+      }
+    }
+    state.drawPile = [];
+    state.discard = [{ instanceId: 60, species: 'whale' }];
+
+    const holding = takeDiscard(state, active);
+    expect(canPlacePendingAt(holding, active, 0, 1)).toBe(true);
+    const finished = place(holding, 0, 1, active);
+    expect(finished.phase).toBe('finished');
+    expect(finished.drawPile).toHaveLength(0);
+    expect(finished.discard).toHaveLength(0);
   });
 });

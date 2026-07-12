@@ -1,12 +1,34 @@
-# Haken — game design document
+# Mini-game collection — game design document
 
 ## Product
 
-Haken is a local battle between two fictional German AI models, K.I. Klaus and
-Bot Brigitte, played simultaneously on one phone. One player sits at each end of
-a portrait-oriented device. Both spend tokens and flick cards from their staging
-areas into a shared three-lane arena; there are no turns, rounds, or
-active-player locks.
+The product is a browser-based collection of small multiplayer game prototypes.
+Each registered game supplies its own title, instructions, player-count and
+device requirements, controls, rules, and visual theme. A shared launcher lets
+players choose a game and return to the collection without reloading the site.
+The collection is deployed as a static site so a current build can be opened
+from a phone while travelling. Installing the site, creating an account, and
+connecting to a backend are not required.
+
+### Launcher and game links
+
+The launcher is the collection's home screen. It presents every available game
+as a card with its title, short description, player count, orientation, and
+shared-device requirements. Each card has a clear play action and a share
+action. A game can be opened directly with a stable link such as
+`?game=haken`; opening that link starts the requested game after its code loads.
+
+Leaving a game returns to the launcher. Browser Back returns to the launcher
+when the game was started there, and browser Forward can reopen it. An unknown
+or unavailable game link shows a short message on the launcher instead of a
+broken screen. Deep links identify a game, not a running match: scores, seeds,
+private state, and in-progress sessions are never included in the URL.
+
+Haken is the first game in the collection. It is a local battle between two
+fictional German AI models, K.I. Klaus and Bot Brigitte, played simultaneously
+on one phone. One player sits at each end of a portrait-oriented device. Both
+spend tokens and flick cards from their staging areas into a shared three-lane
+arena; there are no turns, rounds, or active-player locks.
 
 The presentation combines German bureaucratic humor with cartoon AI chaos:
 overheated servers, stern guardrails, terminal symbols, impact stars, and absurd
@@ -113,6 +135,16 @@ support non-gesture and assistive use.
 
 ## Acceptance criteria
 
+- The launcher lists every registered game and communicates its player and
+  device requirements before play.
+- Every registered game has a copyable deep link that works when opened in a
+  new tab from the deployed repository subpath.
+- Launcher selection, browser Back/Forward, direct game links, and unknown game
+  links resolve without a full-page navigation or an error screen.
+- A player can leave a game, release its input and effects, and start another
+  game without reloading the page.
+- Shared presentation components remain consistent, while each game can provide
+  its own theme and game-specific artwork.
 - Two people can drag different cards at once; neither blocks the other.
 - A complete match is playable at 320×568 through 430×932 portrait sizes
   without document scrolling.

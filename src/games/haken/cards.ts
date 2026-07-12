@@ -1,4 +1,4 @@
-import type { CardDefinition, Zone } from './types';
+import type { CardDefinition, Zone } from './model';
 
 export const BALANCE = {
   zoneHealth: 3,

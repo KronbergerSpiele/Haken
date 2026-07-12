@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Zone } from '../game/types';
-import { FlickController } from './flick-controller';
+import type { Zone } from './model';
+import { FlickController } from './controls';
 
 function pointer(
   target: HTMLElement,

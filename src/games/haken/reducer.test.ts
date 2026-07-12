@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CARD_BY_ID } from './cards';
-import { createGame, playableZones, transition } from './engine';
-import type { CardInstance, GameState, PlayerId, Zone } from './types';
+import { createGame, playableZones, transition } from './reducer';
+import type { CardInstance, GameState, PlayerId, Zone } from './model';
 
 let testInstanceId = 10_000;
 

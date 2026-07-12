@@ -1,8 +1,5 @@
-import type { CardDefinition, PlayerId, Zone } from '../game/types';
-
-function svg(className: string, body: string, viewBox = '0 0 64 64', attributes = ''): string {
-  return `<svg class="${className}" viewBox="${viewBox}" ${attributes} aria-hidden="true" focusable="false">${body}</svg>`;
-}
+import type { CardDefinition, PlayerId, Zone } from './model';
+import { svgMarkup } from '../../graphics/primitives';
 
 export type AvatarMood = 'ready' | 'winner' | 'bonk' | 'hit' | 'block' | 'action';
 
@@ -20,7 +17,7 @@ export function fighterAvatar(
   const animationStyle = `style="--avatar-delay:-${Math.max(0, animationAgeMs)}ms"`;
 
   if (player === 0) {
-    return svg(
+    return svgMarkup(
       `fighter-avatar fighter-avatar--klaus fighter-avatar--${mood}`,
       `<path class="avatar-steam" d="M17 8c-7-6 5-7 0-13M47 8c7-6-5-7 0-13" fill="none" stroke="currentColor" stroke-width="3"/>
        <path d="M22 10 19 3m23 7 3-7M14 14h36l5 9v27l-8 8H17l-8-8V23z" fill="#8ed0e9" stroke="currentColor" stroke-width="3"/>
@@ -33,7 +30,7 @@ export function fighterAvatar(
     );
   }
 
-  return svg(
+  return svgMarkup(
     `fighter-avatar fighter-avatar--brigitte fighter-avatar--${mood}`,
     `<path d="M13 23Q14 7 32 7t19 16v27l-8 8H21l-8-8z" fill="#fff0bd" stroke="currentColor" stroke-width="3"/>
      <path d="M12 25Q13 5 32 5t20 20l-10-7-8 6-8-6-14 9z" fill="#e84a34" stroke="currentColor" stroke-width="3"/>
@@ -67,7 +64,7 @@ export function cardGraphic(card: CardDefinition): string {
     'bundes-guardrail':
       '<path d="M7 17h50M7 34h50M13 10v42m13-42v42m13-42v42m13-42v42" stroke="currentColor" stroke-width="4"/><path d="m8 52 6-8 6 8 6-8 6 8 6-8 6 8 6-8 6 8" fill="#ffc928" stroke="currentColor" stroke-width="2"/>',
   };
-  return svg('card-graphic', graphicById[card.id] ?? '');
+  return svgMarkup('card-graphic', graphicById[card.id] ?? '');
 }
 
 export function zoneDoodle(zone: Zone): string {
@@ -79,12 +76,12 @@ export function zoneDoodle(zone: Zone): string {
     output:
       '<path d="M7 12h50v40H7z" fill="none" stroke="currentColor" stroke-width="3"/><path d="m15 25 8 7-8 7m13 0h18" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="14" cy="18" r="2"/><circle cx="21" cy="18" r="2"/>',
   };
-  return svg(`zone-doodle zone-doodle--${zone}`, doodles[zone]);
+  return svgMarkup(`zone-doodle zone-doodle--${zone}`, doodles[zone]);
 }
 
 export function impactGraphic(text: string): string {
   const symbol = text.includes('BLOCK') ? '✓' : text.includes('VERPUFFT') ? '…' : text.includes('KONTER') ? '↩' : '!';
-  return svg(
+  return svgMarkup(
     'impact-graphic',
     `<path d="m32 2 7 15 16-7-5 17 12 7-15 8 5 17-18-6-9 10-5-15-18 4 8-17-9-10 17-4 1-18z" fill="#ffc928" stroke="currentColor" stroke-width="3"/><text x="32" y="42" text-anchor="middle">${symbol}</text>`,
   );

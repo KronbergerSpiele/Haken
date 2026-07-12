@@ -322,6 +322,26 @@ The following automated boundaries are required:
 builds all registered games. GitHub Pages deployment runs both commands before
 publishing `dist/`.
 
+Pull requests targeting `main` also run
+[`.github/workflows/preview-pages.yml`](.github/workflows/preview-pages.yml).
+That workflow repeats the same test and build steps, deploys the artifact to a
+temporary **Pages Preview** environment with `deploy-pages` `preview: true`,
+and leaves a sticky pull-request comment with the preview URL. Previews are
+ephemeral: GitHub removes them when the pull request closes. The Vite build uses
+relative asset URLs (`base: './'`), so previews work at whatever path GitHub
+Pages assigns without a separate base-path configuration.
+
+Repository setup for previews:
+
+1. Keep **Settings → Pages → Build and deployment → Source** on **GitHub
+   Actions** (same as production).
+2. The first preview run creates the **Pages Preview** deployment environment
+   automatically. No branch or token changes are required.
+
+Production and preview deployments use separate environments (`github-pages` vs
+`Pages Preview`), so merging `main` does not overwrite open pull-request
+previews.
+
 ## Design-document boundary
 
 Technical decisions belong here when they affect architecture, module

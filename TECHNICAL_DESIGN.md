@@ -50,6 +50,7 @@ src/
   app/
     catalog.ts             # explicit registry of available games
     launcher.ts            # game selection and requirement summaries
+    router.ts              # URL parsing and History API synchronization
     session-host.ts        # mount, pause, resume, and dispose orchestration
   engine/
     contracts.ts           # GameModule, GameSession, command, and event types
@@ -134,6 +135,54 @@ captures, listeners, animation work, effect handles, and generated media nodes.
 The manifest contains only launcher metadata. Rules and balance do not belong
 in the catalog. A game is accepted only when it can be removed from the registry
 without breaking the engine or another game.
+
+## Launcher, navigation, and deep links
+
+The launcher renders `GameManifest` metadata and is the only entry point for
+browsing the catalog. It remains interactive while a selected game's lazy chunk
+loads, reports load failures on the corresponding game card, and does not create
+a session until loading succeeds. Its share action uses the Web Share API when
+available and otherwise copies the absolute game URL to the clipboard; a
+selectable text fallback is provided if both APIs are unavailable.
+
+Game routes use a query parameter on the deployment root:
+
+```text
+./                         launcher
+./?game=haken              Haken
+```
+
+Path routes such as `/games/haken` are not used because a static GitHub Pages
+host cannot rewrite a direct request to `index.html`. `router.ts` reads and
+writes URLs through `URL` and `URLSearchParams`, preserving the repository
+subpath. It never constructs a root-relative URL.
+
+The route state contains only the stable manifest ID. Session state, player
+input, score, seed, and timestamps are excluded. IDs are compared exactly after
+URL decoding; arbitrary query values are never interpreted as module paths or
+inserted as markup.
+
+Navigation follows these rules:
+
+- selecting a launcher entry pushes `?game=<id>` and starts that game;
+- `popstate` reconciles the active session with the URL, disposing the old
+  session before mounting another or showing the launcher;
+- an in-game collection action uses browser Back when the launcher started the
+  game, or replaces a directly opened game URL with the launcher after disposal;
+- a direct game URL loads the matching registered game without first flashing
+  the launcher;
+- an unknown, missing, or failed game resolves to the launcher with a
+  non-blocking error message and removes the invalid parameter with
+  `replaceState`;
+- Back returns to the launcher after a game selected there, and Forward can
+  recreate a fresh session for that game. A directly opened deep link may leave
+  the site when the browser goes Back, so the in-game collection action remains
+  available.
+
+The canonical share URL is derived from `window.location.href`, with the
+query reduced to the `game` parameter and the URL fragment removed. This keeps
+links valid in local previews, custom domains, and GitHub repository subpaths
+without propagating unrelated query data.
 
 ## Runtime and determinism
 
@@ -259,6 +308,10 @@ The following automated boundaries are required:
   scoping, node caps, and reduced-motion mappings;
 - catalog tests verify unique IDs, valid metadata, lazy-load success, and that
   every registered game satisfies the contract;
+- router tests verify query parsing, subpath-safe URL generation, unknown IDs,
+  direct loads, and Back/Forward session disposal;
+- launcher tests verify metadata, loading and failure states, and share,
+  clipboard, and text fallbacks;
 - each game has reducer tests proving determinism and its documented
   simultaneous-event ordering, plus DOM smoke tests for pointer and non-gesture
   play;

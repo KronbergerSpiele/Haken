@@ -13,6 +13,14 @@ export const HAKEN_THEME = {
   background: '#171410',
 } as const;
 
+export const ZOFF_THEME = {
+  ...SHARED_THEME,
+  accent: '#6ec8ff',
+  background: '#1a2f4f',
+  cloud: '#f4fbff',
+  meadow: '#8fd06d',
+} as const;
+
 export function applySharedTokens(root: HTMLElement): void {
   root.style.setProperty('--ink', SHARED_THEME.ink);
   root.style.setProperty('--paper', SHARED_THEME.paper);
@@ -26,4 +34,12 @@ export function applyHakenTokens(root: HTMLElement): void {
   applySharedTokens(root);
   root.style.setProperty('--game-accent', HAKEN_THEME.accent);
   root.style.setProperty('--game-background', HAKEN_THEME.background);
+}
+
+export function applyZoffTokens(root: HTMLElement): void {
+  applySharedTokens(root);
+  root.style.setProperty('--game-accent', ZOFF_THEME.accent);
+  root.style.setProperty('--game-background', ZOFF_THEME.background);
+  root.style.setProperty('--zoff-cloud', ZOFF_THEME.cloud);
+  root.style.setProperty('--zoff-meadow', ZOFF_THEME.meadow);
 }

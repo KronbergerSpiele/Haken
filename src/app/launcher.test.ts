@@ -26,6 +26,7 @@ describe('launcher', () => {
 
     expect(root.querySelector('.launcher-grid')?.children.length).toBe(CATALOG.length);
     expect(root.querySelector('[data-play="haken"]')).not.toBeNull();
+    expect(root.querySelector('[data-play="zoff-in-the-sky"]')).not.toBeNull();
     expect(root.querySelector('[data-share="haken"]')).not.toBeNull();
     expect(root.textContent).toContain('2 Spieler');
     expect(root.textContent).toContain('Hochformat');

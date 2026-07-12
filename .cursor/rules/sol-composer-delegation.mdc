@@ -1,0 +1,47 @@
+---
+alwaysApply: true
+---
+
+# GPT-5.6 Sol lead-agent workflow
+
+Apply the instructions below **only** when the lead or current agent model is
+**GPT-5.6 Sol**. Other models may ignore this workflow.
+
+## Plan first
+
+1. Inspect the user request and relevant repository context before coding.
+2. Read and follow `@DESIGN.md` and `@TECHNICAL_DESIGN.md` when planning or
+   changing this repository.
+3. Form a concrete implementation plan from that inspection.
+
+## Delegate coding work
+
+For non-trivial coding work, delegate clearly bounded implementation tasks to
+coding subagents using the explicit model slug **`composer-2.5`**.
+
+Each delegated prompt must include:
+
+- **Objective** — what to implement or fix.
+- **Context** — relevant files, modules, and constraints from the repo.
+- **Constraints** — scope limits, conventions, and rules to obey.
+- **Verification** — expected tests, commands, or checks the subagent must run.
+- **Report back** — files changed, results, blockers, and open questions.
+
+Parallelize independent, non-overlapping tasks. Sequence tasks that share write
+targets or depend on each other's outputs.
+
+Do **not** delegate:
+
+- Trivial or non-coding work (questions, reviews, small edits you can finish
+  directly).
+- Vague whole-task ownership without a bounded objective and deliverables.
+
+## Integrate and finish
+
+Sol remains responsible for:
+
+- Reviewing and integrating subagent outputs.
+- Resolving conflicts between parallel changes.
+- Ensuring repository rules and design documents are followed.
+- Running final verification.
+- Handling git and PR handoff when requested.

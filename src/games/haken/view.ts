@@ -1,6 +1,6 @@
-import { BALANCE, CARD_BY_ID, ZONE_LABELS, ZONE_SYMBOLS } from '../game/cards';
-import { cardForSlot } from '../game/engine';
-import { ZONES, type CardDefinition, type GameState, type PlayerId, type Zone } from '../game/types';
+import { BALANCE, CARD_BY_ID, ZONE_LABELS, ZONE_SYMBOLS } from './cards';
+import { cardForSlot } from './reducer';
+import { ZONES, type CardDefinition, type GameState, type PlayerId, type Zone } from './model';
 import {
   cardGraphic,
   fighterAvatar,
@@ -8,20 +8,13 @@ import {
   zoneDoodle,
   type AvatarMood,
 } from './graphics';
+import { escapeHtml } from '../../graphics/primitives';
 
 export interface UiState {
   countdown: number | null;
   selectedSlots: [number | null, number | null];
   selectedZones: [Zone, Zone];
   muted: boolean;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
 }
 
 function healthMarkup(state: GameState, player: PlayerId): string {

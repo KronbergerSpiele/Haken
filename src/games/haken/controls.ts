@@ -1,5 +1,5 @@
-import { BALANCE } from '../game/cards';
-import { ZONES, type PlayerId, type Zone } from '../game/types';
+import { BALANCE } from './cards';
+import { ZONES, type PlayerId, type Zone } from './model';
 
 interface Drag {
   pointerId: number;

@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createGame, transition } from '../game/engine';
-import type { UiState } from './render';
-import { render } from './render';
+import { createGame, transition } from './reducer';
+import type { UiState } from './view';
+import { render } from './view';
 
 const ui: UiState = {
   countdown: null,

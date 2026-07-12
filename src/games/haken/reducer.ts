@@ -12,7 +12,7 @@ import {
   type PlayerState,
   type Transition,
   type Zone,
-} from './types';
+} from './model';
 
 const otherPlayer = (player: PlayerId): PlayerId => (player === 0 ? 1 : 0);
 

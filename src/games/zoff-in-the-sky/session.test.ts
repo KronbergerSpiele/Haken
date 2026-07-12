@@ -9,6 +9,7 @@ import { createGraphicsService } from '../../graphics/primitives';
 import { createInputService } from '../../engine/input';
 import { RuntimeClock } from '../../engine/runtime';
 import { ZoffSession } from './session';
+import type { GameEvent } from './model';
 
 function dispatchPointer(
   type: 'pointerdown' | 'pointermove' | 'pointerup' | 'pointercancel',
@@ -207,5 +208,133 @@ describe('zoff session', () => {
     internal.draw();
 
     expect(document.activeElement).toBe(root.querySelector('[data-restart]'));
+  });
+
+  it('shows eating overlay on handoff after chain removal and keeps handoff usable', () => {
+    session = new ZoffSession(createContext(12)) as ZoffSession;
+    session.mount(root);
+    root.querySelector<HTMLButtonElement>('[data-start]')!.click();
+    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
+
+    const internal = session as unknown as {
+      game: { activePlayer: 0 | 1 };
+      handleEvents(events: GameEvent[], previousActive: 0 | 1): void;
+      draw(): void;
+    };
+    internal.game.activePlayer = 1;
+    internal.handleEvents(
+      [
+        {
+          type: 'chainRemoved',
+          player: 0,
+          row: 0,
+          cols: [0, 1, 2],
+          species: ['mosquito', 'mouse', 'fox'],
+        },
+      ],
+      0,
+    );
+    internal.draw();
+
+    expect(root.querySelector('.zoff-handoff')).not.toBeNull();
+    expect(root.querySelector('[data-eating-overlay]')).not.toBeNull();
+    expect(root.querySelector('[data-confirm-handoff]')).not.toBeNull();
+  });
+
+  it('dismisses eating overlay after the presentation timer expires', () => {
+    vi.useFakeTimers();
+    session = new ZoffSession(createContext(12)) as ZoffSession;
+    session.mount(root);
+    root.querySelector<HTMLButtonElement>('[data-start]')!.click();
+    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
+
+    const internal = session as unknown as {
+      handleEvents(events: GameEvent[], previousActive: 0 | 1): void;
+      draw(): void;
+    };
+    internal.handleEvents(
+      [
+        {
+          type: 'chainRemoved',
+          player: 0,
+          row: 0,
+          cols: [0, 1, 2],
+          species: ['mosquito', 'mouse', 'fox'],
+        },
+      ],
+      0,
+    );
+    internal.draw();
+    expect(root.querySelector('[data-eating-overlay]')).not.toBeNull();
+
+    vi.advanceTimersByTime(900);
+    expect(root.querySelector('[data-eating-overlay]')).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('clears eating overlay timer on dispose', () => {
+    vi.useFakeTimers();
+    session = new ZoffSession(createContext(12)) as ZoffSession;
+    session.mount(root);
+    root.querySelector<HTMLButtonElement>('[data-start]')!.click();
+    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
+
+    const internal = session as unknown as {
+      handleEvents(events: GameEvent[], previousActive: 0 | 1): void;
+      eatingOverlayTimer: number | null;
+    };
+    internal.handleEvents(
+      [
+        {
+          type: 'chainRemoved',
+          player: 0,
+          row: 0,
+          cols: [0, 1, 2],
+          species: ['mosquito', 'mouse', 'fox'],
+        },
+      ],
+      0,
+    );
+    expect(internal.eatingOverlayTimer).not.toBeNull();
+
+    session.dispose();
+    expect(internal.eatingOverlayTimer).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('stores every simultaneous chainRemoved group in overlay state', () => {
+    session = new ZoffSession(createContext(12)) as ZoffSession;
+    session.mount(root);
+    root.querySelector<HTMLButtonElement>('[data-start]')!.click();
+    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
+
+    const internal = session as unknown as {
+      handleEvents(events: GameEvent[], previousActive: 0 | 1): void;
+      ui: { eatingOverlayChains: Array<{ row: number }> };
+      draw(): void;
+    };
+    internal.handleEvents(
+      [
+        {
+          type: 'chainRemoved',
+          player: 0,
+          row: 0,
+          cols: [0, 1, 2],
+          species: ['mosquito', 'mouse', 'fox'],
+        },
+        {
+          type: 'chainRemoved',
+          player: 1,
+          row: 2,
+          cols: [1, 2, 3],
+          species: ['fish', 'mosquito', 'mouse'],
+        },
+      ],
+      0,
+    );
+    internal.draw();
+
+    expect(internal.ui.eatingOverlayChains).toHaveLength(2);
+    expect(root.querySelectorAll('.zoff-eating-overlay')).toHaveLength(2);
   });
 });

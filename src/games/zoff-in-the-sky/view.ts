@@ -4,13 +4,14 @@ import { GRID_COLS, GRID_ROWS } from './model';
 import {
   cardBackMarkup,
   cardFaceMarkup,
-  eatingChainOverlayMarkup,
+  eatingChainsOverlayMarkup,
   eatingRelationLabel,
   eatConnectorMarkup,
   findAdjacentEatLinks,
   speciesLabel,
   speciesValueLabel,
   eatingIndicatorsMarkup,
+  type EatingChainGroup,
 } from './graphics';
 import { cardValue } from './cards';
 import { escapeHtml } from '../../graphics/primitives';
@@ -22,7 +23,7 @@ export interface UiState {
   chainFeedback: string | null;
   removedCardCount: number;
   turnFlipActive: boolean;
-  eatingOverlay: readonly Species[] | null;
+  eatingOverlayChains: readonly EatingChainGroup[];
 }
 
 export const INITIAL_UI: UiState = {
@@ -32,8 +33,10 @@ export const INITIAL_UI: UiState = {
   chainFeedback: null,
   removedCardCount: 0,
   turnFlipActive: false,
-  eatingOverlay: null,
+  eatingOverlayChains: [],
 };
+
+export type { EatingChainGroup };
 
 export function visibleSubtotal(grid: Grid): number {
   let sum = 0;
@@ -300,43 +303,43 @@ function resultMarkup(state: GameState, ui: UiState): string {
 
 function playMarkup(state: GameState, ui: UiState): string {
   const opponent: PlayerId = state.activePlayer === 0 ? 1 : 0;
-  const overlay =
-    ui.eatingOverlay && ui.eatingOverlay.length >= 3
-      ? eatingChainOverlayMarkup(ui.eatingOverlay)
-      : '';
+  const decision = privateDecisionMarkup(state, ui);
 
   return `<div class="zoff-game">
-    ${boardMarkup(state, opponent, { compact: true, interactive: false, ui })}
-    ${pileMarkup(state, true)}
-    ${privateDecisionMarkup(state, ui)}
-    ${boardMarkup(state, state.activePlayer, { compact: false, interactive: true, ui })}
-    <div class="zoff-status" aria-live="polite">${escapeHtml(ui.statusMessage || phaseInstructions(state, ui))}</div>
-    ${overlay}
+    <div class="zoff-game__opponent">${boardMarkup(state, opponent, { compact: true, interactive: false, ui })}</div>
+    <div class="zoff-game__piles">${pileMarkup(state, true)}</div>
+    <div class="zoff-game__decision${decision ? '' : ' zoff-game__decision--empty'}"${decision ? '' : ' aria-hidden="true"'}>${decision}</div>
+    <div class="zoff-game__active">${boardMarkup(state, state.activePlayer, { compact: false, interactive: true, ui })}</div>
+    <div class="zoff-game__status"><div class="zoff-status" aria-live="polite">${escapeHtml(ui.statusMessage || phaseInstructions(state, ui))}</div></div>
     <div class="zoff-landscape-warning"><b>Handy drehen</b><span>Zoff spielt man hochkant.</span></div>
     ${state.phase === 'finished' ? resultMarkup(state, ui) : ''}
   </div>`;
+}
+
+export function eatingOverlaysMarkup(state: GameState, ui: UiState): string {
+  if (ui.eatingOverlayChains.length === 0) return '';
+  const aboveResult = state.phase === 'finished';
+  const className = aboveResult
+    ? 'zoff-eating-overlays zoff-eating-overlays--above-result'
+    : 'zoff-eating-overlays';
+  return `<div class="${className}" data-eating-overlay>${eatingChainsOverlayMarkup(ui.eatingOverlayChains)}</div>`;
+}
+
+function renderContent(state: GameState, ui: UiState): string {
+  if (state.phase === 'setup') return setupMarkup();
+  if (!ui.handoffConfirmed) return handoffMarkup(state);
+  return playMarkup(state, ui);
 }
 
 export function applyPresentationClasses(root: HTMLElement, state: GameState, ui: UiState): void {
   root.classList.toggle('zoff-root--handoff', state.phase !== 'setup' && !ui.handoffConfirmed);
   root.classList.toggle('zoff-root--playing', ui.handoffConfirmed && state.phase !== 'setup');
   root.classList.toggle('zoff-root--turn-flip', ui.turnFlipActive);
+  root.classList.toggle('zoff-root--eating-overlay', ui.eatingOverlayChains.length > 0);
 }
 
 export function render(root: HTMLElement, state: GameState, ui: UiState): void {
-  if (state.phase === 'setup') {
-    root.innerHTML = setupMarkup();
-    applyPresentationClasses(root, state, ui);
-    return;
-  }
-
-  if (!ui.handoffConfirmed) {
-    root.innerHTML = handoffMarkup(state);
-    applyPresentationClasses(root, state, ui);
-    return;
-  }
-
-  root.innerHTML = playMarkup(state, ui);
+  root.innerHTML = renderContent(state, ui) + eatingOverlaysMarkup(state, ui);
   applyPresentationClasses(root, state, ui);
 }
 

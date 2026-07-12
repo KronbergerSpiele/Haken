@@ -1,7 +1,7 @@
 import animalsUrl from './assets/animals.webp';
 import cardBackUrl from './assets/card-back.webp';
 import { PREDATOR_GRAPH, SPECIES, canEat, cardValue } from './cards';
-import type { Species } from './model';
+import type { PlayerId, Species } from './model';
 import { escapeHtml } from '../../graphics/primitives';
 
 const SPRITE_COLS = 4;
@@ -102,23 +102,38 @@ export function eatingIndicatorsMarkup(species: Species): string {
   </div>`;
 }
 
-export function eatingChainOverlayMarkup(species: readonly Species[]): string {
-  const steps = species
+export interface EatingChainGroup {
+  player: PlayerId;
+  row: number;
+  species: readonly Species[];
+}
+
+export function eatingChainGroupMarkup(group: EatingChainGroup): string {
+  const steps = group.species
     .map(
       (entry, index) =>
         `${speciesIconMarkup(entry, 'prey')}${
-          index < species.length - 1
+          index < group.species.length - 1
             ? '<span class="zoff-chain-bite" aria-hidden="true">→</span>'
             : ''
         }`,
     )
     .join('');
-  const names = species.map((entry) => speciesLabel(entry)).join(' → ');
-  return `<div class="zoff-eating-overlay" role="status" aria-live="polite" aria-label="Fresskette: ${escapeHtml(names)}">
+  const names = group.species.map((entry) => speciesLabel(entry)).join(' → ');
+  const label = `Fresskette in Reihe ${group.row + 1}: ${names}`;
+  return `<section class="zoff-eating-overlay" role="status" aria-live="polite" aria-label="${escapeHtml(label)}">
+    <p class="zoff-eating-overlay__row">Reihe ${group.row + 1}</p>
     <div class="zoff-eating-overlay__burst" aria-hidden="true">${steps}</div>
     <p class="zoff-eating-overlay__label">Fresskette!</p>
     <p class="zoff-eating-overlay__names">${escapeHtml(names)}</p>
-  </div>`;
+  </section>`;
+}
+
+export function eatingChainsOverlayMarkup(chains: readonly EatingChainGroup[]): string {
+  return chains
+    .filter((chain) => chain.species.length >= 3)
+    .map((chain) => eatingChainGroupMarkup(chain))
+    .join('');
 }
 
 export interface AdjacentEatLink {

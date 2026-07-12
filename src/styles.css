@@ -1242,6 +1242,7 @@ button:focus-visible {
   --zoff-sky-bottom: #d8f2ff;
   --zoff-panel: rgb(244 251 255 / 94%);
   --zoff-shadow: 3px 4px 0 rgb(23 20 16 / 28%);
+  position: relative;
   width: 100%;
   height: 100%;
   height: 100dvh;
@@ -1358,7 +1359,13 @@ button:focus-visible {
 [data-theme='zoff-in-the-sky'] .zoff-game {
   position: relative;
   display: grid;
-  grid-template-rows: minmax(0, auto) minmax(0, auto) minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+  grid-template-areas:
+    'opponent'
+    'piles'
+    'decision'
+    'active'
+    'status';
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   gap: 6px;
   width: 100%;
   height: 100%;
@@ -1368,6 +1375,39 @@ button:focus-visible {
     max(8px, env(safe-area-inset-bottom))
     max(8px, env(safe-area-inset-left));
   overflow: hidden;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-game__opponent {
+  grid-area: opponent;
+  min-height: 0;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-game__piles {
+  grid-area: piles;
+  min-height: 0;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-game__decision {
+  grid-area: decision;
+  min-height: 0;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-game__decision--empty {
+  display: block;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-game__active {
+  grid-area: active;
+  min-height: 0;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-game__status {
+  grid-area: status;
+  min-height: 0;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-board {
@@ -1706,18 +1746,37 @@ button:focus-visible {
   opacity: 0.94;
 }
 
-[data-theme='zoff-in-the-sky'] .zoff-eating-overlay {
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlays {
   position: absolute;
   inset: 0;
   z-index: 15;
   display: grid;
   place-content: center;
   justify-items: center;
-  gap: 8px;
+  gap: 10px;
   padding: 16px;
   text-align: center;
   background: rgb(255 240 189 / 78%);
   pointer-events: none;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlays--above-result {
+  z-index: 30;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlay {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  max-width: 22rem;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlay__row {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-eating-overlay__burst {

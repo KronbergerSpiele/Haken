@@ -3,8 +3,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { canEat } from './cards';
 import { createGame, transition } from './reducer';
-import { INITIAL_UI, formatBoardScore, render, visibleSubtotal } from './view';
+import { INITIAL_UI, eatingOverlaysMarkup, formatBoardScore, render, visibleSubtotal } from './view';
 import {
+  eatingChainsOverlayMarkup,
   eatingIndicatorsMarkup,
   findAdjacentEatLinks,
   preyOf,
@@ -37,6 +38,17 @@ describe('zoff graphics helpers', () => {
     expect(markup).not.toContain('>Fu<');
     expect(markup).not.toContain('zoff-eat-glyph');
     expect(markup).toContain('role="img"');
+  });
+
+  it('renders multiple simultaneous chain groups with row labels', () => {
+    const markup = eatingChainsOverlayMarkup([
+      { player: 0, row: 0, species: ['mosquito', 'mouse', 'fox'] },
+      { player: 1, row: 2, species: ['fish', 'mosquito', 'mouse', 'hedgehog'] },
+    ]);
+    expect((markup.match(/<section class="zoff-eating-overlay"/g) ?? []).length).toBe(2);
+    expect(markup).toContain('Reihe 1');
+    expect(markup).toContain('Reihe 3');
+    expect(markup).toContain('Mücke → Maus → Fuchs');
   });
 });
 
@@ -86,19 +98,61 @@ describe('zoff view rendering', () => {
     );
   });
 
-  it('renders an eating overlay when chain feedback is active', () => {
+  it('renders an eating overlay at the session root during play', () => {
     const game = transition(createGame(12), { type: 'start' }).state;
     render(root, game, {
       ...INITIAL_UI,
       handoffConfirmed: true,
-      eatingOverlay: ['mosquito', 'mouse', 'fox'],
+      eatingOverlayChains: [{ player: 0, row: 0, species: ['mosquito', 'mouse', 'fox'] }],
       chainFeedback: 'Fresskette in Reihe 1: Mücke → Maus → Fuchs',
     });
+    const shell = root.querySelector('[data-eating-overlay]');
+    expect(shell).not.toBeNull();
+    expect(root.querySelector('.zoff-game .zoff-eating-overlays')).toBeNull();
     const overlay = root.querySelector('.zoff-eating-overlay');
-    expect(overlay).not.toBeNull();
     expect(overlay?.getAttribute('aria-live')).toBe('polite');
     expect(overlay?.querySelectorAll('.zoff-eat-icon').length).toBeGreaterThanOrEqual(3);
     expect(overlay?.textContent).toContain('Fresskette!');
+  });
+
+  it('renders eating overlay on handoff after a chain event', () => {
+    const game = transition(createGame(12), { type: 'start' }).state;
+    render(root, game, {
+      ...INITIAL_UI,
+      handoffConfirmed: false,
+      eatingOverlayChains: [{ player: 0, row: 1, species: ['mosquito', 'mouse', 'fox'] }],
+    });
+    expect(root.querySelector('.zoff-handoff')).not.toBeNull();
+    expect(root.querySelector('[data-eating-overlay]')).not.toBeNull();
+    expect(root.classList.contains('zoff-root--eating-overlay')).toBe(true);
+  });
+
+  it('places final eating overlay above the result layer', () => {
+    const game = transition(createGame(18), { type: 'start' }).state;
+    game.phase = 'finished';
+    game.result = { scores: [3, 5], winner: 0 };
+    render(root, game, {
+      ...INITIAL_UI,
+      handoffConfirmed: true,
+      eatingOverlayChains: [{ player: 0, row: 0, species: ['mosquito', 'mouse', 'fox'] }],
+    });
+    const shell = root.querySelector('.zoff-eating-overlays--above-result');
+    expect(shell).not.toBeNull();
+    expect(eatingOverlaysMarkup(game, {
+      ...INITIAL_UI,
+      eatingOverlayChains: [{ player: 0, row: 0, species: ['mosquito', 'mouse', 'fox'] }],
+    })).toContain('zoff-eating-overlays--above-result');
+    expect(root.querySelector('.zoff-result')).not.toBeNull();
+  });
+
+  it('keeps a stable five-track play grid with an empty decision slot', () => {
+    const game = transition(createGame(12), { type: 'start' }).state;
+    render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
+    expect(root.querySelector('.zoff-game__opponent .zoff-board--compact')).not.toBeNull();
+    expect(root.querySelector('.zoff-game__piles')).not.toBeNull();
+    expect(root.querySelector('.zoff-game__decision.zoff-game__decision--empty')).not.toBeNull();
+    expect(root.querySelector('.zoff-game__active .zoff-board--active')).not.toBeNull();
+    expect(root.querySelector('.zoff-game__status .zoff-status')).not.toBeNull();
   });
 
   it('renders active and compact boards with public piles after handoff', () => {

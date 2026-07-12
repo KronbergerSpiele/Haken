@@ -12,6 +12,9 @@ import {
   type UiState,
 } from './view';
 
+const EATING_OVERLAY_MS = 900;
+const EATING_OVERLAY_REDUCED_MS = 450;
+
 export class ZoffSession implements GameSession {
   private game: GameState;
   private ui: UiState = { ...INITIAL_UI };
@@ -21,6 +24,7 @@ export class ZoffSession implements GameSession {
   private focusResultReplay = false;
   private drag: ZoffDragController | null = null;
   private flipTimer: number | null = null;
+  private eatingOverlayTimer: number | null = null;
   private readonly clickHandler: (event: Event) => void;
   private readonly keyHandler: (event: KeyboardEvent) => void;
 
@@ -49,15 +53,12 @@ export class ZoffSession implements GameSession {
         return getVisibleDiscard(this.game) !== null;
       },
       onDrawStart: () => {
-        this.clearEatingOverlay();
         this.dispatchZoff({ type: 'draw', player: this.game.activePlayer });
       },
       onTakeDiscardStart: () => {
-        this.clearEatingOverlay();
         this.dispatchZoff({ type: 'takeDiscard', player: this.game.activePlayer });
       },
       onPlace: (row, col) => {
-        this.clearEatingOverlay();
         this.dispatchZoff({
           type: 'place',
           player: this.game.activePlayer,
@@ -96,6 +97,7 @@ export class ZoffSession implements GameSession {
     if (this.disposed) return;
     this.disposed = true;
     this.clearFlipTimer();
+    this.clearEatingOverlay();
     this.drag?.dispose();
     this.drag = null;
     this.root?.removeEventListener('click', this.clickHandler);
@@ -105,7 +107,12 @@ export class ZoffSession implements GameSession {
     if (this.root) {
       this.context.graphics.clearThemeScope(this.root);
       this.root.replaceChildren();
-      this.root.classList.remove('zoff-root--handoff', 'zoff-root--playing', 'zoff-root--turn-flip');
+      this.root.classList.remove(
+        'zoff-root--handoff',
+        'zoff-root--playing',
+        'zoff-root--turn-flip',
+        'zoff-root--eating-overlay',
+      );
     }
     this.root = null;
   }
@@ -143,21 +150,15 @@ export class ZoffSession implements GameSession {
   }
 
   private handleEvents(events: GameEvent[], previousActive: PlayerId): void {
+    const chainEvents = events.filter(
+      (event): event is Extract<GameEvent, { type: 'chainRemoved' }> => event.type === 'chainRemoved',
+    );
+
     for (const event of events) {
       if (event.type === 'started') {
         this.resetHandoff(true);
         this.ui.statusMessage = `${this.playerLabel(event.firstPlayer)} beginnt.`;
         this.context.announce(this.ui.statusMessage);
-      }
-      if (event.type === 'chainRemoved') {
-        const message = formatChainEvent(event);
-        this.ui.chainFeedback = message;
-        this.ui.eatingOverlay = [...event.species];
-        this.matchRemovedCards += event.cols.length;
-        this.ui.removedCardCount = this.matchRemovedCards;
-        this.ui.statusMessage = message;
-        this.context.announce(message);
-        this.context.effects.play('impact', this.root, { text: 'Kette' });
       }
       if (event.type === 'finalTurnBegan') {
         this.ui.statusMessage = `Letzter Zug für ${this.playerLabel(event.player)}.`;
@@ -175,6 +176,24 @@ export class ZoffSession implements GameSession {
         this.context.announce(message);
         this.context.effects.play('celebrate', this.root);
       }
+    }
+
+    if (chainEvents.length > 0) {
+      this.ui.eatingOverlayChains = chainEvents.map((event) => ({
+        player: event.player,
+        row: event.row,
+        species: [...event.species],
+      }));
+      const messages = chainEvents.map((event) => formatChainEvent(event));
+      this.ui.chainFeedback = messages.join(' · ');
+      this.matchRemovedCards += chainEvents.reduce((sum, event) => sum + event.cols.length, 0);
+      this.ui.removedCardCount = this.matchRemovedCards;
+      this.ui.statusMessage = messages[messages.length - 1]!;
+      for (const message of messages) {
+        this.context.announce(message);
+      }
+      this.context.effects.play('impact', this.root, { text: 'Kette' });
+      this.scheduleEatingOverlayDismiss();
     }
 
     if (
@@ -248,12 +267,40 @@ export class ZoffSession implements GameSession {
   }
 
   private clearEatingOverlay(): void {
-    this.ui.eatingOverlay = null;
+    this.clearEatingOverlayTimer();
+    this.ui.eatingOverlayChains = [];
+  }
+
+  private eatingOverlayDuration(): number {
+    if (
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      return EATING_OVERLAY_REDUCED_MS;
+    }
+    return EATING_OVERLAY_MS;
+  }
+
+  private scheduleEatingOverlayDismiss(): void {
+    this.clearEatingOverlayTimer();
+    this.eatingOverlayTimer = window.setTimeout(() => {
+      this.eatingOverlayTimer = null;
+      this.ui.eatingOverlayChains = [];
+      this.draw();
+    }, this.eatingOverlayDuration());
+  }
+
+  private clearEatingOverlayTimer(): void {
+    if (this.eatingOverlayTimer !== null) {
+      window.clearTimeout(this.eatingOverlayTimer);
+      this.eatingOverlayTimer = null;
+    }
   }
 
   private restart(useNewSeed: boolean): void {
     this.drag?.cancel();
     this.clearFlipTimer();
+    this.clearEatingOverlay();
     const seed = useNewSeed ? this.context.random.nextUint32() || 1 : this.context.seed;
     this.game = createGame(seed);
     this.ui = { ...INITIAL_UI };
@@ -284,7 +331,6 @@ export class ZoffSession implements GameSession {
       return;
     }
     if (target.matches('[data-confirm-handoff]')) {
-      this.clearEatingOverlay();
       this.ui.handoffConfirmed = true;
       this.triggerTurnFlip();
       this.ui.statusMessage = this.phaseHint();
@@ -293,8 +339,6 @@ export class ZoffSession implements GameSession {
       return;
     }
     if (!this.ui.handoffConfirmed || this.game.phase === 'finished') return;
-
-    this.clearEatingOverlay();
 
     if (target.matches('[data-take-discard]')) {
       this.dispatchZoff({ type: 'takeDiscard', player: this.game.activePlayer });

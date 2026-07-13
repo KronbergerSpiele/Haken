@@ -217,26 +217,21 @@ export class ZoffDragController {
     this.root.querySelectorAll<HTMLElement>('[data-place]').forEach((cell) => {
       const row = Number(cell.dataset.row);
       const col = Number(cell.dataset.col);
-      const legal =
+      const aimed =
         drag !== null &&
         sourceMatches &&
-        this.callbacks.isPlaceable(row, col);
-      const aimed =
-        legal &&
+        this.callbacks.isPlaceable(row, col) &&
         target !== null &&
         target.row === row &&
         target.col === col;
-      cell.classList.toggle('zoff-cell--drag-target', legal);
       cell.classList.toggle('zoff-cell--drag-aimed', aimed);
     });
   }
 
   private clearHighlights(): void {
-    this.root
-      .querySelectorAll('.zoff-cell--drag-target, .zoff-cell--drag-aimed')
-      .forEach((cell) => {
-        cell.classList.remove('zoff-cell--drag-target', 'zoff-cell--drag-aimed');
-      });
+    this.root.querySelectorAll('.zoff-cell--drag-aimed').forEach((cell) => {
+      cell.classList.remove('zoff-cell--drag-aimed');
+    });
   }
 
   private endDrag(_placed: boolean): void {

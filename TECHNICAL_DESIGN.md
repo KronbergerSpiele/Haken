@@ -349,14 +349,17 @@ Zoff in the Sky is a self-contained turn-based game module at
 - The session applies a namespaced `zoff-in-the-sky` theme scope and CSS tokens.
   Theme tokens expose a dark near-black background, flat panel surfaces, high-
   contrast text, and cyan/magenta laser accent colors via `applyZoffTokens`.
-- `session.ts` routes click, keyboard, and pointer drag-and-drop input into
-  reducer commands; there is no separate `controls.ts`.
+- `session.ts` routes click and keyboard input into reducer commands;
+  `controls.ts` owns pointer drag-and-drop and reports legal placements back to
+  the session.
 - When the reducer changes the active player, the session renders a
-  presentation-only 1.2-second turn-complete interstitial before rendering the
-  next-player handoff. It hides both boards, cancels drag input, and is cleared
-  on restart or disposal. The subsequent handoff triggers a board-flip
-  presentation effect; reduced-motion maps the flip to a short fade or static
-  active-player emphasis.
+  presentation-only 1.2-second bottom toast while keeping the outgoing player's
+  board perspective via `perspectivePlayer`. Reducer state already contains the
+  new active player; gameplay input is disabled until the toast expires, then the
+  view switches perspective and triggers a board-flip presentation effect.
+  Reduced-motion maps the flip to a short fade while preserving toast text.
+  Starting a round shows the first player's board directly with an optional entry
+  flip; there is no confirmation screen.
 - The view renders the active player's full grid, a compact opponent grid, pass-
   device privacy for inspected draws, compact edge eating indicators as miniature
   animal-art sprites on dark tiles with subtle laser border accents, and stronger
@@ -370,10 +373,14 @@ Zoff in the Sky is a self-contained turn-based game module at
   hidden occupied count. Final totals render only in the `finished` phase after
   full reveal and scoring.
 - Deck and discard piles expose pointer drag sources. During drag, the view
-  shows a floating card preview and highlights legal placement targets from
-  `canPlacePendingAt`. Starting a deck drag enters `inspectingDraw` with the
-  same privacy rules as the tap path. Pointer release outside a legal target
-  cancels only the drag chrome and leaves `pendingCard` and phase unchanged.
+  shows a floating card preview and applies a strong cyan highlight only to the
+  currently aimed legal cell; `zoff-root--dragging` de-emphasizes static
+  placeable styles. Starting a deck drag enters `inspectingDraw` with the same
+  privacy rules as the tap path. Pointer release outside a legal target cancels
+  only the drag chrome and leaves `pendingCard` and phase unchanged.
+- Zoff presentation uses a deterministic CSS z-index scale via theme variables
+  for cell indicators, eating overlays, result, landscape warning, turn toast,
+  collection exit, and drag preview.
 - After reducer-emitted chain-removal events, the view schedules presentation-
   only eat/bite/pop effects on cleared runs. Effect timing does not gate or
   reorder reducer transitions; reduced-motion maps to static text emphasis.
@@ -435,14 +442,14 @@ The following automated boundaries are required:
   top, opening discard, seeded initial reveals, Zoff turn legality, stock-safety
   gap rejection with occupied replacement, final-turn gap allowance, private
   inspected draw visibility, face-up and hidden replacement, full-run chain
-  removal, final-turn handoff after placement or reveal, scoring, and draws,
+  removal, final-turn transition after placement or reveal, scoring, and draws,
   plus DOM smoke tests in `view.test.ts`—including stock-unsafe gaps not marked
   placeable, interim header scores versus finished totals, icon-based edge
-  indicators with accessible species labels, board-flip or reduced-motion turn
-  handoff, the turn-complete delay before that handoff, deck/discard drag to
-  legal slots with outside-drop preserving pending
-  state, and chain-removal presentation that does not alter reducer outcomes—
-  and lifecycle cleanup in `session.test.ts`;
+  indicators with accessible species labels, automatic toast-to-flip turn
+  transitions with outgoing-perspective preservation, deck/discard drag to legal
+  slots with focused aimed-cell highlighting and outside-drop preserving
+  pending state, and chain-removal presentation that does not alter reducer
+  outcomes—and lifecycle cleanup in `session.test.ts`;
 - end-to-end smoke tests launch Haken, leave it, launch it again, and confirm
   that no duplicate listeners, animation loops, or effects survive; the same
   cleanup guarantees apply when launching and leaving Zoff in the Sky.

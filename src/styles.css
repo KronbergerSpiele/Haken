@@ -1245,6 +1245,13 @@ button:focus-visible {
   --zoff-text-muted: rgb(232 244 255 / 72%);
   --zoff-shadow: 2px 3px 0 rgb(0 0 0 / 45%);
   --zoff-edge-gutter: max(14px, calc(env(safe-area-inset-left) + 10px));
+  --zoff-z-cell-indicators: 2;
+  --zoff-z-eating-overlay: 15;
+  --zoff-z-result: 20;
+  --zoff-z-landscape: 25;
+  --zoff-z-turn-toast: 28;
+  --zoff-z-collection-exit: 30;
+  --zoff-z-drag-preview: 40;
   position: relative;
   width: 100%;
   height: 100%;
@@ -1260,6 +1267,7 @@ button:focus-visible {
 }
 
 [data-theme='zoff-in-the-sky'] .collection-exit {
+  z-index: var(--zoff-z-collection-exit);
   border: 2px solid var(--zoff-laser-magenta, #ff2d95);
   background: rgb(18 26 46 / 94%);
   color: var(--zoff-text, #e8f4ff);
@@ -1277,8 +1285,7 @@ button:focus-visible {
   overscroll-behavior: none;
 }
 
-[data-theme='zoff-in-the-sky'] .zoff-splash,
-[data-theme='zoff-in-the-sky'] .zoff-handoff {
+[data-theme='zoff-in-the-sky'] .zoff-splash {
   position: relative;
   display: grid;
   place-content: center;
@@ -1302,24 +1309,18 @@ button:focus-visible {
 [data-theme='zoff-in-the-sky'] .zoff-splash__logo,
 [data-theme='zoff-in-the-sky'] .zoff-how-to,
 [data-theme='zoff-in-the-sky'] .zoff-start-button,
-[data-theme='zoff-in-the-sky'] .zoff-rotate-note,
-[data-theme='zoff-in-the-sky'] .zoff-handoff__kicker,
-[data-theme='zoff-in-the-sky'] .zoff-handoff h2,
-[data-theme='zoff-in-the-sky'] .zoff-handoff__text,
-[data-theme='zoff-in-the-sky'] .zoff-handoff__note {
+[data-theme='zoff-in-the-sky'] .zoff-rotate-note {
   position: relative;
 }
 
-[data-theme='zoff-in-the-sky'] .zoff-splash__logo span,
-[data-theme='zoff-in-the-sky'] .zoff-handoff__kicker {
+[data-theme='zoff-in-the-sky'] .zoff-splash__logo span {
   font-size: 0.9rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--zoff-laser-cyan, #00e5ff);
 }
 
-[data-theme='zoff-in-the-sky'] .zoff-splash__logo h1,
-[data-theme='zoff-in-the-sky'] .zoff-handoff h2 {
+[data-theme='zoff-in-the-sky'] .zoff-splash__logo h1 {
   margin: 0;
   font-family: 'Archivo Black', Impact, sans-serif;
   font-size: clamp(2rem, 9vw, 3rem);
@@ -1329,7 +1330,6 @@ button:focus-visible {
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-splash__logo p,
-[data-theme='zoff-in-the-sky'] .zoff-handoff__text,
 [data-theme='zoff-in-the-sky'] .zoff-rotate-note {
   margin: 0;
   max-width: 22rem;
@@ -1389,7 +1389,7 @@ button:focus-visible {
 [data-theme='zoff-in-the-sky'] .zoff-cell--placeable:focus-visible,
 [data-theme='zoff-in-the-sky'] .zoff-cell--revealable:focus-visible,
 [data-theme='zoff-in-the-sky'] .collection-exit:focus-visible {
-  outline: 2px solid var(--zoff-laser-magenta, #ff2d95);
+  outline: 2px solid var(--zoff-laser-cyan, #00e5ff);
   outline-offset: 2px;
 }
 
@@ -1566,8 +1566,8 @@ button:focus-visible {
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-cell--revealable {
-  box-shadow: inset 0 0 0 2px var(--zoff-laser-magenta, #ff2d95);
-  outline: 2px solid rgb(255 45 149 / 55%);
+  box-shadow: inset 0 0 0 2px var(--zoff-laser-cyan, #00e5ff);
+  outline: 2px solid rgb(0 229 255 / 55%);
   outline-offset: 1px;
 }
 
@@ -1640,7 +1640,7 @@ button:focus-visible {
   justify-content: space-between;
   align-items: stretch;
   pointer-events: none;
-  z-index: 2;
+  z-index: var(--zoff-z-cell-indicators);
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-eat-indicators {
@@ -1788,17 +1788,18 @@ button:focus-visible {
   cursor: grabbing;
 }
 
-[data-theme='zoff-in-the-sky'] .zoff-cell--drag-target {
-  box-shadow: inset 0 0 0 2px rgb(0 229 255 / 85%);
-  outline: 2px dashed rgb(0 229 255 / 65%);
+[data-theme='zoff-in-the-sky'].zoff-root--dragging .zoff-cell--placeable:not(.zoff-cell--drag-aimed) {
+  box-shadow: inset 0 0 0 1px rgb(0 229 255 / 30%);
+  outline: 1px solid rgb(0 229 255 / 22%);
   outline-offset: 1px;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-cell--drag-aimed {
   box-shadow: inset 0 0 0 3px var(--zoff-laser-cyan, #00e5ff);
-  outline: 2px solid var(--zoff-laser-magenta, #ff2d95);
+  outline: 2px solid var(--zoff-laser-cyan, #00e5ff);
   outline-offset: 1px;
   transform: scale(1.04);
+  z-index: calc(var(--zoff-z-cell-indicators) + 1);
 }
 
 [data-theme='zoff-in-the-sky'].zoff-root--dragging .zoff-pile--draggable {
@@ -1811,7 +1812,7 @@ button:focus-visible {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 40;
+  z-index: var(--zoff-z-drag-preview);
   width: clamp(48px, 14vw, 72px);
   aspect-ratio: 3 / 4;
   pointer-events: none;
@@ -1826,7 +1827,7 @@ button:focus-visible {
 [data-theme='zoff-in-the-sky'] .zoff-eating-overlays {
   position: absolute;
   inset: 0;
-  z-index: 15;
+  z-index: var(--zoff-z-eating-overlay);
   display: grid;
   place-content: center;
   justify-items: center;
@@ -1838,7 +1839,7 @@ button:focus-visible {
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-eating-overlays--above-result {
-  z-index: 30;
+  z-index: calc(var(--zoff-z-result) + 1);
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-eating-overlay {
@@ -1893,15 +1894,48 @@ button:focus-visible {
   text-shadow: 0 0 12px rgb(0 229 255 / 35%);
 }
 
-[data-theme='zoff-in-the-sky'] .zoff-handoff__note {
+[data-theme='zoff-in-the-sky'] .zoff-turn-toast {
+  position: absolute;
+  right: max(8px, env(safe-area-inset-right));
+  bottom: max(8px, env(safe-area-inset-bottom));
+  left: max(8px, env(safe-area-inset-left));
+  z-index: var(--zoff-z-turn-toast);
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  padding: 10px 14px;
+  border: 2px solid var(--zoff-laser-cyan, #00e5ff);
+  background: rgb(8 12 20 / 94%);
+  box-shadow:
+    0 0 14px rgb(0 229 255 / 28%),
+    var(--zoff-shadow);
+  pointer-events: none;
+  text-align: center;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-turn-toast__text {
   margin: 0;
-  padding: 6px 12px;
-  border: 2px solid var(--zoff-laser-magenta, #ff2d95);
-  background: rgb(255 45 149 / 12%);
-  color: var(--zoff-laser-magenta, #ff2d95);
+  font-family: 'Archivo Black', Impact, sans-serif;
+  font-size: clamp(1rem, 4.5vw, 1.25rem);
+  line-height: 1.15;
+  color: var(--zoff-laser-cyan, #00e5ff);
+  text-shadow: 0 0 12px rgb(0 229 255 / 35%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-turn-toast__note {
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--zoff-laser-cyan, #00e5ff);
+  background: rgb(0 229 255 / 10%);
+  color: var(--zoff-laser-cyan, #00e5ff);
+  font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+[data-theme='zoff-in-the-sky'].zoff-root--turn-toast .zoff-game {
+  pointer-events: none;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-private-draw__hint {
@@ -1965,7 +1999,6 @@ button:focus-visible {
   }
 }
 
-[data-theme='zoff-in-the-sky'].zoff-root--turn-flip .zoff-handoff,
 [data-theme='zoff-in-the-sky'].zoff-root--turn-flip .zoff-game {
   animation: zoff-turn-flip 0.5s ease-out;
   transform-origin: center center;
@@ -1994,7 +2027,6 @@ button:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-theme='zoff-in-the-sky'].zoff-root--turn-flip .zoff-handoff,
   [data-theme='zoff-in-the-sky'].zoff-root--turn-flip .zoff-game {
     animation: zoff-turn-fade 0.2s ease-out;
   }
@@ -2130,7 +2162,7 @@ button:focus-visible {
 [data-theme='zoff-in-the-sky'] .zoff-result {
   position: absolute;
   inset: 0;
-  z-index: 20;
+  z-index: var(--zoff-z-result);
   display: grid;
   place-content: center;
   justify-items: center;
@@ -2167,7 +2199,7 @@ button:focus-visible {
   [data-theme='zoff-in-the-sky'] .zoff-landscape-warning {
     position: absolute;
     inset: 0;
-    z-index: 25;
+    z-index: var(--zoff-z-landscape);
     display: grid;
     place-content: center;
     justify-items: center;

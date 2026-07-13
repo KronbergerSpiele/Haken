@@ -78,20 +78,23 @@ describe('zoff view rendering', () => {
     expect(root.querySelector('[data-start]')).not.toBeNull();
   });
 
-  it('shows a pass-device handoff before revealing the board', () => {
+  it('shows the first player board directly after start with optional flip', () => {
     const game = transition(createGame(12), { type: 'start' }).state;
-    render(root, game, { ...INITIAL_UI, turnFlipActive: true });
-    expect(root.querySelector('.zoff-handoff')).not.toBeNull();
+    render(root, game, {
+      ...INITIAL_UI,
+      perspectivePlayer: game.activePlayer,
+      turnFlipActive: true,
+    });
+    expect(root.querySelector('.zoff-game')).not.toBeNull();
     expect(root.classList.contains('zoff-root--turn-flip')).toBe(true);
-    expect(root.classList.contains('zoff-root--handoff')).toBe(true);
-    expect(root.querySelector('.zoff-game')).toBeNull();
-    expect(root.textContent).toContain('Spieler');
-    expect(root.querySelector('[data-confirm-handoff]')).not.toBeNull();
+    expect(root.querySelector('[data-confirm-handoff]')).toBeNull();
+    expect(root.querySelector('.zoff-handoff')).toBeNull();
+    expect(root.querySelector('[data-draw]')).not.toBeNull();
   });
 
   it('shows visible subtotals and hidden counts in board headers', () => {
     const game = transition(createGame(12), { type: 'start' }).state;
-    render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
+    render(root, game, { ...INITIAL_UI, perspectivePlayer: game.activePlayer });
     const scores = [...root.querySelectorAll('.zoff-board__score')];
     expect(scores).toHaveLength(2);
     expect(scores.every((score) => /Sichtbar -?\d+ · \d+ verdeckt/.test(score.textContent ?? ''))).toBe(
@@ -103,7 +106,7 @@ describe('zoff view rendering', () => {
     const game = transition(createGame(12), { type: 'start' }).state;
     render(root, game, {
       ...INITIAL_UI,
-      handoffConfirmed: true,
+      perspectivePlayer: game.activePlayer,
       eatingOverlayChains: [{ player: 0, row: 0, species: ['mosquito', 'mouse', 'fox'] }],
       chainFeedback: 'Fresskette in Reihe 1: Mücke → Maus → Fuchs',
     });
@@ -116,16 +119,20 @@ describe('zoff view rendering', () => {
     expect(overlay?.textContent).toContain('Fresskette!');
   });
 
-  it('renders eating overlay on handoff after a chain event', () => {
+  it('renders eating overlay above the board during a turn toast', () => {
     const game = transition(createGame(12), { type: 'start' }).state;
+    const outgoing = game.activePlayer === 0 ? 1 : 0;
     render(root, game, {
       ...INITIAL_UI,
-      handoffConfirmed: false,
+      turnToastActive: true,
+      perspectivePlayer: outgoing,
+      statusMessage: 'Spieler 1 ist dran.',
       eatingOverlayChains: [{ player: 0, row: 1, species: ['mosquito', 'mouse', 'fox'] }],
     });
-    expect(root.querySelector('.zoff-handoff')).not.toBeNull();
+    expect(root.querySelector('.zoff-turn-toast')).not.toBeNull();
     expect(root.querySelector('[data-eating-overlay]')).not.toBeNull();
     expect(root.classList.contains('zoff-root--eating-overlay')).toBe(true);
+    expect(root.classList.contains('zoff-root--turn-toast')).toBe(true);
   });
 
   it('places final eating overlay above the result layer', () => {
@@ -134,7 +141,7 @@ describe('zoff view rendering', () => {
     game.result = { scores: [3, 5], winner: 0 };
     render(root, game, {
       ...INITIAL_UI,
-      handoffConfirmed: true,
+      perspectivePlayer: game.activePlayer,
       eatingOverlayChains: [{ player: 0, row: 0, species: ['mosquito', 'mouse', 'fox'] }],
     });
     const shell = root.querySelector('.zoff-eating-overlays--above-result');
@@ -148,7 +155,7 @@ describe('zoff view rendering', () => {
 
   it('keeps a stable four-track play grid without a separate decision row', () => {
     const game = transition(createGame(12), { type: 'start' }).state;
-    render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
+    render(root, game, { ...INITIAL_UI, perspectivePlayer: game.activePlayer });
     expect(root.querySelector('.zoff-game__opponent .zoff-board--compact')).not.toBeNull();
     expect(root.querySelector('.zoff-game__piles')).not.toBeNull();
     expect(root.querySelector('.zoff-pile-edge-gutter')).not.toBeNull();
@@ -159,7 +166,7 @@ describe('zoff view rendering', () => {
 
   it('orders discard before deck in the pile strip', () => {
     const game = transition(createGame(12), { type: 'start' }).state;
-    render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
+    render(root, game, { ...INITIAL_UI, perspectivePlayer: game.activePlayer });
     const discard = root.querySelector('.zoff-pile--discard')!;
     const deck = root.querySelector('.zoff-pile--deck')!;
     expect(
@@ -167,9 +174,9 @@ describe('zoff view rendering', () => {
     ).toBeTruthy();
   });
 
-  it('renders active and compact boards with public piles after handoff', () => {
+  it('renders active and compact boards with public piles during play', () => {
     const game = transition(createGame(12), { type: 'start' }).state;
-    render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
+    render(root, game, { ...INITIAL_UI, perspectivePlayer: game.activePlayer });
     expect(root.querySelectorAll('.zoff-board')).toHaveLength(2);
     expect(root.querySelector('.zoff-board--active')).not.toBeNull();
     expect(root.querySelector('.zoff-board--compact')).not.toBeNull();
@@ -178,10 +185,30 @@ describe('zoff view rendering', () => {
     expect(root.querySelector('.zoff-status')).not.toBeNull();
   });
 
+  it('shows a compact bottom toast while preserving the outgoing board perspective', () => {
+    const game = transition(createGame(12), { type: 'start' }).state;
+    const outgoing = game.activePlayer === 0 ? 1 : 0;
+    game.activePlayer = outgoing === 0 ? 1 : 0;
+    render(root, game, {
+      ...INITIAL_UI,
+      turnToastActive: true,
+      perspectivePlayer: outgoing,
+      statusMessage: `Spieler ${game.activePlayer + 1} ist dran.`,
+    });
+    expect(root.querySelector('.zoff-turn-toast')).not.toBeNull();
+    expect(root.textContent).toContain(`Spieler ${game.activePlayer + 1} ist dran`);
+    expect(
+      root.querySelector('.zoff-game__active .zoff-board--active')?.getAttribute('aria-label'),
+    ).toBe(`Spielfeld Spieler ${outgoing + 1}`);
+    expect(root.querySelector('.zoff-board--current-turn')).toBeNull();
+    expect(root.querySelector('[data-draw]')).toBeNull();
+    expect(root.classList.contains('zoff-root--turn-toast')).toBe(true);
+  });
+
   it('shows the private draw only to the active player during inspection', () => {
     let game = transition(createGame(15), { type: 'start' }).state;
     game = transition(game, { type: 'draw', player: game.activePlayer }).state;
-    render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
+    render(root, game, { ...INITIAL_UI, perspectivePlayer: game.activePlayer });
     const piles = root.querySelector('.zoff-game__piles')!;
     const privateDecision = piles.querySelector('.zoff-private-decision');
     expect(privateDecision).not.toBeNull();
@@ -206,7 +233,7 @@ describe('zoff view rendering', () => {
     game.discard = [{ instanceId: 50, species: 'fox' }];
     game = transition(game, { type: 'takeDiscard', player: active }).state;
 
-    render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
+    render(root, game, { ...INITIAL_UI, perspectivePlayer: game.activePlayer });
 
     const placeButtons = [...root.querySelectorAll<HTMLButtonElement>('[data-place]')];
     expect(placeButtons.some((button) => button.dataset.row === '0' && button.dataset.col === '1')).toBe(
@@ -220,7 +247,7 @@ describe('zoff view rendering', () => {
 
   it('marks gaps and face-up cards with eating indicator icons', () => {
     const game = transition(createGame(16), { type: 'start' }).state;
-    render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
+    render(root, game, { ...INITIAL_UI, perspectivePlayer: game.activePlayer });
     expect(root.querySelector('.zoff-cell--gap, .zoff-cell--hidden, .zoff-cell--face-up')).not.toBeNull();
     expect(root.querySelector('.zoff-eat-icon, .zoff-card-back')).not.toBeNull();
     expect(
@@ -236,7 +263,7 @@ describe('zoff view rendering', () => {
     game.result = { scores: [3, 5], winner: 0 };
     render(root, game, {
       ...INITIAL_UI,
-      handoffConfirmed: true,
+      perspectivePlayer: game.activePlayer,
       removedCardCount: 4,
       chainFeedback: 'Fresskette in Reihe 2: Mücke → Maus → Fuchs',
     });

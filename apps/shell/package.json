@@ -1,0 +1,18 @@
+{
+  "name": "@spiele/shell",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@spiele/engine": "workspace:*",
+    "@spiele/ui": "workspace:*",
+    "@spiele/graphics": "workspace:*",
+    "@spiele/game-haken": "workspace:*",
+    "@spiele/game-zoff-in-the-sky": "workspace:*"
+  }
+}

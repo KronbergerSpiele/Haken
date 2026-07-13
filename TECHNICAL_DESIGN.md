@@ -13,10 +13,13 @@ game discovery, lifecycle, clocks, player input plumbing, shared graphics and
 effects, and platform integrations. Each game owns its rules, deterministic
 state transitions, game-specific controls, view, theme, and content.
 
-The site remains framework-free TypeScript built by Vite. Native DOM and SVG,
-Pointer Events, CSS, `requestAnimationFrame`, the Page Visibility API, and the
-Fullscreen API are sufficient. The production output is a static site with
-relative asset URLs and can be hosted at a GitHub Pages repository subpath.
+The site is TypeScript built by Vite, with Lit 3 as its focused presentation
+dependency. The shell and game packages use Lit templates and light-DOM custom
+elements; reducers, runtime services, session orchestration, and input
+controllers remain framework-independent. Native SVG, Pointer Events, CSS,
+`requestAnimationFrame`, the Page Visibility API, and the Fullscreen API remain
+the platform foundation. The production output is a static site with relative
+asset URLs and can be hosted at a GitHub Pages repository subpath.
 
 "Remote" means that a deployed build can be opened over the web while away from
 the development machine. The first transport is local, same-device multiplayer.
@@ -35,7 +38,8 @@ Dependencies point downward through four layers:
    player/input ownership, seeded random source, pause handling, and session
    services.
 3. **Shared presentation library** provides graphics primitives, themes, effect
-   scheduling, sound/haptics adapters, and accessibility helpers.
+   scheduling, sound/haptics adapters, accessibility helpers, and reusable UI
+   custom elements.
 4. **Game modules** implement only their own model, commands, reducer, renderer,
    controls, content, and tests.
 
@@ -43,55 +47,147 @@ The runtime does not contain Haken concepts such as cards, lanes, tokens, or
 zones. Shared presentation code does not import a game module. Games may import
 runtime and presentation contracts, but they may not import one another.
 
-Target module layout:
+The repository is a pnpm workspace. Package names use the `@spiele/*` scope.
+Dependencies point downward through workspace packages that mirror the four
+layers above:
 
 ```text
-src/
-  app/
-    catalog.ts             # explicit registry of available games
-    launcher.ts            # game selection and requirement summaries
-    router.ts              # URL parsing and History API synchronization
-    session-host.ts        # mount, pause, resume, and dispose orchestration
-  engine/
-    contracts.ts           # GameModule, GameSession, command, and event types
-    runtime.ts             # clock and ordered command processing
-    random.ts              # reproducible seeded random source
-    input.ts               # pointer ownership and keyboard/tap routing
-  graphics/
-    primitives.ts          # safe DOM/SVG shapes, icons, labels, and sprites
-    theme.ts               # shared design tokens and per-game theme scopes
-    effects.ts             # visual effect timeline and reduced-motion variants
-    feedback.ts            # optional sound and vibration adapters
-  games/
-    haken/
-      session.ts           # Haken manifest and session factory
-      model.ts             # Haken-only state and event contracts
-      cards.ts             # deck definitions and balance constants
-      reducer.ts           # deterministic Haken transitions
-      controls.ts          # flick and accessible fallback interpretation
-      view.ts              # Haken DOM projection
-      graphics.ts          # Haken-specific art built from shared primitives
-    zoff-in-the-sky/
-      session.ts           # session factory, click/keyboard command routing
-      model.ts             # nested grid, deck, phase, and command contracts
-      cards.ts             # species values, deck composition, predator graph
-      reducer.ts           # deterministic turn, chain, and scoring transitions
-      view.ts              # active and compact opponent grid projection
-      graphics.ts          # stylized sprites, miniature eating icons, card back
-      reducer.test.ts
-      view.test.ts
-      session.test.ts
-      assets/              # optimized local card-face and card-back artwork
-  main.ts                  # composition root only
+apps/shell/                         @spiele/shell — Vite entry, launcher, router
+  src/
+    main.ts                         # composition root only
+    styles.css                      # imports base and shell stylesheets
+    styles-base.css                 # global reset, fonts, shared tokens
+    styles-shell.css                # launcher, collection exit, layout roots
+    app/
+      catalog.ts                    # explicit registry of available games
+      launcher.ts                   # mounts spiele-launcher; share/focus helpers
+      router.ts                     # URL parsing and History API synchronization
+      session-host.ts               # mount, pause, resume, and dispose orchestration
+
+packages/ui/                        @spiele/ui — shared Lit custom elements (light DOM)
+  src/
+    define.ts                       # collision-safe customElements.define guard
+    light-dom-element.ts            # LitElement base that renders in the light DOM
+    collection-exit.ts              # spiele-collection-exit
+    launcher.ts                     # spiele-launcher
+    launcher-card.ts                # spiele-launcher-card
+    register.ts                     # registerUiElements()
+
+packages/engine/                    @spiele/engine — mini-game runtime
+  src/
+    contracts.ts                    # GameModule, GameSession, command, and event types
+    runtime.ts                      # clock and ordered command processing
+    random.ts                       # reproducible seeded random source
+    input.ts                        # pointer ownership and keyboard/tap routing
+
+packages/graphics/                  @spiele/graphics — shared presentation library
+  src/
+    primitives.ts                   # safe DOM/SVG shapes, icons, labels, and sprites
+    theme.ts                        # shared design tokens and applySharedTokens
+    effects.ts                      # visual effect timeline and reduced-motion variants
+    feedback.ts                     # optional sound and vibration adapters
+
+packages/game-haken/                  @spiele/game-haken
+  src/
+    theme.ts                        # Haken theme tokens and applyHakenTokens
+    styles.css                      # lazy-loaded Haken splash, arena, and card presentation
+    session.ts                      # Haken session factory
+    model.ts                        # Haken-only state and event contracts
+    cards.ts                        # deck definitions and balance constants
+    reducer.ts                      # deterministic Haken transitions
+    controls.ts                     # flick and accessible fallback interpretation
+    view.ts                         # mounts and updates spiele-haken-view
+    haken-view-element.ts           # Lit projection for Haken state
+    graphics.ts                     # Haken-specific Lit/SVG art templates
+
+packages/game-zoff-in-the-sky/        @spiele/game-zoff-in-the-sky
+  src/
+    theme.ts                        # Zoff theme tokens and applyZoffTokens
+    styles.css                      # lazy-loaded Zoff cyberpunk presentation rules
+    session.ts                      # session factory, click/keyboard command routing
+    model.ts                        # nested grid, deck, phase, and command contracts
+    cards.ts                        # species values, deck composition, predator graph
+    reducer.ts                      # deterministic turn, chain, and scoring transitions
+    view.ts                         # mounts and updates spiele-zoff-view
+    view-element.ts                 # light-DOM Zoff custom-element host
+    view-templates.ts               # Lit board, pile, result, and overlay templates
+    graphics.ts                     # Lit sprites, miniature eating icons, card back
+    assets/                         # optimized local card-face and card-back artwork
 ```
 
-Haken already lives under `src/games/haken/`. Shared pointer, lifecycle, and
-presentation behavior lives in `src/engine/` and `src/graphics/`. Zoff in the
-Sky follows the same plug-in layout as a self-contained turn-based module.
+Workspace dependency graph:
+
+```text
+@spiele/shell
+  ├── @spiele/engine
+  ├── @spiele/ui ──► @spiele/engine, lit
+  ├── @spiele/graphics ──► @spiele/engine
+  ├── @spiele/game-haken ──► @spiele/engine, @spiele/graphics, @spiele/ui, lit
+  └── @spiele/game-zoff-in-the-sky ──► @spiele/engine, @spiele/graphics, @spiele/ui, lit
+```
+
+`@spiele/shell` is the only package that imports every game. Game packages do
+not import one another. Shared presentation code does not import a game module.
+Game-specific theme tokens and styles live in each game package; `@spiele/graphics`
+owns only cross-game shared tokens.
+
+The Vite application root is `apps/shell`. Production builds write to the
+repository-root `dist/` directory with `base: './'` so GitHub Pages subpath
+deployment keeps working. Root scripts delegate to the shell app for `dev`,
+`build`, and `preview`; `pnpm test` runs Vitest across `apps/` and `packages/`.
+Type-checking uses TypeScript project references from the repository root.
+
+Haken lives in `@spiele/game-haken`. Shared pointer, lifecycle, and presentation
+behavior lives in `@spiele/engine` and `@spiele/graphics`. Reusable shell and
+in-game UI custom elements live in `@spiele/ui`. Zoff in the Sky follows the
+same plug-in layout as a self-contained turn-based module.
+
+## Shared UI custom elements (`@spiele/ui`)
+
+`@spiele/ui` provides reusable custom elements and the shared `LightDomElement`
+base built with Lit 3. Elements render into the **light DOM**
+(`createRenderRoot()` returns the host) so existing global CSS (`data-theme`,
+shell stylesheets), hit-testing, and DOM queries keep working without Shadow DOM
+style encapsulation. Imperative session boundaries may call `renderNow()` after
+setting properties when controls or focus must see the updated DOM in the same
+task.
+
+### Naming and registration
+
+- Tag names use the collision-safe `spiele-` prefix (for example
+  `spiele-collection-exit`, `spiele-launcher`, `spiele-launcher-card`).
+- Registration goes through `defineSpieleElement()` / `registerUiElements()`,
+  which no-op when a tag is already defined so hot reload and repeated mounts
+  stay safe.
+- Lit reactive properties use `static properties` with `declare` fields (no
+  class-field initializers) so TypeScript `useDefineForClassFields` does not
+  shadow Lit accessors.
+
+### Element contracts
+
+| Element | Properties | Events | Notes |
+| --- | --- | --- | --- |
+| `spiele-collection-exit` | `label` (default `← SAMMLUNG`) | `spiele-exit` (bubbles) | Renders `button.collection-exit` with `data-exit-collection="true"` and `aria-label="Zurück zur Spielesammlung"`. Both games mount it through `mountCollectionExit()`. |
+| `spiele-launcher` | `manifests`, `loadStates`, `notice`, `selectedGameId`, `shareUrlFor` | `spiele-play`, `spiele-share` (bubbles; `detail` is game id) | Shell launcher grid host; preserves `.launcher` structure and `#launcher-live`. |
+| `spiele-launcher-card` | `manifest`, `loadState`, `selected`, `shareUrl` | `spiele-play`, `spiele-share` (bubbles; `detail` is game id) | Host carries `launcher-card` classes, `data-game-id`, and legacy `data-play` / `data-share` / `data-share-url` selectors. |
+
+`apps/shell/src/app/launcher.ts` mounts `spiele-launcher`, wires custom events
+to `LauncherActions`, and keeps `shareGameLink`, `announceLauncher`, and
+`focusLauncherEntry` as shell helpers that query the rendered light DOM.
+`renderLauncher` commits synchronously, so focus restoration and action hooks
+are available before it returns its listener cleanup function.
+
+Each game projects state through its own layout-neutral light-DOM host
+(`spiele-haken-view` or `spiele-zoff-view`). Sessions retain command routing and
+lifecycle ownership, update those hosts synchronously, and listen for the shared
+`spiele-exit` event to call `context.requestExit()`. Game renderers preserve
+stable hosts and let Lit update changed template parts instead of replacing the
+session root.
 
 ## Game plug-in contract
 
-Games are compile-time plug-ins registered explicitly in `app/catalog.ts`.
+Games are compile-time plug-ins registered explicitly in
+`apps/shell/src/app/catalog.ts`.
 Remote code, runtime plug-in downloads, and manifest fetching are out of scope.
 An explicit registry keeps deployment static, makes the complete catalog
 testable, and lets Vite produce one lazy-loaded chunk per game.
@@ -147,7 +243,8 @@ without breaking the engine or another game.
 
 ## Launcher, navigation, and deep links
 
-The launcher renders `GameManifest` metadata and is the only entry point for
+The launcher renders `GameManifest` metadata through `spiele-launcher` /
+`spiele-launcher-card` custom elements and is the only entry point for
 browsing the catalog. It remains interactive while a selected game's lazy chunk
 loads, reports load failures on the corresponding game card, and does not create
 a session until loading succeeds. Its share action uses the Web Share API when
@@ -249,12 +346,12 @@ serialization compatibility, abuse controls, and backend deployment.
 
 ## Shared graphics and effects
 
-`src/graphics/` is a rendering toolkit rather than a game asset catalog:
+`@spiele/graphics` is a rendering toolkit rather than a game asset catalog:
 
 - primitives create reusable DOM/SVG elements such as panels, badges, progress
   meters, bursts, particles, and icon containers;
-- theme scopes expose typed color, spacing, typography, motion, and contrast
-  tokens as CSS custom properties;
+- theme scopes expose typed shared color tokens as CSS custom properties; each
+  game package supplies its own named theme tokens, stylesheet, and artwork;
 - each game supplies named artwork and composition in its own `graphics.ts`;
 - the effect service schedules visual effects against the runtime clock and
   supports cancellation by session, element, or effect handle;
@@ -264,10 +361,11 @@ serialization compatibility, abuse controls, and backend deployment.
 - reduced-motion variants replace large movement, shake, and particle effects
   with short fades or static emphasis while preserving timing and meaning.
 
-Graphics APIs return nodes or structured descriptors, not unsanitized HTML.
-Bundled SVG paths are trusted source code; player-provided text is inserted with
-`textContent`. Zoff in the Sky ships text-free card faces and a card back as
-static bundled assets referenced from its module. Effects are presentation-only:
+Graphics APIs return nodes, Lit `TemplateResult` values, or structured
+descriptors—not unsanitized HTML. Bundled SVG paths are trusted source code;
+dynamic text uses Lit bindings rather than raw markup. Zoff in the Sky ships
+text-free card faces and a card back as static bundled assets referenced from
+its module. Effects are presentation-only:
 their callbacks cannot mutate game state. Rule outcomes first produce semantic
 game events, then the view maps those events to effects. Skipped or disabled
 effects therefore cannot alter a match.
@@ -305,7 +403,7 @@ behind its view without changing other games.
 
 ## Lifecycle and platform services
 
-`session-host.ts` is the only module allowed to coordinate game lifecycle with
+`apps/shell/src/app/session-host.ts` is the only module allowed to coordinate game lifecycle with
 navigation and page visibility. Session flow is:
 
 1. resolve and lazy-load a registered manifest;
@@ -322,8 +420,8 @@ No platform service contains game rules.
 
 ## Zoff in the Sky module
 
-Zoff in the Sky is a self-contained turn-based game module at
-`src/games/zoff-in-the-sky/`. It does not share rules code with Haken.
+Zoff in the Sky is a self-contained turn-based game module in
+`@spiele/game-zoff-in-the-sky`. It does not share rules code with Haken.
 
 ### State and phases
 
@@ -413,8 +511,8 @@ Zoff in the Sky is a self-contained turn-based game module at
 
 ### Registration and assets
 
-- The game is registered explicitly in `app/catalog.ts` with lazy dynamic import
-  of its session factory, matching the Haken chunk pattern.
+- The game is registered explicitly in `apps/shell/src/app/catalog.ts` with lazy dynamic import
+  of `@spiele/game-zoff-in-the-sky/session`, matching the Haken chunk pattern.
 - Card artwork is bundled under the module's `assets/` directory and referenced
   as static build inputs; there is no runtime asset fetch. Faces use stylized
   flat geometric, exaggerated, bold-outline, limited-palette sprites; edge

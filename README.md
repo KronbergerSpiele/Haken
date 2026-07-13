@@ -1,14 +1,23 @@
-# Haken
+# Spielesammlung
 
-Haken is a simultaneous battle between two fictional German AI models on one
-portrait-oriented phone. Sit at opposite ends and flick attacks and defenses
-into three system lanes. Most cards belong to one lane; costly wildcard cards
-can target any lane. Crash two opposing system zones to win. There are no turns.
+Browser-based collection of small multiplayer game prototypes. Haken is a
+simultaneous battle between two fictional German AI models on one
+portrait-oriented phone. Zoff in the Sky is a calm two-player card duel on one
+device. A shared launcher lets players choose a game and return to the
+collection without reloading the site.
 
-The game is a static, framework-free TypeScript site. It has no accounts,
-backend, tracking, or network multiplayer.
+The collection is a static TypeScript monorepo built with Vite. Shared UI uses
+Lit custom elements in `@spiele/ui` (light DOM only); there is no full
+application framework. It has no accounts, backend, tracking, or network
+multiplayer.
 
 ## Play
+
+Open the deployed site or run `pnpm dev` locally. The launcher lists every
+registered game with player count, orientation, and shared-device requirements.
+Use `?game=haken` or `?game=zoff-in-the-sky` to open a game directly.
+
+Haken quick start:
 
 1. Put the phone between both players in portrait orientation.
 2. Press **Los geht's**. The browser will offer fullscreen mode.
@@ -17,9 +26,6 @@ backend, tracking, or network multiplayer.
 4. Attacks fire when their countdown empties. A defense in that lane catches
    one attack.
 5. Crash two zones—Kontext, Logik, or Ausgabe—to win.
-
-Both players can drag cards at exactly the same time. Tapping a card exposes
-accessible lane and **Spielen** controls for players who do not want to flick.
 
 The complete rules, balance values, card catalog, timing model, and UX
 requirements are in the [game design document](DESIGN.md). Architecture and
@@ -41,25 +47,25 @@ pnpm dev
 Useful commands:
 
 ```bash
-pnpm test       # deterministic engine and DOM smoke tests
+pnpm test       # deterministic engine and DOM smoke tests across the workspace
 pnpm build      # type-check and create dist/
 pnpm preview    # serve the production build locally
 ```
 
-## Architecture
+## Monorepo layout
 
-- `src/game/types.ts` defines cards, players, center state, and commands.
-- `src/game/cards.ts` contains the symmetric tactical deck and balance constants.
-- `src/game/engine.ts` is the deterministic transition engine. It has no DOM
-  dependency and resolves simultaneous damage in batches.
-- `src/ui/flick-controller.ts` owns independent Pointer Event gestures.
-- `src/ui/render.ts` projects state into the two-sided accessible interface.
-- `src/main.ts` connects the animation clock, lifecycle, fullscreen, feedback,
-  rendering, and engine.
+| Package | Responsibility |
+| --- | --- |
+| `@spiele/shell` (`apps/shell`) | Vite entry, launcher host, router, session host, shell CSS |
+| `@spiele/ui` (`packages/ui`) | Shared Lit custom elements (light DOM): collection exit, launcher |
+| `@spiele/engine` (`packages/engine`) | Clock, contracts, input, seeded random |
+| `@spiele/graphics` (`packages/graphics`) | Shared primitives, effects, feedback, shared theme tokens |
+| `@spiele/game-haken` (`packages/game-haken`) | Haken rules, view, theme tokens, and styles |
+| `@spiele/game-zoff-in-the-sky` (`packages/game-zoff-in-the-sky`) | Zoff rules, view, theme tokens, styles, and card artwork |
 
-Card deadlines use monotonic timestamps. Pausing shifts every pending deadline,
-preventing hidden tabs from deciding a match. A seed controls deck shuffling so
-the same command stream produces the same result.
+Games register in `apps/shell/src/app/catalog.ts` with lazy dynamic imports so
+each game ships as its own Vite chunk. Production output is written to the
+repository-root `dist/` directory.
 
 ## GitHub Pages
 

@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow+Condensed:wght@600;700;800;900&display=swap');
+
+:root {
+  color: #fff8df;
+  background: #171410;
+  font-family: 'Barlow Condensed', Impact, sans-serif;
+  font-synthesis: none;
+  --ink: #171410;
+  --paper: #fff0bd;
+  --yellow: #ffc928;
+  --red: #e84a34;
+  --blue: #308ac4;
+  --green: #40a462;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  background:
+    radial-gradient(circle at 50% 50%, #403322 0 1px, transparent 2px) 0 0 / 12px 12px,
+    #171410;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button {
+  color: inherit;
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+

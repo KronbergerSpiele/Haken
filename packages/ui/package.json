@@ -1,0 +1,17 @@
+{
+  "name": "@spiele/ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./collection-exit": "./src/collection-exit.ts",
+    "./launcher": "./src/launcher.ts",
+    "./launcher-card": "./src/launcher-card.ts",
+    "./register": "./src/register.ts"
+  },
+  "dependencies": {
+    "@spiele/engine": "workspace:*",
+    "lit": "^3.3.3"
+  }
+}

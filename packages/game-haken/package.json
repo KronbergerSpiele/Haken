@@ -1,0 +1,18 @@
+{
+  "name": "@spiele/game-haken",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/session.ts",
+    "./session": "./src/session.ts",
+    "./theme": "./src/theme.ts",
+    "./styles.css": "./src/styles.css"
+  },
+  "dependencies": {
+    "@spiele/engine": "workspace:*",
+    "@spiele/graphics": "workspace:*",
+    "@spiele/ui": "workspace:*",
+    "lit": "^3.3.3"
+  }
+}

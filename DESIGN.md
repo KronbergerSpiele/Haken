@@ -34,7 +34,15 @@ The presentation combines German bureaucratic humor with cartoon AI chaos:
 overheated servers, stern guardrails, terminal symbols, impact stars, and absurd
 model names. It contains no gore and does not imitate or demean real people.
 
-## Match rules
+Zoff in the Sky is the second game in the collection. It is a local,
+single-round duel for two people on one portrait phone, inspired by Skyjo grid
+play and the non-transitive animal hierarchy from Frank's Zoo (*Zoff im Zoo*).
+Players alternate turns, manage hidden three-by-five grids, and try to finish
+with the lowest total value. The tone is playful sky-high zoo chaos with
+stylized flat geometric animal cards—exaggerated silhouettes, bold outlines,
+and a limited palette—and no text on the artwork.
+
+## Haken — match rules
 
 ### Objective
 
@@ -116,7 +124,7 @@ hiding the page freezes travel, regeneration, refills, and center deadlines.
 
 All values are balance constants. A typical match should last 90–150 seconds.
 
-## Screen and feedback
+## Haken — screen and feedback
 
 The board fills `100dvh` and respects safe-area insets. The upper player's
 controls are rotated 180 degrees. The shared center uses mirrored labels so each
@@ -133,10 +141,174 @@ replaces travel and shake effects with short fades. Large controls, high
 contrast, semantic buttons, visible focus, and live status announcements
 support non-gesture and assistive use.
 
+## Zoff in the Sky — match rules
+
+### Objective
+
+Each player owns a personal three-row by five-column grid of fifteen slots.
+Every slot starts hidden. The player with the lower sum of card values on their
+grid after one scored round wins. Equal totals are a draw.
+
+### Setup
+
+- Two players share one device in portrait orientation.
+- The match is a single round; there is no match clock.
+- Shuffle a fifty-nine-card deck from a reproducible match seed: five copies of
+  each of eleven ordinary species plus four Mosquitoes.
+- Deal fifteen cards face down into each grid, filling every slot. Place the
+  remaining cards face down as the draw pile.
+- Reveal exactly two hidden cards per player at seeded-random positions.
+- Turn one draw-pile card face up as the opening discard.
+- Choose the first player deterministically from match-seed parity.
+
+### Species, values, and deck
+
+Twelve species appear in the deck. Values apply only for end-of-round scoring:
+
+| Species | Value |
+| --- | --- |
+| Mosquito | −1 |
+| Fish, Mouse, Whale | 0 |
+| Hedgehog, Perch | 1 |
+| Fox, Lion, Seal | 2 |
+| Crocodile, Polar Bear | 3 |
+| Elephant | 4 |
+
+There is no Joker. Mosquito and Elephant have no special combo rules from
+Frank's Zoo.
+
+### Predator graph
+
+Eating uses the verified non-transitive predator graph below. Each row lists
+the predators that can eat that prey species:
+
+| Prey | Predators |
+| --- | --- |
+| Mosquito | Mouse, Hedgehog, Fish |
+| Mouse | Hedgehog, Polar Bear, Seal, Lion, Crocodile, Fox |
+| Hedgehog | Fox |
+| Fox | Polar Bear, Crocodile, Lion, Elephant |
+| Fish | Perch, Whale, Seal, Crocodile |
+| Perch | Polar Bear, Seal, Crocodile, Whale |
+| Crocodile | Elephant |
+| Lion | Elephant |
+| Seal | Polar Bear, Whale |
+| Polar Bear | Elephant, Whale |
+| Elephant | Mouse |
+| Whale | — |
+
+In a left-to-right chain, each face-up card on the right eats its immediate
+left neighbor when the right card's species is a listed predator of the left
+card's species.
+
+### Turn structure
+
+Players alternate turns. On a turn the active player chooses exactly one of
+these options:
+
+1. **Take discard** — remove the visible top discard card and hold it for
+   placement into one of the active player's occupied slots or empty gaps.
+2. **Inspect draw** — privately look at the top draw card without showing the
+   opponent, then either:
+   - place that card into an occupied slot or gap; or
+   - discard the drawn card face up and reveal one still-hidden card in the
+     active player's grid.
+
+**Placement** — a held discard or drawn card is always placed face up. Replacing
+an occupied slot—whether the old card is face up or still hidden—sends the
+replaced card face up to the discard pile. Placing into an empty gap discards
+nothing.
+
+**Stock safety** — during a normal turn, when the draw pile is empty and taking
+the visible discard leaves the discard pile empty, that pending discard cannot
+be placed into a gap; it must replace an occupied card so a visible discard
+remains. During the owed final turn, gap placement is allowed because scoring
+follows immediately.
+
+When the draw pile is empty, recycle all discard cards except the current
+visible top into a newly shuffled draw pile, leaving that top card as the only
+discard.
+
+### Horizontal chains
+
+After any placement or reveal, resolve chains on both grids in player order,
+scanning each row left to right. Remove the entire maximal contiguous run of
+three or more face-up cards where every card to the right eats its immediate
+left neighbor. Each qualifying run is cleared in one step; individual cards are
+not removed one at a time. Gaps break contiguity, so chain resolution never
+crosses an empty slot. Removed cards do not fall, slide, or snap closed; gaps
+stay empty and may be filled on later turns.
+
+### Final turn and scoring
+
+Whenever a player's grid has no hidden occupied cards after their action—including
+replacing their final hidden card with a face-up placement—the opponent receives
+exactly one more turn. After that turn, reveal every remaining hidden card,
+resolve all horizontal chains on both grids, sum each player's occupied slot
+values, and end the round. The lower sum wins; equal sums are a draw.
+
+## Zoff in the Sky — screen and feedback
+
+The board fills `100dvh` and respects safe-area insets. Landscape orientation
+displays a request to rotate.
+
+The active player sees their full grid and a compact read-only opponent grid.
+Inspected draw cards use pass-device privacy: only the active player may view
+the drawn card before placing or discarding it.
+
+Turn handoff and confirmation use a polished **board flip** transition so the
+active side reads upright after each change. Reduced-motion mode replaces the
+flip with a short fade or static state change that preserves the same
+information.
+
+Each card shows stylized flat geometric animal art: exaggerated silhouettes,
+bold outlines, and a limited palette in a board-game illustration style. Local
+optimized assets are text-free on the card faces; a separate card back is used
+for hidden slots.
+
+Eating relationships are communicated twice:
+
+- **Compact edge indicators** on each face-up card: miniature animal-art icons on
+  the left edge show prey the card can eat; icons on the right edge show
+  predators that can eat it. These are pictorial cues, not text abbreviations.
+- **Contextual valid-link connectors** that emphasize legal eat pairs among
+  currently adjacent face-up neighbors.
+
+Accessible labels and tooltips state the full species names and relationships
+in words. Color is never the only cue for who eats whom.
+
+Each board header shows a **current score** while the round is in progress:
+the sum of values on face-up cards plus a hidden-card count (for example,
+`12 + 3 hidden`). This is an interim tally only; it is explicitly not the
+final score while hidden cards remain. The exact total appears only after the
+automatic full reveal at round end.
+
+The draw pile and discard pile support **Pointer Event drag-and-drop** onto
+legal grid slots. A floating card preview follows the pointer; legal targets
+receive clear placement feedback. Dragging from the deck begins draw inspection
+with the same privacy rules as the existing flow. Dropping outside a legal slot
+leaves the pending decision available—it does not discard, cancel, or commit
+the action. Tap, button, and keyboard controls remain complete fallbacks with
+identical rules.
+
+After deterministic chain resolution, removed runs receive a playful eating
+animation—icon bites, pops, or similar emphasis on the cleared cards.
+Animations are presentation-only and never change or delay rule outcomes.
+Reduced-motion mode replaces motion with static text emphasis of the removal.
+
+Sound and vibration are optional and never required. Reduced-motion mode keeps
+chain removal and turn changes readable without relying on motion alone. Large
+controls, high contrast, semantic buttons, visible focus, and live status
+announcements support non-gesture and assistive use.
+
 ## Acceptance criteria
+
+### Collection
 
 - The launcher lists every registered game and communicates its player and
   device requirements before play.
+- The launcher scrolls vertically when its game cards exceed the available
+  viewport, including on small portrait phones.
 - Every registered game has a copyable deep link that works when opened in a
   new tab from the deployed repository subpath.
 - Launcher selection, browser Back/Forward, direct game links, and unknown game
@@ -145,6 +317,11 @@ support non-gesture and assistive use.
   game without reloading the page.
 - Shared presentation components remain consistent, while each game can provide
   its own theme and game-specific artwork.
+- Reduced motion and muted sound preserve all gameplay information.
+- A production build works from a GitHub repository subpath.
+
+### Haken
+
 - Two people can drag different cards at once; neither blocks the other.
 - A complete match is playable at 320×568 through 430×932 portrait sizes
   without document scrolling.
@@ -154,5 +331,46 @@ support non-gesture and assistive use.
 - Simultaneous lethal damage produces Doppel-K.O.
 - Hiding the page cannot resolve cards or regenerate resources.
 - Tap controls can complete a match without flick gestures.
-- Reduced motion and muted sound preserve all gameplay information.
-- A production build works from a GitHub repository subpath.
+
+### Zoff in the Sky
+
+- A complete single-round match is playable at 320×568 through 430×932 portrait
+  sizes without document scrolling.
+- Each grid uses fifteen fixed slots; gaps remain after chain removal and can
+  be filled later.
+- A turn accepts only the documented discard, inspect-and-place, or
+  inspect-discard-and-reveal actions.
+- Inspected draw cards stay private to the active player until placed or
+  discarded.
+- Setup deals an opening face-up discard, two seeded-random initial reveals per
+  player, and a first player chosen from match-seed parity.
+- Replaced occupied cards—face up or hidden—enter the discard pile face up;
+  placed cards are face up; placements into gaps do not discard.
+- Draw-pile recycle keeps the visible discard top and shuffles the rest back
+  into the draw pile.
+- When stock is exhausted, a held sole discard must replace an occupied card
+  during a normal turn; gap placement is allowed on the owed final turn.
+- Horizontal chains remove entire qualifying runs of three or more in one step;
+  multiple qualifying rows resolve in player and row order; gaps remain with no
+  falling or snapping.
+- Clearing every hidden occupied card after an action—including a face-up
+  replacement of the last hidden card—grants the opponent exactly one further
+  turn before automatic full reveal, chain resolution, and scoring.
+- Lowest total value wins; equal totals are a draw.
+- Same seed and command sequence produce the same grid, chains, and score.
+- Turn handoff uses a board flip transition; reduced-motion substitutes a short
+  fade or static state change with the same information.
+- Eating edge indicators use miniature animal-art icons for prey (left) and
+  predators (right), not text abbreviations; accessible labels and tooltips
+  state full species names and relationships without relying on color alone.
+- Board headers show visible subtotal plus hidden-card count during play; the
+  exact final score appears only after the end-of-round full reveal.
+- Draw and discard piles support pointer drag-and-drop to legal grid slots with
+  floating preview and legal-target feedback; dragging the deck starts
+  inspection; dropping outside a legal slot leaves the pending decision
+  available; tap, button, and keyboard paths remain complete fallbacks.
+- Chain removal plays a presentation-only eating animation after deterministic
+  resolution; reduced-motion uses static text emphasis instead.
+- All twelve species and the card back render from bundled local artwork with
+  stylized flat geometric, exaggerated, bold-outline, limited-palette faces and
+  no text on card faces.

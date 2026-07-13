@@ -14,6 +14,19 @@ export const CATALOG: readonly GameManifest[] = [
         createSession: createHakenSession,
       })),
   },
+  {
+    id: 'zoff-in-the-sky',
+    title: 'Zoff in the Sky',
+    description:
+      'Ruhiges Tier-Duell für zwei Personen an einem Handy. Verwalte verdeckte Karten und sammle möglichst wenige Punkte.',
+    players: { min: 2, max: 2 },
+    device: 'shared-screen',
+    orientation: 'portrait',
+    load: () =>
+      import('../games/zoff-in-the-sky/session').then(({ createZoffSession }) => ({
+        createSession: createZoffSession,
+      })),
+  },
 ];
 
 export function findManifest(id: string): GameManifest | undefined {

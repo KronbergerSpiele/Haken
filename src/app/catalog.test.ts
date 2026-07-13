@@ -6,6 +6,7 @@ describe('catalog', () => {
     const ids = allManifestIds();
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).toContain('haken');
+    expect(ids).toContain('zoff-in-the-sky');
   });
 
   it('loads every registered game module', async () => {

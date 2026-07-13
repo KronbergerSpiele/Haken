@@ -347,14 +347,17 @@ Zoff in the Sky is a self-contained turn-based game module at
 ### Presentation
 
 - The session applies a namespaced `zoff-in-the-sky` theme scope and CSS tokens.
+  Theme tokens expose a dark near-black background, flat panel surfaces, high-
+  contrast text, and cyan/magenta laser accent colors via `applyZoffTokens`.
 - `session.ts` routes click, keyboard, and pointer drag-and-drop input into
   reducer commands; there is no separate `controls.ts`.
 - Turn changes trigger a board-flip presentation effect; reduced-motion maps it
   to a short fade or static active-player emphasis.
 - The view renders the active player's full grid, a compact opponent grid, pass-
   device privacy for inspected draws, compact edge eating indicators as miniature
-  animal-art sprites, and stronger contextual valid-link connectors. Accessible
-  labels and tooltips mirror full species names and predator/prey relations.
+  animal-art sprites on dark tiles with subtle laser border accents, and stronger
+  contextual valid-link connectors. Accessible labels and tooltips mirror full
+  species names and predator/prey relations.
 - Each board header projects an interim score: visible face-up subtotal plus
   hidden occupied count. Final totals render only in the `finished` phase after
   full reveal and scoring.

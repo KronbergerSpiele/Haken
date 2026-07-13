@@ -79,6 +79,32 @@ describe('zoff session', () => {
     expect(root.querySelector('[data-draw]')).not.toBeNull();
   });
 
+  it('shows turn-complete feedback before the next player handoff', () => {
+    vi.useFakeTimers();
+    session = mountPlayableSession(root, 12);
+    const internal = session as unknown as {
+      game: { activePlayer: 0 | 1 };
+      handleEvents(events: GameEvent[], previousActive: 0 | 1): void;
+      draw(): void;
+    };
+    internal.game.activePlayer = 1;
+    internal.handleEvents([], 0);
+    internal.draw();
+
+    expect(root.querySelector('.zoff-turn-complete')).not.toBeNull();
+    expect(root.querySelector('.zoff-handoff')).not.toBeNull();
+    expect(root.querySelector('[data-confirm-handoff]')).toBeNull();
+    expect(root.querySelector('.zoff-game')).toBeNull();
+
+    vi.advanceTimersByTime(1_199);
+    expect(root.querySelector('.zoff-turn-complete')).not.toBeNull();
+    vi.advanceTimersByTime(1);
+
+    expect(root.querySelector('.zoff-turn-complete')).toBeNull();
+    expect(root.querySelector('[data-confirm-handoff]')).not.toBeNull();
+    vi.useRealTimers();
+  });
+
   it('exposes draggable pile sources after handoff', () => {
     session = new ZoffSession(createContext()) as ZoffSession;
     session.mount(root);
@@ -211,6 +237,7 @@ describe('zoff session', () => {
   });
 
   it('shows eating overlay on handoff after chain removal and keeps handoff usable', () => {
+    vi.useFakeTimers();
     session = new ZoffSession(createContext(12)) as ZoffSession;
     session.mount(root);
     root.querySelector<HTMLButtonElement>('[data-start]')!.click();
@@ -238,7 +265,11 @@ describe('zoff session', () => {
 
     expect(root.querySelector('.zoff-handoff')).not.toBeNull();
     expect(root.querySelector('[data-eating-overlay]')).not.toBeNull();
+    expect(root.querySelector('[data-confirm-handoff]')).toBeNull();
+
+    vi.advanceTimersByTime(1_200);
     expect(root.querySelector('[data-confirm-handoff]')).not.toBeNull();
+    vi.useRealTimers();
   });
 
   it('dismisses eating overlay after the presentation timer expires', () => {

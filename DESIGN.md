@@ -256,10 +256,12 @@ The active player sees their full grid and a compact read-only opponent grid.
 Inspected draw cards use pass-device privacy: only the active player may view
 the drawn card before placing or discarding it.
 
-Turn handoff and confirmation use a polished **board flip** transition so the
-active side reads upright after each change. Reduced-motion mode replaces the
-flip with a short fade or static state change that preserves the same
-information.
+After a player completes a turn, a 1.2-second **Zug beendet** confirmation is
+shown before the next-player handoff modal. The confirmation does not reveal the
+next player's board. Turn handoff and confirmation use a polished **board flip**
+transition so the active side reads upright after each change. Reduced-motion
+mode replaces the flip with a short fade or static state change that preserves
+the same information.
 
 Each card shows stylized flat geometric animal art: exaggerated silhouettes,
 bold outlines, and a limited palette in a board-game illustration style. Local
@@ -376,8 +378,10 @@ announcements support non-gesture and assistive use.
   turn before automatic full reveal, chain resolution, and scoring.
 - Lowest total value wins; equal totals are a draw.
 - Same seed and command sequence produce the same grid, chains, and score.
-- Turn handoff uses a board flip transition; reduced-motion substitutes a short
-  fade or static state change with the same information.
+- A 1.2-second turn-complete confirmation separates a completed turn from the
+  next-player handoff without revealing the next player's board; handoff uses a
+  board flip transition, while reduced-motion substitutes a short fade or
+  static state change with the same information.
 - Eating edge indicators use miniature animal-art icons for prey (left) and
   predators (right), not text abbreviations; accessible labels and tooltips
   state full species names and relationships without relying on color alone.

@@ -18,6 +18,7 @@ import { escapeHtml } from '../../graphics/primitives';
 
 export interface UiState {
   handoffConfirmed: boolean;
+  handoffPending: boolean;
   discardRevealMode: boolean;
   statusMessage: string;
   chainFeedback: string | null;
@@ -28,6 +29,7 @@ export interface UiState {
 
 export const INITIAL_UI: UiState = {
   handoffConfirmed: false,
+  handoffPending: false,
   discardRevealMode: false,
   statusMessage: '',
   chainFeedback: null,
@@ -261,6 +263,14 @@ function handoffMarkup(state: GameState): string {
   </main>`;
 }
 
+function turnCompleteMarkup(): string {
+  return `<main class="zoff-handoff zoff-turn-complete" aria-live="polite">
+    <p class="zoff-handoff__kicker">Zug beendet</p>
+    <h2>Gut gespielt!</h2>
+    <p class="zoff-handoff__text">Der nächste Zug wird vorbereitet.</p>
+  </main>`;
+}
+
 function setupMarkup(): string {
   return `<main class="zoff-splash">
     <div class="zoff-splash__sky" aria-hidden="true"></div>
@@ -328,13 +338,17 @@ export function eatingOverlaysMarkup(state: GameState, ui: UiState): string {
 
 function renderContent(state: GameState, ui: UiState): string {
   if (state.phase === 'setup') return setupMarkup();
+  if (ui.handoffPending) return turnCompleteMarkup();
   if (!ui.handoffConfirmed) return handoffMarkup(state);
   return playMarkup(state, ui);
 }
 
 export function applyPresentationClasses(root: HTMLElement, state: GameState, ui: UiState): void {
-  root.classList.toggle('zoff-root--handoff', state.phase !== 'setup' && !ui.handoffConfirmed);
-  root.classList.toggle('zoff-root--playing', ui.handoffConfirmed && state.phase !== 'setup');
+  root.classList.toggle(
+    'zoff-root--handoff',
+    state.phase !== 'setup' && !ui.handoffConfirmed && !ui.handoffPending,
+  );
+  root.classList.toggle('zoff-root--playing', ui.handoffConfirmed && !ui.handoffPending && state.phase !== 'setup');
   root.classList.toggle('zoff-root--turn-flip', ui.turnFlipActive);
   root.classList.toggle('zoff-root--eating-overlay', ui.eatingOverlayChains.length > 0);
 }

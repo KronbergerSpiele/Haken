@@ -131,7 +131,9 @@ describe('zoff session', () => {
     dispatchPointer('pointerdown', deck, { pointerId: 11, clientX: 10, clientY: 10, button: 0 });
 
     expect(root.querySelectorAll('[data-place]').length).toBeGreaterThan(0);
-    expect(root.querySelector('.zoff-private-decision')).not.toBeNull();
+    const privateDecision = root.querySelector('.zoff-private-decision');
+    expect(privateDecision).not.toBeNull();
+    expect(root.querySelector('.zoff-game__piles')?.contains(privateDecision!)).toBe(true);
     const preview = root.querySelector('.zoff-drag-preview');
     expect(preview).not.toBeNull();
     expect(root.contains(preview)).toBe(true);

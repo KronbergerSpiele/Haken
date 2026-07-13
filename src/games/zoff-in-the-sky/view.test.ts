@@ -146,15 +146,25 @@ describe('zoff view rendering', () => {
     expect(root.querySelector('.zoff-result')).not.toBeNull();
   });
 
-  it('keeps a stable five-track play grid with an empty decision slot', () => {
+  it('keeps a stable four-track play grid without a separate decision row', () => {
     const game = transition(createGame(12), { type: 'start' }).state;
     render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
     expect(root.querySelector('.zoff-game__opponent .zoff-board--compact')).not.toBeNull();
     expect(root.querySelector('.zoff-game__piles')).not.toBeNull();
     expect(root.querySelector('.zoff-pile-edge-gutter')).not.toBeNull();
-    expect(root.querySelector('.zoff-game__decision.zoff-game__decision--empty')).not.toBeNull();
+    expect(root.querySelector('.zoff-game__decision')).toBeNull();
     expect(root.querySelector('.zoff-game__active .zoff-board--active')).not.toBeNull();
     expect(root.querySelector('.zoff-game__status .zoff-status')).not.toBeNull();
+  });
+
+  it('orders discard before deck in the pile strip', () => {
+    const game = transition(createGame(12), { type: 'start' }).state;
+    render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
+    const discard = root.querySelector('.zoff-pile--discard')!;
+    const deck = root.querySelector('.zoff-pile--deck')!;
+    expect(
+      discard.compareDocumentPosition(deck) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it('renders active and compact boards with public piles after handoff', () => {
@@ -172,10 +182,14 @@ describe('zoff view rendering', () => {
     let game = transition(createGame(15), { type: 'start' }).state;
     game = transition(game, { type: 'draw', player: game.activePlayer }).state;
     render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
-    expect(root.querySelector('.zoff-private-decision')).not.toBeNull();
-    expect(root.querySelector('.zoff-private-decision .zoff-private-draw')).not.toBeNull();
-    expect(root.querySelector('.zoff-private-decision [data-discard-reveal]')).not.toBeNull();
+    const piles = root.querySelector('.zoff-game__piles')!;
+    const privateDecision = piles.querySelector('.zoff-private-decision');
+    expect(privateDecision).not.toBeNull();
+    expect(privateDecision?.querySelector('.zoff-private-draw')).not.toBeNull();
+    expect(privateDecision?.querySelector('[data-discard-reveal]')).not.toBeNull();
+    expect(root.querySelector('.zoff-piles--inspecting')).not.toBeNull();
     expect(root.querySelector('.zoff-game--inspecting')).not.toBeNull();
+    expect(root.querySelector('.zoff-game__decision')).toBeNull();
     expect(root.querySelector('.zoff-board--current-turn')).not.toBeNull();
   });
 

@@ -307,9 +307,11 @@ position, not fill color, is the primary cue.
 
 The active player's board receives a warm accent border and the **Am Zug** badge
 during their turn. Legal placement, reveal, and drag-target cells use stronger
-outline and inset feedback. The private draw decision panel is visually primary
-when inspecting a drawn card; the status line steps back to a lighter, smaller
-treatment so phase guidance does not compete with the hidden-card choice.
+outline and inset feedback. The pile strip presents the discard to the left of
+the draw pile. When inspecting a drawn card, its private decision controls use
+the space to the right of both piles instead of adding a new vertical area, so
+the boards do not shift. The private choice remains visually primary while the
+status line steps back to a lighter, smaller treatment.
 
 After deterministic chain resolution, removed runs receive a playful eating
 animation—icon bites, pops, or similar emphasis on the cleared cards.
@@ -399,6 +401,9 @@ announcements support non-gesture and assistive use.
   prey/predator cues rather than solid color blocks.
 - The active player's board is visually distinguished during their turn; private
   draw decisions outrank the status line in visual hierarchy.
+- The discard appears before the draw pile, and an inspected draw uses the
+  existing space to their right without adding a layout row or shifting either
+  board.
 - Chain removal plays a presentation-only eating animation after deterministic
   resolution; reduced-motion uses static text emphasis instead.
 - All twelve species and the card back render from bundled local artwork with

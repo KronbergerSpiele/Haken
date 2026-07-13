@@ -291,11 +291,11 @@ function turnCompleteMarkup(): string {
 
 function setupMarkup(): string {
   return `<main class="zoff-splash">
-    <div class="zoff-splash__sky" aria-hidden="true"></div>
+    <div class="zoff-splash__backdrop" aria-hidden="true"></div>
     <div class="zoff-splash__logo">
       <span>ZWEI SPIELER · EIN HANDY · EINE RUNDE</span>
       <h1>Zoff in the Sky</h1>
-      <p>Tierisches Geduldspiel hoch über den Wolken</p>
+      <p>Laser-Tierduell in der Neon-Matrix</p>
     </div>
     <ol class="zoff-how-to">
       <li><b>1</b> Niedrigste Punktzahl gewinnt</li>

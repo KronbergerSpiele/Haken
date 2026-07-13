@@ -272,6 +272,32 @@ their callbacks cannot mutate game state. Rule outcomes first produce semantic
 game events, then the view maps those events to effects. Skipped or disabled
 effects therefore cannot alter a match.
 
+### Interaction feedback and layering
+
+Game views model presentation transitions separately from reducer state. A
+routine shared-device turn change may retain the outgoing perspective while a
+short toast is shown, disable command-producing input for that interval, and
+then switch perspective with a flip or reduced-motion fade. Full-screen
+interstitials are not the default: a game introduces one only when its state
+contract contains information that must remain hidden until explicit handoff,
+or when a blocking acknowledgement is required. Presentation delays never
+postpone, replay, or reorder reducer transitions.
+
+Each theme defines a small named z-index scale instead of scattering unrelated
+numeric values through component rules. The scale orders at least board
+content, in-card indicators, gameplay effects, blocking results, compact
+notices, persistent navigation, and pointer-drag previews. Components that
+create stacking contexts through transforms, opacity, filters, or positioned
+ancestors must be checked against that scale; DOM order alone is not treated as
+the layering contract.
+
+Legal-action feedback uses a theme's positive interaction token consistently
+for hover, focus, tap selection, reveal targets, and drag targets. Warning and
+destructive tokens are kept separate. During drag, legality may be exposed
+subtly on all available targets, but only the current drop target receives the
+strong state. CSS selectors must avoid combining multiple strong outlines or
+shadows on one element.
+
 The library uses DOM/SVG initially because it integrates with the existing
 accessible interface and is adequate for small boards. A Canvas renderer is not
 part of the common contract. A game that proves it needs Canvas may own one
@@ -428,7 +454,8 @@ The following automated boundaries are required:
 - runtime tests verify command ordering, seeded randomness, pause offsets,
   single-session ownership, and cleanup;
 - graphics tests verify safe text insertion, effect cancellation, theme
-  scoping, node caps, and reduced-motion mappings;
+  scoping, node caps, reduced-motion mappings, semantic interaction colors, and
+  named layer ordering for overlapping feedback;
 - catalog tests verify unique IDs, valid metadata, lazy-load success, and that
   every registered game satisfies the contract;
 - router tests verify query parsing, subpath-safe URL generation, unknown IDs,

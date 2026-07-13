@@ -10,6 +10,29 @@ The collection is deployed as a static site so a current build can be opened
 from a phone while travelling. Installing the site, creating an account, and
 connecting to a backend are not required.
 
+### Shared interaction principles
+
+Games use the smallest interruption that still protects private information and
+makes state changes understandable. Routine turn changes should keep the board
+visible and use compact, non-blocking feedback such as a toast followed by a
+clear transition. A full-screen interstitial or confirmation step is reserved
+for moments where revealing the underlying screen would expose private state,
+where the next player must explicitly confirm readiness, or where play cannot
+safely continue without a decision.
+
+Interaction colors have stable meanings within each game. A valid target uses
+one consistent positive accent across pointer, touch, and keyboard paths;
+warning or destructive colors are not reused for valid actions. When several
+targets are legal, passive targets remain visually quiet and the currently
+focused or aimed target receives the strongest emphasis. Multiple strong
+outlines, glows, and state layers must not stack on the same control.
+
+Transient feedback follows a deliberate visual order: board content and card
+cues stay below gameplay effects, compact notices remain readable above those
+effects, and dragged objects plus essential navigation stay on top. Color,
+motion, and layer position supplement text or symbols rather than carrying
+gameplay meaning alone.
+
 ### Launcher and game links
 
 The launcher is the collection's home screen. It presents every available game

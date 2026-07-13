@@ -1,0 +1,13 @@
+{
+  "name": "@spiele/engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./contracts": "./src/contracts.ts",
+    "./runtime": "./src/runtime.ts",
+    "./random": "./src/random.ts",
+    "./input": "./src/input.ts"
+  }
+}

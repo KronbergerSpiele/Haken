@@ -1,0 +1,16 @@
+{
+  "name": "@spiele/graphics",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./theme": "./src/theme.ts",
+    "./primitives": "./src/primitives.ts",
+    "./effects": "./src/effects.ts",
+    "./feedback": "./src/feedback.ts"
+  },
+  "dependencies": {
+    "@spiele/engine": "workspace:*"
+  }
+}

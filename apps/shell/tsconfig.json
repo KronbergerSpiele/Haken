@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "noEmit": false
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../../packages/engine" },
+    { "path": "../../packages/graphics" },
+    { "path": "../../packages/ui" },
+    { "path": "../../packages/game-haken" },
+    { "path": "../../packages/game-zoff-in-the-sky" }
+  ]
+}

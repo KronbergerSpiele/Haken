@@ -1,0 +1,1144 @@
+[data-theme='zoff-in-the-sky'] {
+  --zoff-bg-top: #080c14;
+  --zoff-bg-bottom: #0d1424;
+  --zoff-panel: rgb(18 26 46 / 92%);
+  --zoff-outline: #3d5080;
+  --zoff-text-muted: rgb(232 244 255 / 72%);
+  --zoff-shadow: 2px 3px 0 rgb(0 0 0 / 45%);
+  --zoff-edge-gutter: max(14px, calc(env(safe-area-inset-left) + 10px));
+  --zoff-z-cell-indicators: 2;
+  --zoff-z-eating-overlay: 15;
+  --zoff-z-result: 20;
+  --zoff-z-landscape: 25;
+  --zoff-z-turn-toast: 28;
+  --zoff-z-collection-exit: 30;
+  --zoff-z-drag-preview: 40;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  color: var(--zoff-text, #e8f4ff);
+  background:
+    linear-gradient(rgb(0 229 255 / 2.5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 229 255 / 2.5%) 1px, transparent 1px),
+    linear-gradient(180deg, var(--zoff-bg-top), var(--zoff-bg-bottom));
+  background-size: 28px 28px, 28px 28px, 100% 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+[data-theme='zoff-in-the-sky'] .collection-exit {
+  z-index: var(--zoff-z-collection-exit);
+  border: 2px solid var(--zoff-laser-magenta, #ff2d95);
+  background: rgb(18 26 46 / 94%);
+  color: var(--zoff-text, #e8f4ff);
+  box-shadow:
+    0 0 10px rgb(255 45 149 / 28%),
+    2px 3px 0 rgb(0 0 0 / 45%);
+}
+
+[data-theme='zoff-in-the-sky'].zoff-root--playing {
+  touch-action: pan-y pinch-zoom;
+}
+
+[data-theme='zoff-in-the-sky'].zoff-root--dragging {
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-splash {
+  position: relative;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: clamp(12px, 2.5dvh, 22px);
+  min-height: 100%;
+  padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-splash__backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 55% 38% at 50% 0%, rgb(0 229 255 / 14%), transparent 68%),
+    radial-gradient(ellipse 48% 32% at 82% 88%, rgb(255 45 149 / 9%), transparent 62%),
+    radial-gradient(ellipse 38% 28% at 14% 72%, rgb(0 229 255 / 7%), transparent 58%);
+  opacity: 1;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-splash__logo,
+[data-theme='zoff-in-the-sky'] .zoff-how-to,
+[data-theme='zoff-in-the-sky'] .zoff-start-button,
+[data-theme='zoff-in-the-sky'] .zoff-rotate-note {
+  position: relative;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-splash__logo span {
+  font-size: 0.9rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--zoff-laser-cyan, #00e5ff);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-splash__logo h1 {
+  margin: 0;
+  font-family: 'Archivo Black', Impact, sans-serif;
+  font-size: clamp(2rem, 9vw, 3rem);
+  line-height: 0.95;
+  color: var(--zoff-text, #e8f4ff);
+  text-shadow: 0 0 18px rgb(0 229 255 / 35%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-splash__logo p,
+[data-theme='zoff-in-the-sky'] .zoff-rotate-note {
+  margin: 0;
+  max-width: 22rem;
+  line-height: 1.35;
+  color: var(--zoff-text-muted);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-how-to {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 22rem;
+  text-align: left;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-how-to li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 8px 10px;
+  border: 2px solid var(--zoff-outline);
+  background: var(--zoff-panel);
+  box-shadow: inset 0 0 0 1px rgb(0 229 255 / 10%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-how-to b {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 2px;
+  border: 2px solid var(--zoff-laser-cyan, #00e5ff);
+  background: rgb(0 229 255 / 18%);
+  color: var(--zoff-laser-cyan, #00e5ff);
+  font-size: 0.95rem;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-start-button,
+[data-theme='zoff-in-the-sky'] .zoff-action {
+  border: 2px solid var(--zoff-laser-cyan, #00e5ff);
+  background: var(--zoff-panel-solid, #121a2e);
+  color: var(--zoff-text, #e8f4ff);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow:
+    0 0 10px rgb(0 229 255 / 22%),
+    var(--zoff-shadow);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-start-button:focus-visible,
+[data-theme='zoff-in-the-sky'] .zoff-action:focus-visible,
+[data-theme='zoff-in-the-sky'] .zoff-cell--placeable:focus-visible,
+[data-theme='zoff-in-the-sky'] .zoff-cell--revealable:focus-visible,
+[data-theme='zoff-in-the-sky'] .collection-exit:focus-visible {
+  outline: 2px solid var(--zoff-laser-cyan, #00e5ff);
+  outline-offset: 2px;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-start-button {
+  min-height: 48px;
+  padding: 10px 22px;
+  font-size: 1.1rem;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-game {
+  position: relative;
+  display: grid;
+  grid-template-areas:
+    'opponent'
+    'piles'
+    'active'
+    'status';
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  padding:
+    max(44px, calc(env(safe-area-inset-top) + 34px))
+    max(8px, env(safe-area-inset-right))
+    max(8px, env(safe-area-inset-bottom))
+    max(8px, env(safe-area-inset-left));
+  overflow: hidden;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-game__opponent {
+  grid-area: opponent;
+  min-height: 0;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-game__piles {
+  grid-area: piles;
+  min-height: 0;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-game__active {
+  grid-area: active;
+  min-height: 0;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-game__status {
+  grid-area: status;
+  min-height: 0;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board {
+  display: grid;
+  gap: 4px;
+  min-height: 0;
+  padding: 6px;
+  border: 2px solid var(--zoff-outline);
+  background: var(--zoff-panel);
+  box-shadow: inset 0 0 0 1px rgb(0 229 255 / 8%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--current-turn {
+  border-color: var(--zoff-laser-cyan, #00e5ff);
+  box-shadow:
+    0 0 14px rgb(0 229 255 / 32%),
+    inset 0 0 0 1px rgb(0 229 255 / 18%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--active.zoff-board--current-turn {
+  border-width: 2px;
+  background: rgb(18 26 46 / 96%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--compact {
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-board__header {
+  font-size: 0.75rem;
+  line-height: 1.1;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-board__turn {
+  font-size: 0.62rem;
+  padding: 1px 6px;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board__score {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  opacity: 0.95;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-board__score {
+  font-size: 0.68rem;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board__turn {
+  padding: 2px 8px;
+  border: 2px solid var(--zoff-laser-cyan, #00e5ff);
+  background: rgb(0 229 255 / 16%);
+  color: var(--zoff-laser-cyan, #00e5ff);
+  font-size: 0.75rem;
+  box-shadow: 0 0 8px rgb(0 229 255 / 30%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-grid {
+  display: grid;
+  gap: 4px;
+  min-height: 0;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-grid-row {
+  position: relative;
+  display: grid;
+  gap: 2px;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-grid-cells {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-grid-cells {
+  gap: 2px;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 4;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 2px solid var(--zoff-outline);
+  background: #0f1628;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-cell {
+  aspect-ratio: unset;
+  height: clamp(20px, 6dvh, 32px);
+  max-height: 32px;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-card-face,
+[data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-card-back {
+  grid-template-rows: 1fr;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-cell--gap {
+  background:
+    repeating-linear-gradient(45deg, rgb(0 229 255 / 10%) 0 4px, transparent 4px 8px),
+    #0a0f1a;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-cell--placeable {
+  box-shadow: inset 0 0 0 2px var(--zoff-laser-cyan, #00e5ff);
+  outline: 2px solid rgb(0 229 255 / 55%);
+  outline-offset: 1px;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-cell--revealable {
+  box-shadow: inset 0 0 0 2px var(--zoff-laser-cyan, #00e5ff);
+  outline: 2px solid rgb(0 229 255 / 55%);
+  outline-offset: 1px;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-cell-gap {
+  font-size: 1.4rem;
+  line-height: 1;
+  opacity: 0.5;
+  color: var(--zoff-laser-cyan, #00e5ff);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-card-face,
+[data-theme='zoff-in-the-sky'] .zoff-card-back {
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-card-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: 400% 300%;
+  background-position: var(--zoff-sprite-x) var(--zoff-sprite-y);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-card-back .zoff-card-art {
+  background-size: cover;
+  background-position: center;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-cell--placeable,
+[data-theme='zoff-in-the-sky'] .zoff-cell--revealable {
+  cursor: pointer;
+  outline-offset: 2px;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-card-caption {
+  display: grid;
+  gap: 0;
+  padding: 1px 2px;
+  background: rgb(8 12 20 / 92%);
+  color: var(--zoff-text, #e8f4ff);
+  text-align: center;
+  line-height: 1.05;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-card-caption {
+  display: none;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-card-caption strong {
+  font-size: 0.55rem;
+  text-transform: uppercase;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-card-caption em {
+  font-style: normal;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eat-indicators {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  pointer-events: none;
+  z-index: var(--zoff-z-cell-indicators);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-eat-indicators {
+  display: none;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eat-indicators__prey,
+[data-theme='zoff-in-the-sky'] .zoff-eat-indicators__predators {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px 1px;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eat-glyph,
+[data-theme='zoff-in-the-sky'] .zoff-eat-icon {
+  display: block;
+  width: 0.92rem;
+  height: 0.92rem;
+  border: 1.5px solid var(--zoff-outline);
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #1a2438;
+  box-shadow: 0 0 4px rgb(0 0 0 / 35%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eat-icon--prey {
+  border-left: 2px solid var(--zoff-laser-cyan, #00e5ff);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eat-icon__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: 400% 300%;
+  background-position: var(--zoff-sprite-x) var(--zoff-sprite-y);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eat-icon--predator {
+  border-right: 2px solid var(--zoff-laser-magenta, #ff2d95);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-grid-links {
+  position: relative;
+  height: 0.55rem;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eat-link {
+  position: absolute;
+  top: 0;
+  left: calc((var(--zoff-link-col) + 1) * 20% - 2%);
+  width: 20%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transform: translateX(-50%);
+  color: var(--zoff-laser-magenta, #ff2d95);
+  font-weight: 900;
+  font-size: 0.65rem;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eat-link--chain {
+  color: var(--zoff-laser-cyan, #00e5ff);
+  font-size: 0.7rem;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eat-link__arrow {
+  padding: 0 3px;
+  border: 2px solid currentcolor;
+  background: rgb(18 26 46 / 92%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eat-link__chain {
+  padding: 0 3px;
+  border: 1px solid currentcolor;
+  background: rgb(18 26 46 / 92%);
+  white-space: nowrap;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-piles {
+  display: grid;
+  grid-template-columns: var(--zoff-edge-gutter) auto auto 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px 6px 0;
+  border: 2px solid var(--zoff-outline);
+  background: var(--zoff-panel);
+  box-shadow: inset 0 0 0 1px rgb(0 229 255 / 8%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-pile-edge-gutter {
+  width: 100%;
+  min-height: 1px;
+  pointer-events: none;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-pile-strip-side {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  min-height: 0;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-pile {
+  position: relative;
+  width: clamp(42px, 12vw, 58px);
+  aspect-ratio: 3 / 4;
+  border: 2px solid var(--zoff-outline);
+  background: #0f1628;
+  overflow: hidden;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-pile-count {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  padding: 1px 4px;
+  border: 1px solid var(--zoff-laser-cyan, #00e5ff);
+  background: rgb(8 12 20 / 92%);
+  color: var(--zoff-laser-cyan, #00e5ff);
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-pile-empty {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-pile--draggable {
+  cursor: grab;
+  touch-action: none;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-pile--draggable:active {
+  cursor: grabbing;
+}
+
+[data-theme='zoff-in-the-sky'].zoff-root--dragging .zoff-cell--placeable:not(.zoff-cell--drag-aimed) {
+  box-shadow: inset 0 0 0 1px rgb(0 229 255 / 30%);
+  outline: 1px solid rgb(0 229 255 / 22%);
+  outline-offset: 1px;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-cell--drag-aimed {
+  box-shadow: inset 0 0 0 3px var(--zoff-laser-cyan, #00e5ff);
+  outline: 2px solid var(--zoff-laser-cyan, #00e5ff);
+  outline-offset: 1px;
+  transform: scale(1.04);
+  z-index: calc(var(--zoff-z-cell-indicators) + 1);
+}
+
+[data-theme='zoff-in-the-sky'].zoff-root--dragging .zoff-pile--draggable {
+  outline: 2px solid var(--zoff-laser-cyan, #00e5ff);
+  outline-offset: 2px;
+  box-shadow: 0 0 10px rgb(0 229 255 / 28%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-drag-preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--zoff-z-drag-preview);
+  width: clamp(48px, 14vw, 72px);
+  aspect-ratio: 3 / 4;
+  pointer-events: none;
+  border: 2px solid var(--zoff-laser-cyan, #00e5ff);
+  background: #0f1628;
+  box-shadow:
+    0 0 16px rgb(0 229 255 / 35%),
+    0 10px 24px rgb(0 0 0 / 45%);
+  opacity: 0.96;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlays {
+  position: absolute;
+  inset: 0;
+  z-index: var(--zoff-z-eating-overlay);
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 16px;
+  text-align: center;
+  background: rgb(8 12 20 / 88%);
+  pointer-events: none;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlays--above-result {
+  z-index: calc(var(--zoff-z-result) + 1);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlay {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  max-width: 22rem;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlay__row {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlay__burst {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 2px solid var(--zoff-laser-magenta, #ff2d95);
+  background: rgb(18 26 46 / 96%);
+  box-shadow:
+    0 0 18px rgb(255 45 149 / 28%),
+    var(--zoff-shadow);
+  animation: zoff-chain-pop 0.55s ease-out;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlay__burst .zoff-eat-icon {
+  width: 2.4rem;
+  height: 2.4rem;
+  animation: zoff-chain-bite 0.55s ease-out;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-chain-bite {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--zoff-laser-magenta, #ff2d95);
+  animation: zoff-chain-arrow 0.55s ease-out;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlay__label {
+  margin: 0;
+  font-family: 'Archivo Black', Impact, sans-serif;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  color: var(--zoff-laser-cyan, #00e5ff);
+  text-shadow: 0 0 12px rgb(0 229 255 / 35%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-turn-toast {
+  position: absolute;
+  right: max(8px, env(safe-area-inset-right));
+  bottom: max(8px, env(safe-area-inset-bottom));
+  left: max(8px, env(safe-area-inset-left));
+  z-index: var(--zoff-z-turn-toast);
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  padding: 10px 14px;
+  border: 2px solid var(--zoff-laser-cyan, #00e5ff);
+  background: rgb(8 12 20 / 94%);
+  box-shadow:
+    0 0 14px rgb(0 229 255 / 28%),
+    var(--zoff-shadow);
+  pointer-events: none;
+  text-align: center;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-turn-toast__text {
+  margin: 0;
+  font-family: 'Archivo Black', Impact, sans-serif;
+  font-size: clamp(1rem, 4.5vw, 1.25rem);
+  line-height: 1.15;
+  color: var(--zoff-laser-cyan, #00e5ff);
+  text-shadow: 0 0 12px rgb(0 229 255 / 35%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-turn-toast__note {
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--zoff-laser-cyan, #00e5ff);
+  background: rgb(0 229 255 / 10%);
+  color: var(--zoff-laser-cyan, #00e5ff);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+[data-theme='zoff-in-the-sky'].zoff-root--turn-toast .zoff-game {
+  pointer-events: none;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-private-draw__hint {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--zoff-laser-magenta, #ff2d95);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-eating-overlay__names {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--zoff-text-muted);
+}
+
+@keyframes zoff-chain-pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.2;
+  }
+
+  70% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes zoff-chain-bite {
+  0% {
+    transform: scale(0.5) rotate(-8deg);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.12) rotate(4deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+@keyframes zoff-chain-arrow {
+  0% {
+    transform: translateX(-8px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+[data-theme='zoff-in-the-sky'].zoff-root--turn-flip .zoff-game {
+  animation: zoff-turn-flip 0.5s ease-out;
+  transform-origin: center center;
+}
+
+@keyframes zoff-turn-flip {
+  0% {
+    transform: perspective(900px) rotateY(88deg);
+    opacity: 0.35;
+  }
+
+  100% {
+    transform: perspective(900px) rotateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes zoff-turn-fade {
+  0% {
+    opacity: 0.2;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='zoff-in-the-sky'].zoff-root--turn-flip .zoff-game {
+    animation: zoff-turn-fade 0.2s ease-out;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-eating-overlay__burst,
+  [data-theme='zoff-in-the-sky'] .zoff-eating-overlay__burst .zoff-eat-icon,
+  [data-theme='zoff-in-the-sky'] .zoff-chain-bite {
+    animation: none;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-cell--drag-aimed {
+    transform: none;
+  }
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-pile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-action {
+  min-height: 40px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-action--primary {
+  background: rgb(0 229 255 / 18%);
+  border-color: var(--zoff-laser-cyan, #00e5ff);
+  color: var(--zoff-laser-cyan, #00e5ff);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-private-decision {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-piles--inspecting {
+  border-left: 4px solid var(--zoff-laser-magenta, #ff2d95);
+  background: rgb(18 26 46 / 96%);
+  box-shadow:
+    0 0 14px rgb(255 45 149 / 22%),
+    inset 0 0 0 1px rgb(0 229 255 / 10%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-piles--inspecting .zoff-private-decision {
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-private-decision .zoff-private-draw {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-private-decision .zoff-private-draw__hint {
+  margin: 0;
+  max-width: 5.5rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-private-decision .zoff-card-face {
+  flex-shrink: 0;
+  width: clamp(42px, 12vw, 58px);
+  aspect-ratio: 3 / 4;
+  border: 2px solid var(--zoff-laser-cyan, #00e5ff);
+  background: #0f1628;
+  box-shadow: 0 0 10px rgb(0 229 255 / 25%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-private-decision__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-private-draw {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  padding: 6px;
+  border: 2px dashed var(--zoff-laser-magenta, #ff2d95);
+  background: rgb(18 26 46 / 88%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-private-draw .zoff-card-face {
+  width: clamp(72px, 24vw, 110px);
+  aspect-ratio: 3 / 4;
+  border: 2px solid var(--zoff-laser-cyan, #00e5ff);
+  background: #0f1628;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-status {
+  padding: 4px 8px;
+  border: 1px solid var(--zoff-outline);
+  background: rgb(18 26 46 / 72%);
+  font-size: 0.78rem;
+  line-height: 1.25;
+  color: var(--zoff-text-muted);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-game--inspecting .zoff-status {
+  font-size: 0.72rem;
+  opacity: 0.78;
+  border-style: dashed;
+  background: rgb(8 12 20 / 58%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-landscape-warning {
+  display: none;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-result {
+  position: absolute;
+  inset: 0;
+  z-index: var(--zoff-z-result);
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+  background: rgb(8 12 20 / 92%);
+  color: var(--zoff-text, #e8f4ff);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-result__kicker {
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--zoff-laser-magenta, #ff2d95);
+  opacity: 0.95;
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-result h2 {
+  margin: 0;
+  font-family: 'Archivo Black', Impact, sans-serif;
+  font-size: clamp(1.6rem, 7vw, 2.4rem);
+  text-shadow: 0 0 16px rgb(0 229 255 / 30%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-result__scores,
+[data-theme='zoff-in-the-sky'] .zoff-result__chains-summary,
+[data-theme='zoff-in-the-sky'] .zoff-result__chains {
+  margin: 0;
+  max-width: 22rem;
+  line-height: 1.35;
+}
+
+@media (orientation: landscape) {
+  [data-theme='zoff-in-the-sky'] .zoff-landscape-warning {
+    position: absolute;
+    inset: 0;
+    z-index: var(--zoff-z-landscape);
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 8px;
+    padding: 20px;
+    text-align: center;
+    background: rgb(8 12 20 / 94%);
+    color: var(--zoff-text, #e8f4ff);
+    border: 2px solid var(--zoff-laser-magenta, #ff2d95);
+    box-shadow: inset 0 0 40px rgb(255 45 149 / 12%);
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-landscape-warning b {
+    font-family: 'Archivo Black', Impact, sans-serif;
+    font-size: clamp(1.4rem, 6vw, 2rem);
+    color: var(--zoff-laser-cyan, #00e5ff);
+    text-shadow: 0 0 14px rgb(0 229 255 / 35%);
+  }
+}
+
+@media (max-height: 700px) {
+  [data-theme='zoff-in-the-sky'] .zoff-game {
+    gap: 4px;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board {
+    padding: 4px;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board__score {
+    font-size: 0.72rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-board__score {
+    font-size: 0.62rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-eat-icon {
+    width: 0.82rem;
+    height: 0.82rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-cell {
+    height: clamp(18px, 5.5dvh, 28px);
+    max-height: 28px;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-grid {
+    gap: 2px;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board--active .zoff-grid {
+    gap: 3px;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board--active .zoff-grid-cells {
+    gap: 3px;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-grid-links {
+    height: 0.45rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-piles {
+    padding: 4px 6px;
+    gap: 6px;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-pile {
+    width: clamp(38px, 11vw, 52px);
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-private-decision {
+    gap: 6px;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-private-decision .zoff-card-face {
+    width: clamp(38px, 11vw, 52px);
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-action {
+    min-height: 36px;
+    font-size: 0.75rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-status {
+    font-size: 0.78rem;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-height: 600px) {
+  [data-theme='zoff-in-the-sky'] {
+    --zoff-edge-gutter: max(10px, calc(env(safe-area-inset-left) + 6px));
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-game {
+    gap: 2px;
+    padding-top: max(38px, calc(env(safe-area-inset-top) + 28px));
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board__score {
+    font-size: 0.68rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-board__score {
+    font-size: 0.58rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-eat-icon {
+    width: 0.76rem;
+    height: 0.76rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-cell {
+    height: clamp(16px, 4.8dvh, 24px);
+    max-height: 24px;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-board__header {
+    font-size: 0.68rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board__header {
+    font-size: 0.78rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board--active {
+    padding: 3px;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board--active .zoff-grid-cells {
+    gap: 2px;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-grid-links {
+    height: 0.35rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-eat-link {
+    font-size: 0.58rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-piles {
+    padding: 3px 5px;
+    gap: 4px;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-pile {
+    width: clamp(34px, 10vw, 44px);
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-private-decision .zoff-private-draw__hint {
+    font-size: 0.65rem;
+    max-width: 4.5rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-private-decision .zoff-card-face {
+    width: clamp(34px, 10vw, 44px);
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-action {
+    min-height: 34px;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-status {
+    font-size: 0.72rem;
+    line-height: 1.2;
+    padding: 2px 5px;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-card-caption strong {
+    font-size: 0.5rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-card-caption em {
+    font-size: 0.58rem;
+  }
+}

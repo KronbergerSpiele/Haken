@@ -1,13 +1,19 @@
-import { render as litRender } from 'lit';
+import { noChange, render as litRender } from 'lit';
+import { LightDomElement } from '@spiele/ui';
 import type { GameState } from './model';
 import type { UiState } from './view';
 import { zoffViewTemplate } from './view-templates';
 
 export const SPIELE_ZOFF_VIEW_TAG = 'spiele-zoff-view';
 
-export class SpieleZoffView extends HTMLElement {
-  connectedCallback(): void {
+export class SpieleZoffView extends LightDomElement {
+  override connectedCallback(): void {
+    super.connectedCallback();
     this.style.display = 'contents';
+  }
+
+  override render() {
+    return noChange;
   }
 
   /** Synchronously commits the Lit template into the light DOM. */

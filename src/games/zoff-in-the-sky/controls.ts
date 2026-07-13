@@ -27,6 +27,7 @@ export interface ZoffDragCallbacks {
 
 const MOVE_THRESHOLD = 6;
 const CLICK_SUPPRESS_MS = 320;
+export const ZOFF_DRAGGING_CLASS = 'zoff-root--dragging';
 
 export class ZoffDragController {
   private drag: ActiveDrag | null = null;
@@ -56,6 +57,7 @@ export class ZoffDragController {
     if (this.disposed) return;
     this.disposed = true;
     this.cancel();
+    this.clearDraggingClass();
     this.root.removeEventListener('pointerdown', this.onPointerDown);
     this.detachWindowListeners();
   }
@@ -98,6 +100,7 @@ export class ZoffDragController {
       preview,
     };
 
+    this.root.classList.add(ZOFF_DRAGGING_CLASS);
     this.attachWindowListeners();
     this.updateHighlights(event.clientX, event.clientY);
   };
@@ -243,6 +246,7 @@ export class ZoffDragController {
     drag.preview.remove();
     this.drag = null;
     this.clearHighlights();
+    this.clearDraggingClass();
     this.detachWindowListeners();
 
     if (
@@ -251,6 +255,10 @@ export class ZoffDragController {
     ) {
       this.root.releasePointerCapture(drag.pointerId);
     }
+  }
+
+  private clearDraggingClass(): void {
+    this.root.classList.remove(ZOFF_DRAGGING_CLASS);
   }
 
   private attachWindowListeners(): void {

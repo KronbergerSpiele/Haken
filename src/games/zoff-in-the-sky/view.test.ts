@@ -38,6 +38,7 @@ describe('zoff graphics helpers', () => {
     expect(markup).not.toContain('>Fu<');
     expect(markup).not.toContain('zoff-eat-glyph');
     expect(markup).toContain('role="img"');
+    expect(markup).toContain('zoff-eat-icon__art');
   });
 
   it('renders multiple simultaneous chain groups with row labels', () => {
@@ -150,6 +151,7 @@ describe('zoff view rendering', () => {
     render(root, game, { ...INITIAL_UI, handoffConfirmed: true });
     expect(root.querySelector('.zoff-game__opponent .zoff-board--compact')).not.toBeNull();
     expect(root.querySelector('.zoff-game__piles')).not.toBeNull();
+    expect(root.querySelector('.zoff-pile-edge-gutter')).not.toBeNull();
     expect(root.querySelector('.zoff-game__decision.zoff-game__decision--empty')).not.toBeNull();
     expect(root.querySelector('.zoff-game__active .zoff-board--active')).not.toBeNull();
     expect(root.querySelector('.zoff-game__status .zoff-status')).not.toBeNull();
@@ -173,6 +175,8 @@ describe('zoff view rendering', () => {
     expect(root.querySelector('.zoff-private-decision')).not.toBeNull();
     expect(root.querySelector('.zoff-private-decision .zoff-private-draw')).not.toBeNull();
     expect(root.querySelector('.zoff-private-decision [data-discard-reveal]')).not.toBeNull();
+    expect(root.querySelector('.zoff-game--inspecting')).not.toBeNull();
+    expect(root.querySelector('.zoff-board--current-turn')).not.toBeNull();
   });
 
   it('does not mark stock-unsafe gaps as placeable while occupied targets remain selectable', () => {

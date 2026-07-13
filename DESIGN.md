@@ -291,6 +291,24 @@ leaves the pending decision available—it does not discard, cancel, or commit
 the action. Tap, button, and keyboard controls remain complete fallbacks with
 identical rules.
 
+During an active pile drag, the session root applies `touch-action: none` and
+`overscroll-behavior: none` where supported so horizontal browser navigation
+gestures are less likely to compete with card placement. A dedicated left-edge
+gutter in the pile strip keeps deck and discard interactions away from the
+screen edge; native iOS back-swipe cannot be fully prevented in all browsers.
+
+Board headers use larger, bolder interim score text. Card point values on face-up
+cards are enlarged for legibility on small phones. Eating edge indicators are
+larger miniature animal-art tiles on white backgrounds with subtle border
+accents; prey icons sit on the left edge and predator icons on the right—
+position, not fill color, is the primary cue.
+
+The active player's board receives a warm accent border and the **Am Zug** badge
+during their turn. Legal placement, reveal, and drag-target cells use stronger
+outline and inset feedback. The private draw decision panel is visually primary
+when inspecting a drawn card; the status line steps back to a lighter, smaller
+treatment so phase guidance does not compete with the hidden-card choice.
+
 After deterministic chain resolution, removed runs receive a playful eating
 animation—icon bites, pops, or similar emphasis on the cleared cards.
 Animations are presentation-only and never change or delay rule outcomes.
@@ -369,6 +387,14 @@ announcements support non-gesture and assistive use.
   floating preview and legal-target feedback; dragging the deck starts
   inspection; dropping outside a legal slot leaves the pending decision
   available; tap, button, and keyboard paths remain complete fallbacks.
+- Pile drag uses root-level touch/overscroll suppression during the gesture plus
+  a left-edge gutter in the pile strip; native browser back-swipe is reduced
+  where web APIs allow, not eliminated on every platform.
+- Interim board scores and on-card point values are enlarged for small-phone
+  legibility; eating edge icons are larger animal-art tiles with position-based
+  prey/predator cues rather than solid color blocks.
+- The active player's board is visually distinguished during their turn; private
+  draw decisions outrank the status line in visual hierarchy.
 - Chain removal plays a presentation-only eating animation after deterministic
   resolution; reduced-motion uses static text emphasis instead.
 - All twelve species and the card back render from bundled local artwork with

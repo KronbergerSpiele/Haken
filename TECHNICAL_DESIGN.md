@@ -355,6 +355,10 @@ Zoff in the Sky is a self-contained turn-based game module at
   device privacy for inspected draws, compact edge eating indicators as miniature
   animal-art sprites, and stronger contextual valid-link connectors. Accessible
   labels and tooltips mirror full species names and predator/prey relations.
+  Its play grid has four vertical tracks (opponent, piles, active board, status).
+  The pile strip orders discard before draw and owns a fixed right-side content
+  region that switches from normal pile actions to the private draw decision,
+  avoiding a new track and board movement during inspection.
 - Each board header projects an interim score: visible face-up subtotal plus
   hidden occupied count. Final totals render only in the `finished` phase after
   full reveal and scoring.

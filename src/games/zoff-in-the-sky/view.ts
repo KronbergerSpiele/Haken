@@ -179,7 +179,7 @@ function boardMarkup(
     </div>`;
   }).join('');
 
-  return `<section class="zoff-board ${options.compact ? 'zoff-board--compact' : 'zoff-board--active'}" aria-label="Spielfeld ${playerName(player)}">
+  return `<section class="zoff-board ${options.compact ? 'zoff-board--compact' : 'zoff-board--active'}${player === state.activePlayer ? ' zoff-board--current-turn' : ''}" aria-label="Spielfeld ${playerName(player)}">
     <header class="zoff-board__header">
       <span class="zoff-board__player">${playerName(player)}</span>
       <span class="zoff-board__score" aria-label="${escapeHtml(formatBoardScore(state, player))}">${escapeHtml(formatBoardScore(state, player))}</span>
@@ -203,6 +203,7 @@ function pileMarkup(state: GameState, interactive: boolean): string {
     interactive && (state.phase === 'awaitingAction' || state.phase === 'finalTurn');
 
   return `<section class="zoff-piles" aria-label="Stapel">
+    <div class="zoff-pile-edge-gutter" aria-hidden="true"></div>
     <div class="zoff-pile zoff-pile--deck${canDraw ? ' zoff-pile--draggable' : ''}" data-drag-deck aria-label="Ziehstapel, ${state.drawPile.length} Karten">
       ${cardBackMarkup({ compact: true })}
       <span class="zoff-pile-count">${state.drawPile.length}</span>
@@ -305,7 +306,7 @@ function playMarkup(state: GameState, ui: UiState): string {
   const opponent: PlayerId = state.activePlayer === 0 ? 1 : 0;
   const decision = privateDecisionMarkup(state, ui);
 
-  return `<div class="zoff-game">
+  return `<div class="zoff-game${decision ? ' zoff-game--inspecting' : ''}">
     <div class="zoff-game__opponent">${boardMarkup(state, opponent, { compact: true, interactive: false, ui })}</div>
     <div class="zoff-game__piles">${pileMarkup(state, true)}</div>
     <div class="zoff-game__decision${decision ? '' : ' zoff-game__decision--empty'}"${decision ? '' : ' aria-hidden="true"'}>${decision}</div>

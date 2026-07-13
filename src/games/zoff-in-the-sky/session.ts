@@ -1,6 +1,6 @@
 import type { GameCommand, GameSession, SessionContext } from '../../engine/contracts';
 import { applyZoffTokens } from '../../graphics/theme';
-import { ZoffDragController } from './controls';
+import { ZoffDragController, ZOFF_DRAGGING_CLASS } from './controls';
 import { canPlacePendingAt, createGame, getVisibleDiscard, transition } from './reducer';
 import type { GameCommand as ZoffCommand, GameEvent, GameState, PlayerId } from './model';
 import {
@@ -112,6 +112,7 @@ export class ZoffSession implements GameSession {
         'zoff-root--playing',
         'zoff-root--turn-flip',
         'zoff-root--eating-overlay',
+        ZOFF_DRAGGING_CLASS,
       );
     }
     this.root = null;

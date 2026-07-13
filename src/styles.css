@@ -1240,8 +1240,9 @@ button:focus-visible {
 [data-theme='zoff-in-the-sky'] {
   --zoff-sky-top: #8ed8ff;
   --zoff-sky-bottom: #d8f2ff;
-  --zoff-panel: rgb(244 251 255 / 94%);
-  --zoff-shadow: 3px 4px 0 rgb(23 20 16 / 28%);
+  --zoff-panel: rgb(244 251 255 / 88%);
+  --zoff-shadow: 2px 3px 0 rgb(23 20 16 / 18%);
+  --zoff-edge-gutter: max(14px, calc(env(safe-area-inset-left) + 10px));
   position: relative;
   width: 100%;
   height: 100%;
@@ -1249,6 +1250,16 @@ button:focus-visible {
   color: var(--ink);
   background: linear-gradient(180deg, var(--zoff-sky-top), var(--zoff-sky-bottom));
   overflow: hidden;
+  overscroll-behavior: none;
+}
+
+[data-theme='zoff-in-the-sky'].zoff-root--playing {
+  touch-action: pan-y pinch-zoom;
+}
+
+[data-theme='zoff-in-the-sky'].zoff-root--dragging {
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-splash,
@@ -1415,9 +1426,21 @@ button:focus-visible {
   gap: 4px;
   min-height: 0;
   padding: 6px;
-  border: 3px solid var(--ink);
+  border: 2px solid var(--ink);
   background: var(--zoff-panel);
   box-shadow: var(--zoff-shadow);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--current-turn {
+  border-color: var(--game-accent);
+  box-shadow:
+    0 0 0 2px rgb(255 196 0 / 45%),
+    var(--zoff-shadow);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-board--active.zoff-board--current-turn {
+  border-width: 2px;
+  background: rgb(255 252 240 / 94%);
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-board--compact {
@@ -1447,15 +1470,15 @@ button:focus-visible {
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-board__score {
-  font-size: 0.62rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 800;
   letter-spacing: 0.02em;
   text-transform: none;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-board__score {
-  font-size: 0.55rem;
+  font-size: 0.68rem;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-board__turn {
@@ -1463,6 +1486,7 @@ button:focus-visible {
   border: 2px solid var(--ink);
   background: var(--game-accent);
   font-size: 0.75rem;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 55%);
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-grid {
@@ -1526,10 +1550,14 @@ button:focus-visible {
 
 [data-theme='zoff-in-the-sky'] .zoff-cell--placeable {
   box-shadow: inset 0 0 0 3px var(--green);
+  outline: 2px solid rgb(110 200 255 / 55%);
+  outline-offset: 1px;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-cell--revealable {
   box-shadow: inset 0 0 0 3px var(--red);
+  outline: 2px solid rgb(255 196 0 / 45%);
+  outline-offset: 1px;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-cell-gap {
@@ -1582,8 +1610,8 @@ button:focus-visible {
 
 [data-theme='zoff-in-the-sky'] .zoff-card-caption em {
   font-style: normal;
-  font-size: 0.5rem;
-  font-weight: 800;
+  font-size: 0.68rem;
+  font-weight: 900;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-eat-indicators {
@@ -1605,18 +1633,21 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 1px;
-  padding: 1px;
+  gap: 2px;
+  padding: 2px 1px;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-eat-glyph,
 [data-theme='zoff-in-the-sky'] .zoff-eat-icon {
   display: block;
-  width: 0.72rem;
-  height: 0.72rem;
-  border: 1px solid var(--ink);
+  width: 0.92rem;
+  height: 0.92rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
   overflow: hidden;
   flex-shrink: 0;
+  background: #fff;
+  box-shadow: 0 1px 0 rgb(23 20 16 / 12%);
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-eat-icon__art {
@@ -1629,11 +1660,11 @@ button:focus-visible {
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-eat-icon--prey {
-  background: var(--green);
+  border-color: rgb(34 120 72 / 85%);
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-eat-icon--predator {
-  background: var(--red);
+  border-color: rgb(155 29 18 / 85%);
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-grid-links {
@@ -1676,13 +1707,19 @@ button:focus-visible {
 
 [data-theme='zoff-in-the-sky'] .zoff-piles {
   display: grid;
-  grid-template-columns: auto auto 1fr;
+  grid-template-columns: var(--zoff-edge-gutter) auto auto 1fr;
   gap: 8px;
   align-items: center;
-  padding: 6px 8px;
-  border: 3px solid var(--ink);
+  padding: 6px 8px 6px 0;
+  border: 2px solid var(--ink);
   background: var(--zoff-panel);
   box-shadow: var(--zoff-shadow);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-pile-edge-gutter {
+  width: 100%;
+  min-height: 1px;
+  pointer-events: none;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-pile {
@@ -1724,12 +1761,21 @@ button:focus-visible {
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-cell--drag-target {
-  box-shadow: inset 0 0 0 3px rgb(110 200 255 / 85%);
+  box-shadow: inset 0 0 0 3px rgb(110 200 255 / 90%);
+  outline: 2px dashed rgb(110 200 255 / 70%);
+  outline-offset: 1px;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-cell--drag-aimed {
   box-shadow: inset 0 0 0 4px var(--green);
-  transform: scale(1.03);
+  outline: 2px solid var(--game-accent);
+  outline-offset: 1px;
+  transform: scale(1.04);
+}
+
+[data-theme='zoff-in-the-sky'].zoff-root--dragging .zoff-pile--draggable {
+  outline: 2px solid var(--game-accent);
+  outline-offset: 2px;
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-drag-preview {
@@ -1931,9 +1977,11 @@ button:focus-visible {
   grid-template-columns: auto minmax(0, 1fr);
   gap: 8px;
   align-items: center;
-  padding: 4px 8px;
-  border: 3px dashed var(--ink);
-  background: rgb(255 240 189 / 88%);
+  padding: 6px 10px;
+  border: 2px solid var(--ink);
+  border-left: 4px solid var(--game-accent);
+  background: rgb(255 248 214 / 94%);
+  box-shadow: var(--zoff-shadow);
   min-height: 0;
 }
 
@@ -1998,10 +2046,18 @@ button:focus-visible {
 
 [data-theme='zoff-in-the-sky'] .zoff-status {
   padding: 4px 8px;
-  border: 2px solid var(--ink);
-  background: rgb(255 255 255 / 88%);
-  font-size: 0.82rem;
+  border: 1px solid rgb(23 20 16 / 35%);
+  background: rgb(255 255 255 / 72%);
+  font-size: 0.78rem;
   line-height: 1.25;
+  color: rgb(23 20 16 / 82%);
+}
+
+[data-theme='zoff-in-the-sky'] .zoff-game--inspecting .zoff-status {
+  font-size: 0.72rem;
+  opacity: 0.82;
+  border-style: dashed;
+  background: rgb(255 255 255 / 58%);
 }
 
 [data-theme='zoff-in-the-sky'] .zoff-landscape-warning {
@@ -2072,6 +2128,19 @@ button:focus-visible {
     padding: 4px;
   }
 
+  [data-theme='zoff-in-the-sky'] .zoff-board__score {
+    font-size: 0.72rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-board__score {
+    font-size: 0.62rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-eat-icon {
+    width: 0.82rem;
+    height: 0.82rem;
+  }
+
   [data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-cell {
     height: clamp(18px, 5.5dvh, 28px);
     max-height: 28px;
@@ -2123,9 +2192,26 @@ button:focus-visible {
 }
 
 @media (max-height: 600px) {
+  [data-theme='zoff-in-the-sky'] {
+    --zoff-edge-gutter: max(10px, calc(env(safe-area-inset-left) + 6px));
+  }
+
   [data-theme='zoff-in-the-sky'] .zoff-game {
     gap: 2px;
     padding-top: max(38px, calc(env(safe-area-inset-top) + 28px));
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board__score {
+    font-size: 0.68rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-board__score {
+    font-size: 0.58rem;
+  }
+
+  [data-theme='zoff-in-the-sky'] .zoff-eat-icon {
+    width: 0.76rem;
+    height: 0.76rem;
   }
 
   [data-theme='zoff-in-the-sky'] .zoff-board--compact .zoff-cell {
@@ -2192,6 +2278,6 @@ button:focus-visible {
   }
 
   [data-theme='zoff-in-the-sky'] .zoff-card-caption em {
-    font-size: 0.45rem;
+    font-size: 0.58rem;
   }
 }

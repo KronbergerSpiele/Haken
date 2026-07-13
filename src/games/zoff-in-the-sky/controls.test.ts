@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createGame, transition } from './reducer';
-import { ZoffDragController } from './controls';
+import { ZoffDragController, ZOFF_DRAGGING_CLASS } from './controls';
 
 function dispatchPointer(
   type: 'pointerdown' | 'pointermove' | 'pointerup' | 'pointercancel',
@@ -117,5 +117,31 @@ describe('zoff drag controls', () => {
     const discard = root.querySelector('[data-drag-discard]')!;
     dispatchPointer('pointerdown', discard, { pointerId: 5, clientX: 10, clientY: 10, button: 0 });
     expect(onTakeDiscardStart).toHaveBeenCalledTimes(1);
+  });
+
+  it('toggles the root dragging class for the full drag lifetime', () => {
+    const deck = root.querySelector('[data-drag-deck]')!;
+
+    dispatchPointer('pointerdown', deck, { pointerId: 7, clientX: 10, clientY: 10, button: 0 });
+    expect(root.classList.contains(ZOFF_DRAGGING_CLASS)).toBe(true);
+
+    dispatchPointer('pointermove', window, { pointerId: 7, clientX: 30, clientY: 30, button: 0 });
+    expect(root.classList.contains(ZOFF_DRAGGING_CLASS)).toBe(true);
+
+    dispatchPointer('pointerup', window, { pointerId: 7, clientX: 30, clientY: 30, button: 0 });
+    expect(root.classList.contains(ZOFF_DRAGGING_CLASS)).toBe(false);
+  });
+
+  it('removes the dragging class on cancel and dispose', () => {
+    const deck = root.querySelector('[data-drag-deck]')!;
+
+    dispatchPointer('pointerdown', deck, { pointerId: 8, clientX: 10, clientY: 10, button: 0 });
+    dispatchPointer('pointercancel', window, { pointerId: 8, clientX: 10, clientY: 10, button: 0 });
+    expect(root.classList.contains(ZOFF_DRAGGING_CLASS)).toBe(false);
+
+    dispatchPointer('pointerdown', deck, { pointerId: 9, clientX: 10, clientY: 10, button: 0 });
+    controller!.dispose();
+    controller = null;
+    expect(root.classList.contains(ZOFF_DRAGGING_CLASS)).toBe(false);
   });
 });

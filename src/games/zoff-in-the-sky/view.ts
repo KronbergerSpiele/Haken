@@ -17,8 +17,8 @@ import { cardValue } from './cards';
 import { escapeHtml } from '../../graphics/primitives';
 
 export interface UiState {
-  handoffConfirmed: boolean;
-  handoffPending: boolean;
+  turnToastActive: boolean;
+  perspectivePlayer: PlayerId;
   discardRevealMode: boolean;
   statusMessage: string;
   chainFeedback: string | null;
@@ -28,8 +28,8 @@ export interface UiState {
 }
 
 export const INITIAL_UI: UiState = {
-  handoffConfirmed: false,
-  handoffPending: false,
+  turnToastActive: false,
+  perspectivePlayer: 0,
   discardRevealMode: false,
   statusMessage: '',
   chainFeedback: null,
@@ -66,8 +66,8 @@ function phaseInstructions(state: GameState, ui: UiState): string {
   if (state.phase === 'setup') {
     return 'Tippe auf Start, um die Runde zu beginnen.';
   }
-  if (!ui.handoffConfirmed) {
-    return `${playerName(state.activePlayer)} ist dran. Gerät übergeben und bestätigen.`;
+  if (ui.turnToastActive) {
+    return `${playerName(state.activePlayer)} ist dran.`;
   }
   if (state.phase === 'awaitingAction' || state.phase === 'finalTurn') {
     const suffix = state.phase === 'finalTurn' ? ' Letzter Zug!' : '';
@@ -169,6 +169,7 @@ function boardMarkup(
   options: { compact: boolean; interactive: boolean; ui: UiState },
 ): string {
   const board = state.players[player].grid;
+  const isCurrentTurn = !options.ui.turnToastActive && player === state.activePlayer;
   const rows = Array.from({ length: GRID_ROWS }, (_, row) => {
     const cells = board[row]!;
     const cellMarkup = Array.from({ length: GRID_COLS }, (_, col) =>
@@ -181,11 +182,11 @@ function boardMarkup(
     </div>`;
   }).join('');
 
-  return `<section class="zoff-board ${options.compact ? 'zoff-board--compact' : 'zoff-board--active'}${player === state.activePlayer ? ' zoff-board--current-turn' : ''}" aria-label="Spielfeld ${playerName(player)}">
+  return `<section class="zoff-board ${options.compact ? 'zoff-board--compact' : 'zoff-board--active'}${isCurrentTurn ? ' zoff-board--current-turn' : ''}" aria-label="Spielfeld ${playerName(player)}">
     <header class="zoff-board__header">
       <span class="zoff-board__player">${playerName(player)}</span>
       <span class="zoff-board__score" aria-label="${escapeHtml(formatBoardScore(state, player))}">${escapeHtml(formatBoardScore(state, player))}</span>
-      ${player === state.activePlayer ? '<b class="zoff-board__turn">Am Zug</b>' : ''}
+      ${isCurrentTurn ? '<b class="zoff-board__turn">Am Zug</b>' : ''}
     </header>
     <div class="zoff-grid">${rows}</div>
   </section>`;
@@ -247,7 +248,7 @@ function pileMarkup(state: GameState, interactive: boolean, ui: UiState): string
 }
 
 function pendingActionsMarkup(state: GameState, ui: UiState): string {
-  if (state.phase !== 'inspectingDraw' || !ui.handoffConfirmed) return '';
+  if (state.phase !== 'inspectingDraw' || ui.turnToastActive) return '';
   if (ui.discardRevealMode) {
     return `<button type="button" class="zoff-action" data-cancel-reveal>Abbrechen</button>`;
   }
@@ -255,7 +256,7 @@ function pendingActionsMarkup(state: GameState, ui: UiState): string {
 }
 
 function privateDecisionMarkup(state: GameState, ui: UiState): string {
-  if (state.phase !== 'inspectingDraw' || !ui.handoffConfirmed || !state.pendingCard) return '';
+  if (state.phase !== 'inspectingDraw' || ui.turnToastActive || !state.pendingCard) return '';
   const species = state.pendingCard.card.species;
   const actions = pendingActionsMarkup(state, ui);
   return `<div class="zoff-private-decision" role="region" aria-label="Entscheidung zur gezogenen Karte">
@@ -267,26 +268,16 @@ function privateDecisionMarkup(state: GameState, ui: UiState): string {
   </div>`;
 }
 
-function handoffMarkup(state: GameState): string {
-  return `<main class="zoff-handoff">
-    <p class="zoff-handoff__kicker">Gerät übergeben</p>
-    <h2>${escapeHtml(playerName(state.activePlayer))}</h2>
-    <p class="zoff-handoff__text">Du bist jetzt dran. Nimm das Gerät und bestätige, bevor du das Spielfeld siehst.</p>
-  ${
+function turnToastMarkup(state: GameState, ui: UiState): string {
+  const finalNote =
     state.phase === 'finalTurn'
-      ? '<p class="zoff-handoff__note">Letzter Zug der Runde!</p>'
-      : ''
-  }
-    <button type="button" class="zoff-start-button" data-confirm-handoff>Bereit</button>
-  </main>`;
-}
-
-function turnCompleteMarkup(): string {
-  return `<main class="zoff-handoff zoff-turn-complete" aria-live="polite">
-    <p class="zoff-handoff__kicker">Zug beendet</p>
-    <h2>Gut gespielt!</h2>
-    <p class="zoff-handoff__text">Der nächste Zug wird vorbereitet.</p>
-  </main>`;
+      ? '<p class="zoff-turn-toast__note">Letzter Zug der Runde!</p>'
+      : '';
+  const message = ui.statusMessage || `${playerName(state.activePlayer)} ist dran.`;
+  return `<div class="zoff-turn-toast" role="status" aria-live="polite">
+    <p class="zoff-turn-toast__text">${escapeHtml(message)}</p>
+    ${finalNote}
+  </div>`;
 }
 
 function setupMarkup(): string {
@@ -331,16 +322,22 @@ function resultMarkup(state: GameState, ui: UiState): string {
 }
 
 function playMarkup(state: GameState, ui: UiState): string {
-  const opponent: PlayerId = state.activePlayer === 0 ? 1 : 0;
+  const displayPlayer = ui.perspectivePlayer;
+  const opponent: PlayerId = displayPlayer === 0 ? 1 : 0;
+  const canInteract = !ui.turnToastActive && state.phase !== 'finished';
   const inspecting =
-    state.phase === 'inspectingDraw' && ui.handoffConfirmed && state.pendingCard !== null;
+    canInteract &&
+    state.phase === 'inspectingDraw' &&
+    state.pendingCard !== null &&
+    displayPlayer === state.activePlayer;
 
   return `<div class="zoff-game${inspecting ? ' zoff-game--inspecting' : ''}">
     <div class="zoff-game__opponent">${boardMarkup(state, opponent, { compact: true, interactive: false, ui })}</div>
-    <div class="zoff-game__piles">${pileMarkup(state, true, ui)}</div>
-    <div class="zoff-game__active">${boardMarkup(state, state.activePlayer, { compact: false, interactive: true, ui })}</div>
-    <div class="zoff-game__status"><div class="zoff-status" aria-live="polite">${escapeHtml(ui.statusMessage || phaseInstructions(state, ui))}</div></div>
+    <div class="zoff-game__piles">${pileMarkup(state, canInteract, ui)}</div>
+    <div class="zoff-game__active">${boardMarkup(state, displayPlayer, { compact: false, interactive: canInteract, ui })}</div>
+    <div class="zoff-game__status"><div class="zoff-status" aria-live="polite">${escapeHtml(ui.turnToastActive ? '' : ui.statusMessage || phaseInstructions(state, ui))}</div></div>
     <div class="zoff-landscape-warning"><b>Handy drehen</b><span>Zoff spielt man hochkant.</span></div>
+    ${ui.turnToastActive ? turnToastMarkup(state, ui) : ''}
     ${state.phase === 'finished' ? resultMarkup(state, ui) : ''}
   </div>`;
 }
@@ -356,17 +353,12 @@ export function eatingOverlaysMarkup(state: GameState, ui: UiState): string {
 
 function renderContent(state: GameState, ui: UiState): string {
   if (state.phase === 'setup') return setupMarkup();
-  if (ui.handoffPending) return turnCompleteMarkup();
-  if (!ui.handoffConfirmed) return handoffMarkup(state);
   return playMarkup(state, ui);
 }
 
 export function applyPresentationClasses(root: HTMLElement, state: GameState, ui: UiState): void {
-  root.classList.toggle(
-    'zoff-root--handoff',
-    state.phase !== 'setup' && !ui.handoffConfirmed && !ui.handoffPending,
-  );
-  root.classList.toggle('zoff-root--playing', ui.handoffConfirmed && !ui.handoffPending && state.phase !== 'setup');
+  root.classList.toggle('zoff-root--playing', state.phase !== 'setup');
+  root.classList.toggle('zoff-root--turn-toast', ui.turnToastActive);
   root.classList.toggle('zoff-root--turn-flip', ui.turnFlipActive);
   root.classList.toggle('zoff-root--eating-overlay', ui.eatingOverlayChains.length > 0);
 }

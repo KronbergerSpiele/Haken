@@ -14,7 +14,7 @@ import {
 
 const EATING_OVERLAY_MS = 900;
 const EATING_OVERLAY_REDUCED_MS = 450;
-const TURN_HANDOFF_DELAY_MS = 1_200;
+const TURN_TOAST_MS = 1_200;
 
 export class ZoffSession implements GameSession {
   private game: GameState;
@@ -25,7 +25,7 @@ export class ZoffSession implements GameSession {
   private focusResultReplay = false;
   private drag: ZoffDragController | null = null;
   private flipTimer: number | null = null;
-  private handoffTimer: number | null = null;
+  private turnToastTimer: number | null = null;
   private eatingOverlayTimer: number | null = null;
   private readonly clickHandler: (event: Event) => void;
   private readonly keyHandler: (event: KeyboardEvent) => void;
@@ -46,11 +46,11 @@ export class ZoffSession implements GameSession {
     root.addEventListener('keydown', this.keyHandler);
     this.drag = new ZoffDragController(root, {
       canDragDeck: () =>
-        this.ui.handoffConfirmed &&
+        !this.ui.turnToastActive &&
         this.game.phase !== 'finished' &&
         (this.game.phase === 'awaitingAction' || this.game.phase === 'finalTurn'),
       canDragDiscard: () => {
-        if (!this.ui.handoffConfirmed || this.game.phase === 'finished') return false;
+        if (this.ui.turnToastActive || this.game.phase === 'finished') return false;
         if (this.game.phase !== 'awaitingAction' && this.game.phase !== 'finalTurn') return false;
         return getVisibleDiscard(this.game) !== null;
       },
@@ -99,7 +99,7 @@ export class ZoffSession implements GameSession {
     if (this.disposed) return;
     this.disposed = true;
     this.clearFlipTimer();
-    this.clearHandoffTimer();
+    this.clearTurnToastTimer();
     this.clearEatingOverlay();
     this.drag?.dispose();
     this.drag = null;
@@ -111,8 +111,8 @@ export class ZoffSession implements GameSession {
       this.context.graphics.clearThemeScope(this.root);
       this.root.replaceChildren();
       this.root.classList.remove(
-        'zoff-root--handoff',
         'zoff-root--playing',
+        'zoff-root--turn-toast',
         'zoff-root--turn-flip',
         'zoff-root--eating-overlay',
         ZOFF_DRAGGING_CLASS,
@@ -160,7 +160,12 @@ export class ZoffSession implements GameSession {
 
     for (const event of events) {
       if (event.type === 'started') {
-        this.resetHandoff(true);
+        this.clearTurnToastTimer();
+        this.drag?.cancel();
+        this.ui.turnToastActive = false;
+        this.ui.perspectivePlayer = event.firstPlayer;
+        this.ui.discardRevealMode = false;
+        this.triggerTurnFlip();
         this.ui.statusMessage = `${this.playerLabel(event.firstPlayer)} beginnt.`;
         this.context.announce(this.ui.statusMessage);
       }
@@ -205,7 +210,7 @@ export class ZoffSession implements GameSession {
       this.game.phase !== 'setup' &&
       this.game.phase !== 'finished'
     ) {
-      this.scheduleHandoff();
+      this.scheduleTurnToast(previousActive);
     }
 
     if (events.some((event) => event.type === 'tookDiscard' || event.type === 'drew')) {
@@ -215,7 +220,7 @@ export class ZoffSession implements GameSession {
     if (events.length > 0) {
       this.ui.removedCardCount = this.matchRemovedCards;
       const removedNow = countRemovedCards(events);
-      if (removedNow === 0 && !events.some((event) => event.type === 'finished')) {
+      if (removedNow === 0 && !events.some((event) => event.type === 'finished') && !this.ui.turnToastActive) {
         const last = events[events.length - 1]!;
         this.ui.statusMessage = this.describeEvent(last);
       }
@@ -243,35 +248,31 @@ export class ZoffSession implements GameSession {
     }
   }
 
-  private resetHandoff(animateFlip = false): void {
-    this.clearHandoffTimer();
+  private scheduleTurnToast(previousActive: PlayerId): void {
+    this.clearTurnToastTimer();
     this.drag?.cancel();
-    this.ui.handoffPending = false;
-    this.ui.handoffConfirmed = false;
+    this.ui.turnToastActive = true;
+    this.ui.perspectivePlayer = previousActive;
     this.ui.discardRevealMode = false;
-    if (animateFlip) this.triggerTurnFlip();
-  }
-
-  private scheduleHandoff(): void {
-    this.clearHandoffTimer();
-    this.drag?.cancel();
-    this.ui.handoffPending = true;
-    this.ui.handoffConfirmed = false;
-    this.ui.discardRevealMode = false;
-    this.ui.statusMessage = 'Zug beendet.';
+    const suffix = this.game.phase === 'finalTurn' ? ' Letzter Zug!' : '';
+    this.ui.statusMessage = `${this.playerLabel(this.game.activePlayer)} ist dran.${suffix}`;
     this.context.announce(this.ui.statusMessage);
-    this.handoffTimer = window.setTimeout(() => {
-      this.handoffTimer = null;
+    this.turnToastTimer = window.setTimeout(() => {
+      this.turnToastTimer = null;
       if (this.disposed) return;
-      this.resetHandoff(true);
+      this.ui.turnToastActive = false;
+      this.ui.perspectivePlayer = this.game.activePlayer;
+      this.triggerTurnFlip();
+      this.ui.statusMessage = this.phaseHint();
+      this.context.announce(this.ui.statusMessage);
       this.draw();
-    }, TURN_HANDOFF_DELAY_MS);
+    }, TURN_TOAST_MS);
   }
 
-  private clearHandoffTimer(): void {
-    if (this.handoffTimer !== null) {
-      window.clearTimeout(this.handoffTimer);
-      this.handoffTimer = null;
+  private clearTurnToastTimer(): void {
+    if (this.turnToastTimer !== null) {
+      window.clearTimeout(this.turnToastTimer);
+      this.turnToastTimer = null;
     }
   }
 
@@ -329,7 +330,7 @@ export class ZoffSession implements GameSession {
   private restart(useNewSeed: boolean): void {
     this.drag?.cancel();
     this.clearFlipTimer();
-    this.clearHandoffTimer();
+    this.clearTurnToastTimer();
     this.clearEatingOverlay();
     const seed = useNewSeed ? this.context.random.nextUint32() || 1 : this.context.seed;
     this.game = createGame(seed);
@@ -360,15 +361,7 @@ export class ZoffSession implements GameSession {
       this.restart(true);
       return;
     }
-    if (target.matches('[data-confirm-handoff]')) {
-      this.ui.handoffConfirmed = true;
-      this.triggerTurnFlip();
-      this.ui.statusMessage = this.phaseHint();
-      this.context.announce(this.ui.statusMessage);
-      this.draw();
-      return;
-    }
-    if (!this.ui.handoffConfirmed || this.game.phase === 'finished') return;
+    if (this.ui.turnToastActive || this.game.phase === 'finished') return;
 
     if (target.matches('[data-take-discard]')) {
       this.dispatchZoff({ type: 'takeDiscard', player: this.game.activePlayer });

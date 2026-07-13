@@ -70,6 +70,7 @@ describe('zoff drag controls', () => {
 
     expect(onPlace).toHaveBeenCalledWith(0, 0);
     expect(root.querySelector('.zoff-drag-preview')).toBeNull();
+    expect(target.classList.contains('zoff-cell--drag-aimed')).toBe(false);
     expect(target.classList.contains('zoff-cell--drag-target')).toBe(false);
     elementsFromPoint.mockRestore();
   });
@@ -117,6 +118,48 @@ describe('zoff drag controls', () => {
     const discard = root.querySelector('[data-drag-discard]')!;
     dispatchPointer('pointerdown', discard, { pointerId: 5, clientX: 10, clientY: 10, button: 0 });
     expect(onTakeDiscardStart).toHaveBeenCalledTimes(1);
+  });
+
+  it('highlights only the aimed legal cell during drag', () => {
+    document.body.innerHTML = `<div id="root" data-theme="zoff-in-the-sky">
+      <div class="zoff-pile zoff-pile--deck" data-drag-deck></div>
+      <button type="button" class="zoff-cell zoff-cell--placeable" data-place data-row="0" data-col="0"></button>
+      <button type="button" class="zoff-cell zoff-cell--placeable" data-place data-row="0" data-col="1"></button>
+    </div>`;
+    root = document.querySelector('#root')!;
+    root.setPointerCapture = vi.fn();
+    root.releasePointerCapture = vi.fn();
+    root.hasPointerCapture = vi.fn(() => true);
+    controller?.dispose();
+    controller = new ZoffDragController(root, {
+      canDragDeck: () => true,
+      canDragDiscard: () => true,
+      onDrawStart,
+      onTakeDiscardStart,
+      onPlace,
+      isPlaceable: () => true,
+      getPendingSpecies: () => 'fox',
+      getPendingSource: () => 'draw',
+      isDiscardRevealMode: () => false,
+    });
+
+    const deck = root.querySelector('[data-drag-deck]')!;
+    const first = root.querySelector('[data-place][data-col="0"]') as HTMLElement;
+    const second = root.querySelector('[data-place][data-col="1"]') as HTMLElement;
+    const elementsFromPoint = vi
+      .spyOn(document, 'elementsFromPoint')
+      .mockReturnValue([second]);
+
+    dispatchPointer('pointerdown', deck, { pointerId: 10, clientX: 10, clientY: 10, button: 0 });
+    dispatchPointer('pointermove', window, { pointerId: 10, clientX: 40, clientY: 40, button: 0 });
+
+    expect(first.classList.contains('zoff-cell--drag-aimed')).toBe(false);
+    expect(second.classList.contains('zoff-cell--drag-aimed')).toBe(true);
+    expect(first.classList.contains('zoff-cell--drag-target')).toBe(false);
+    expect(second.classList.contains('zoff-cell--drag-target')).toBe(false);
+
+    dispatchPointer('pointerup', window, { pointerId: 10, clientX: 40, clientY: 40, button: 0 });
+    elementsFromPoint.mockRestore();
   });
 
   it('toggles the root dragging class for the full drag lifetime', () => {

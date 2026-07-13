@@ -24,7 +24,6 @@ function mountPlayableSession(root: HTMLElement, seed = 7): ZoffSession {
   const session = new ZoffSession(createContext(seed)) as ZoffSession;
   session.mount(root);
   root.querySelector<HTMLButtonElement>('[data-start]')!.click();
-  root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
   root.setPointerCapture = vi.fn();
   root.releasePointerCapture = vi.fn();
   root.hasPointerCapture = vi.fn(() => true);
@@ -68,18 +67,17 @@ describe('zoff session', () => {
     expect(root.querySelector('[data-exit-collection]')).not.toBeNull();
   });
 
-  it('requires handoff confirmation before showing actions', () => {
+  it('shows the board directly after start without confirmation', () => {
     session = new ZoffSession(createContext()) as ZoffSession;
     session.mount(root);
     root.querySelector<HTMLButtonElement>('[data-start]')!.click();
-    expect(root.querySelector('.zoff-handoff')).not.toBeNull();
-    expect(root.querySelector('[data-draw]')).toBeNull();
-    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
+    expect(root.querySelector('.zoff-game')).not.toBeNull();
+    expect(root.querySelector('[data-confirm-handoff]')).toBeNull();
     expect(root.classList.contains('zoff-root--turn-flip')).toBe(true);
     expect(root.querySelector('[data-draw]')).not.toBeNull();
   });
 
-  it('shows turn-complete feedback before the next player handoff', () => {
+  it('shows a turn toast and auto-flips after 1.2 seconds on active-player change', () => {
     vi.useFakeTimers();
     session = mountPlayableSession(root, 12);
     const internal = session as unknown as {
@@ -91,25 +89,25 @@ describe('zoff session', () => {
     internal.handleEvents([], 0);
     internal.draw();
 
-    expect(root.querySelector('.zoff-turn-complete')).not.toBeNull();
-    expect(root.querySelector('.zoff-handoff')).not.toBeNull();
-    expect(root.querySelector('[data-confirm-handoff]')).toBeNull();
-    expect(root.querySelector('.zoff-game')).toBeNull();
+    expect(root.querySelector('.zoff-turn-toast')).not.toBeNull();
+    expect(root.textContent).toContain('Spieler 2 ist dran');
+    expect(root.querySelector('[data-draw]')).toBeNull();
+    expect(root.classList.contains('zoff-root--turn-toast')).toBe(true);
 
     vi.advanceTimersByTime(1_199);
-    expect(root.querySelector('.zoff-turn-complete')).not.toBeNull();
-    vi.advanceTimersByTime(1);
+    expect(root.querySelector('.zoff-turn-toast')).not.toBeNull();
 
-    expect(root.querySelector('.zoff-turn-complete')).toBeNull();
-    expect(root.querySelector('[data-confirm-handoff]')).not.toBeNull();
+    vi.advanceTimersByTime(1);
+    expect(root.querySelector('.zoff-turn-toast')).toBeNull();
+    expect(root.classList.contains('zoff-root--turn-flip')).toBe(true);
+    expect(root.querySelector('[data-draw]')).not.toBeNull();
     vi.useRealTimers();
   });
 
-  it('exposes draggable pile sources after handoff', () => {
+  it('exposes draggable pile sources after start', () => {
     session = new ZoffSession(createContext()) as ZoffSession;
     session.mount(root);
     root.querySelector<HTMLButtonElement>('[data-start]')!.click();
-    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
     expect(root.querySelector('[data-drag-deck]')).not.toBeNull();
     expect(root.querySelector('[data-drag-discard]')).not.toBeNull();
   });
@@ -142,6 +140,9 @@ describe('zoff session', () => {
     const elementsFromPoint = vi.spyOn(document, 'elementsFromPoint').mockReturnValue([placeTarget]);
 
     dispatchPointer('pointermove', window, { pointerId: 11, clientX: 40, clientY: 40, button: 0 });
+    expect(placeTarget.classList.contains('zoff-cell--drag-aimed')).toBe(true);
+    expect(placeTarget.classList.contains('zoff-cell--drag-target')).toBe(false);
+
     dispatchPointer('pointerup', window, { pointerId: 11, clientX: 40, clientY: 40, button: 0 });
 
     expect(root.querySelector('.zoff-private-decision')).toBeNull();
@@ -177,7 +178,6 @@ describe('zoff session', () => {
     session = new ZoffSession(createContext(7)) as ZoffSession;
     session.mount(root);
     root.querySelector<HTMLButtonElement>('[data-start]')!.click();
-    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
     root.querySelector<HTMLButtonElement>('[data-draw]')!.click();
     expect(root.querySelector('.zoff-private-draw')).not.toBeNull();
     const placeTarget = root.querySelector<HTMLButtonElement>('[data-place]');
@@ -190,7 +190,6 @@ describe('zoff session', () => {
     session = new ZoffSession(createContext(9)) as ZoffSession;
     session.mount(root);
     root.querySelector<HTMLButtonElement>('[data-start]')!.click();
-    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
     root.querySelector<HTMLButtonElement>('[data-draw]')!.click();
     root.querySelector<HTMLButtonElement>('[data-discard-reveal]')!.click();
     expect(root.querySelector('[data-reveal]')).not.toBeNull();
@@ -221,29 +220,25 @@ describe('zoff session', () => {
     session = new ZoffSession(createContext(30)) as ZoffSession;
     session.mount(root);
     root.querySelector<HTMLButtonElement>('[data-start]')!.click();
-    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
 
     const internal = session as unknown as {
       game: { phase: string; result: { scores: [number, number]; winner: 0 } };
-      ui: { handoffConfirmed: boolean };
       focusResultReplay: boolean;
       draw(): void;
     };
     internal.game.phase = 'finished';
     internal.game.result = { scores: [2, 4], winner: 0 };
-    internal.ui.handoffConfirmed = true;
     internal.focusResultReplay = true;
     internal.draw();
 
     expect(document.activeElement).toBe(root.querySelector('[data-restart]'));
   });
 
-  it('shows eating overlay on handoff after chain removal and keeps handoff usable', () => {
+  it('shows eating overlay during a turn toast after chain removal', () => {
     vi.useFakeTimers();
     session = new ZoffSession(createContext(12)) as ZoffSession;
     session.mount(root);
     root.querySelector<HTMLButtonElement>('[data-start]')!.click();
-    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
 
     const internal = session as unknown as {
       game: { activePlayer: 0 | 1 };
@@ -265,12 +260,13 @@ describe('zoff session', () => {
     );
     internal.draw();
 
-    expect(root.querySelector('.zoff-handoff')).not.toBeNull();
+    expect(root.querySelector('.zoff-turn-toast')).not.toBeNull();
     expect(root.querySelector('[data-eating-overlay]')).not.toBeNull();
-    expect(root.querySelector('[data-confirm-handoff]')).toBeNull();
+    expect(root.querySelector('[data-draw]')).toBeNull();
 
     vi.advanceTimersByTime(1_200);
-    expect(root.querySelector('[data-confirm-handoff]')).not.toBeNull();
+    expect(root.querySelector('.zoff-turn-toast')).toBeNull();
+    expect(root.querySelector('[data-draw]')).not.toBeNull();
     vi.useRealTimers();
   });
 
@@ -279,7 +275,6 @@ describe('zoff session', () => {
     session = new ZoffSession(createContext(12)) as ZoffSession;
     session.mount(root);
     root.querySelector<HTMLButtonElement>('[data-start]')!.click();
-    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
 
     const internal = session as unknown as {
       handleEvents(events: GameEvent[], previousActive: 0 | 1): void;
@@ -310,7 +305,6 @@ describe('zoff session', () => {
     session = new ZoffSession(createContext(12)) as ZoffSession;
     session.mount(root);
     root.querySelector<HTMLButtonElement>('[data-start]')!.click();
-    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
 
     const internal = session as unknown as {
       handleEvents(events: GameEvent[], previousActive: 0 | 1): void;
@@ -339,7 +333,6 @@ describe('zoff session', () => {
     session = new ZoffSession(createContext(12)) as ZoffSession;
     session.mount(root);
     root.querySelector<HTMLButtonElement>('[data-start]')!.click();
-    root.querySelector<HTMLButtonElement>('[data-confirm-handoff]')!.click();
 
     const internal = session as unknown as {
       handleEvents(events: GameEvent[], previousActive: 0 | 1): void;

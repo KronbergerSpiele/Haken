@@ -237,6 +237,7 @@ describe('zoff session', () => {
   });
 
   it('shows eating overlay on handoff after chain removal and keeps handoff usable', () => {
+    vi.useFakeTimers();
     session = new ZoffSession(createContext(12)) as ZoffSession;
     session.mount(root);
     root.querySelector<HTMLButtonElement>('[data-start]')!.click();
@@ -264,7 +265,11 @@ describe('zoff session', () => {
 
     expect(root.querySelector('.zoff-handoff')).not.toBeNull();
     expect(root.querySelector('[data-eating-overlay]')).not.toBeNull();
+    expect(root.querySelector('[data-confirm-handoff]')).toBeNull();
+
+    vi.advanceTimersByTime(1_200);
     expect(root.querySelector('[data-confirm-handoff]')).not.toBeNull();
+    vi.useRealTimers();
   });
 
   it('dismisses eating overlay after the presentation timer expires', () => {

@@ -454,8 +454,7 @@ The following automated boundaries are required:
 - runtime tests verify command ordering, seeded randomness, pause offsets,
   single-session ownership, and cleanup;
 - graphics tests verify safe text insertion, effect cancellation, theme
-  scoping, node caps, reduced-motion mappings, semantic interaction colors, and
-  named layer ordering for overlapping feedback;
+  scoping, node caps, and reduced-motion mappings;
 - catalog tests verify unique IDs, valid metadata, lazy-load success, and that
   every registered game satisfies the contract;
 - router tests verify query parsing, subpath-safe URL generation, unknown IDs,

@@ -351,13 +351,21 @@ Zoff in the Sky is a self-contained turn-based game module at
   contrast text, and cyan/magenta laser accent colors via `applyZoffTokens`.
 - `session.ts` routes click, keyboard, and pointer drag-and-drop input into
   reducer commands; there is no separate `controls.ts`.
-- Turn changes trigger a board-flip presentation effect; reduced-motion maps it
-  to a short fade or static active-player emphasis.
+- When the reducer changes the active player, the session renders a
+  presentation-only 1.2-second turn-complete interstitial before rendering the
+  next-player handoff. It hides both boards, cancels drag input, and is cleared
+  on restart or disposal. The subsequent handoff triggers a board-flip
+  presentation effect; reduced-motion maps the flip to a short fade or static
+  active-player emphasis.
 - The view renders the active player's full grid, a compact opponent grid, pass-
   device privacy for inspected draws, compact edge eating indicators as miniature
   animal-art sprites on dark tiles with subtle laser border accents, and stronger
   contextual valid-link connectors. Accessible labels and tooltips mirror full
   species names and predator/prey relations.
+  Its play grid has four vertical tracks (opponent, piles, active board, status).
+  The pile strip orders discard before draw and owns a fixed right-side content
+  region that switches from normal pile actions to the private draw decision,
+  avoiding a new track and board movement during inspection.
 - Each board header projects an interim score: visible face-up subtotal plus
   hidden occupied count. Final totals render only in the `finished` phase after
   full reveal and scoring.
@@ -431,7 +439,8 @@ The following automated boundaries are required:
   plus DOM smoke tests in `view.test.ts`—including stock-unsafe gaps not marked
   placeable, interim header scores versus finished totals, icon-based edge
   indicators with accessible species labels, board-flip or reduced-motion turn
-  handoff, deck/discard drag to legal slots with outside-drop preserving pending
+  handoff, the turn-complete delay before that handoff, deck/discard drag to
+  legal slots with outside-drop preserving pending
   state, and chain-removal presentation that does not alter reducer outcomes—
   and lifecycle cleanup in `session.test.ts`;
 - end-to-end smoke tests launch Haken, leave it, launch it again, and confirm

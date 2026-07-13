@@ -14,6 +14,7 @@ import {
 
 const EATING_OVERLAY_MS = 900;
 const EATING_OVERLAY_REDUCED_MS = 450;
+const TURN_HANDOFF_DELAY_MS = 1_200;
 
 export class ZoffSession implements GameSession {
   private game: GameState;
@@ -24,6 +25,7 @@ export class ZoffSession implements GameSession {
   private focusResultReplay = false;
   private drag: ZoffDragController | null = null;
   private flipTimer: number | null = null;
+  private handoffTimer: number | null = null;
   private eatingOverlayTimer: number | null = null;
   private readonly clickHandler: (event: Event) => void;
   private readonly keyHandler: (event: KeyboardEvent) => void;
@@ -97,6 +99,7 @@ export class ZoffSession implements GameSession {
     if (this.disposed) return;
     this.disposed = true;
     this.clearFlipTimer();
+    this.clearHandoffTimer();
     this.clearEatingOverlay();
     this.drag?.dispose();
     this.drag = null;
@@ -202,7 +205,7 @@ export class ZoffSession implements GameSession {
       this.game.phase !== 'setup' &&
       this.game.phase !== 'finished'
     ) {
-      this.resetHandoff(true);
+      this.scheduleHandoff();
     }
 
     if (events.some((event) => event.type === 'tookDiscard' || event.type === 'drew')) {
@@ -241,10 +244,35 @@ export class ZoffSession implements GameSession {
   }
 
   private resetHandoff(animateFlip = false): void {
+    this.clearHandoffTimer();
     this.drag?.cancel();
+    this.ui.handoffPending = false;
     this.ui.handoffConfirmed = false;
     this.ui.discardRevealMode = false;
     if (animateFlip) this.triggerTurnFlip();
+  }
+
+  private scheduleHandoff(): void {
+    this.clearHandoffTimer();
+    this.drag?.cancel();
+    this.ui.handoffPending = true;
+    this.ui.handoffConfirmed = false;
+    this.ui.discardRevealMode = false;
+    this.ui.statusMessage = 'Zug beendet.';
+    this.context.announce(this.ui.statusMessage);
+    this.handoffTimer = window.setTimeout(() => {
+      this.handoffTimer = null;
+      if (this.disposed) return;
+      this.resetHandoff(true);
+      this.draw();
+    }, TURN_HANDOFF_DELAY_MS);
+  }
+
+  private clearHandoffTimer(): void {
+    if (this.handoffTimer !== null) {
+      window.clearTimeout(this.handoffTimer);
+      this.handoffTimer = null;
+    }
   }
 
   private triggerTurnFlip(): void {
@@ -301,6 +329,7 @@ export class ZoffSession implements GameSession {
   private restart(useNewSeed: boolean): void {
     this.drag?.cancel();
     this.clearFlipTimer();
+    this.clearHandoffTimer();
     this.clearEatingOverlay();
     const seed = useNewSeed ? this.context.random.nextUint32() || 1 : this.context.seed;
     this.game = createGame(seed);

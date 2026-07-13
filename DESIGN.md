@@ -263,10 +263,12 @@ The active player sees their full grid and a compact read-only opponent grid.
 Inspected draw cards use pass-device privacy: only the active player may view
 the drawn card before placing or discarding it.
 
-Turn handoff and confirmation use a polished **board flip** transition so the
-active side reads upright after each change. Reduced-motion mode replaces the
-flip with a short fade or static state change that preserves the same
-information.
+After a player completes a turn, a 1.2-second **Zug beendet** confirmation is
+shown before the next-player handoff modal. The confirmation does not reveal the
+next player's board. Turn handoff and confirmation use a polished **board flip**
+transition so the active side reads upright after each change. Reduced-motion
+mode replaces the flip with a short fade or static state change that preserves
+the same information.
 
 Each card shows stylized flat geometric animal art: exaggerated silhouettes,
 bold outlines, and a limited palette in a board-game illustration style. Local
@@ -312,10 +314,12 @@ right—position, not fill color, is the primary cue.
 
 The active player's board receives a cyan laser accent border and the **Am Zug**
 badge during their turn. Legal placement, reveal, and drag-target cells use
-stronger cyan or magenta outline and inset feedback. The private draw decision
-panel is visually primary when inspecting a drawn card, with a magenta laser
-emphasis; the status line steps back to a lighter, smaller treatment so phase
-guidance does not compete with the hidden-card choice.
+stronger cyan or magenta outline and inset feedback. The pile strip presents
+the discard to the left of the draw pile. When inspecting a drawn card, its
+private decision controls use the space to the right of both piles instead of
+adding a new vertical area, so the boards do not shift. The private choice
+remains visually primary with a magenta laser emphasis while the status line
+steps back to a lighter, smaller treatment.
 
 After deterministic chain resolution, removed runs receive a playful eating
 animation—icon bites, pops, or similar emphasis on the cleared cards with laser
@@ -385,8 +389,10 @@ announcements support non-gesture and assistive use.
   turn before automatic full reveal, chain resolution, and scoring.
 - Lowest total value wins; equal totals are a draw.
 - Same seed and command sequence produce the same grid, chains, and score.
-- Turn handoff uses a board flip transition; reduced-motion substitutes a short
-  fade or static state change with the same information.
+- A 1.2-second turn-complete confirmation separates a completed turn from the
+  next-player handoff without revealing the next player's board; handoff uses a
+  board flip transition, while reduced-motion substitutes a short fade or
+  static state change with the same information.
 - Eating edge indicators use miniature animal-art icons for prey (left) and
   predators (right), not text abbreviations; accessible labels and tooltips
   state full species names and relationships without relying on color alone.
@@ -406,6 +412,9 @@ announcements support non-gesture and assistive use.
 - The active player's board is visually distinguished with a cyan laser accent
   during their turn; private draw decisions outrank the status line in visual
   hierarchy with magenta laser emphasis.
+- The discard appears before the draw pile, and an inspected draw uses the
+  existing space to their right without adding a layout row or shifting either
+  board.
 - Chain removal plays a presentation-only eating animation after deterministic
   resolution; reduced-motion uses static text emphasis instead.
 - All twelve species and the card back render from bundled local artwork with

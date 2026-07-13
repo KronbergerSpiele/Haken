@@ -18,6 +18,7 @@ import { escapeHtml } from '../../graphics/primitives';
 
 export interface UiState {
   handoffConfirmed: boolean;
+  handoffPending: boolean;
   discardRevealMode: boolean;
   statusMessage: string;
   chainFeedback: string | null;
@@ -28,6 +29,7 @@ export interface UiState {
 
 export const INITIAL_UI: UiState = {
   handoffConfirmed: false,
+  handoffPending: false,
   discardRevealMode: false,
   statusMessage: '',
   chainFeedback: null,
@@ -189,7 +191,33 @@ function boardMarkup(
   </section>`;
 }
 
-function pileMarkup(state: GameState, interactive: boolean): string {
+function pileActionsMarkup(state: GameState, interactive: boolean): string {
+  const top = getVisibleDiscard(state);
+  const canTake =
+    interactive &&
+    (state.phase === 'awaitingAction' || state.phase === 'finalTurn') &&
+    top !== null;
+
+  const canDraw =
+    interactive && (state.phase === 'awaitingAction' || state.phase === 'finalTurn');
+
+  if (!canTake && !canDraw) return '';
+
+  return `<div class="zoff-pile-actions">
+    ${
+      canTake
+        ? `<button type="button" class="zoff-action" data-take-discard>Ablage nehmen</button>`
+        : ''
+    }
+    ${
+      canDraw
+        ? `<button type="button" class="zoff-action zoff-action--primary" data-draw>Verdeckt ziehen</button>`
+        : ''
+    }
+  </div>`;
+}
+
+function pileMarkup(state: GameState, interactive: boolean, ui: UiState): string {
   const top = getVisibleDiscard(state);
   const discardContent = top
     ? cardFaceMarkup(top.species, { compact: true })
@@ -202,27 +230,19 @@ function pileMarkup(state: GameState, interactive: boolean): string {
   const canDraw =
     interactive && (state.phase === 'awaitingAction' || state.phase === 'finalTurn');
 
-  return `<section class="zoff-piles" aria-label="Stapel">
+  const privateDecision = privateDecisionMarkup(state, ui);
+  const sideContent = privateDecision || pileActionsMarkup(state, interactive);
+
+  return `<section class="zoff-piles${privateDecision ? ' zoff-piles--inspecting' : ''}" aria-label="Stapel">
     <div class="zoff-pile-edge-gutter" aria-hidden="true"></div>
+    <div class="zoff-pile zoff-pile--discard${canTake ? ' zoff-pile--draggable' : ''}" data-drag-discard aria-label="Ablagestapel">
+      ${discardContent}
+    </div>
     <div class="zoff-pile zoff-pile--deck${canDraw ? ' zoff-pile--draggable' : ''}" data-drag-deck aria-label="Ziehstapel, ${state.drawPile.length} Karten">
       ${cardBackMarkup({ compact: true })}
       <span class="zoff-pile-count">${state.drawPile.length}</span>
     </div>
-    <div class="zoff-pile zoff-pile--discard${canTake ? ' zoff-pile--draggable' : ''}" data-drag-discard aria-label="Ablagestapel">
-      ${discardContent}
-    </div>
-    <div class="zoff-pile-actions">
-      ${
-        canTake
-          ? `<button type="button" class="zoff-action" data-take-discard>Ablage nehmen</button>`
-          : ''
-      }
-      ${
-        interactive && (state.phase === 'awaitingAction' || state.phase === 'finalTurn')
-          ? `<button type="button" class="zoff-action zoff-action--primary" data-draw>Verdeckt ziehen</button>`
-          : ''
-      }
-    </div>
+    ${sideContent ? `<div class="zoff-pile-strip-side">${sideContent}</div>` : ''}
   </section>`;
 }
 
@@ -238,13 +258,13 @@ function privateDecisionMarkup(state: GameState, ui: UiState): string {
   if (state.phase !== 'inspectingDraw' || !ui.handoffConfirmed || !state.pendingCard) return '';
   const species = state.pendingCard.card.species;
   const actions = pendingActionsMarkup(state, ui);
-  return `<section class="zoff-private-decision" aria-label="Entscheidung zur gezogenen Karte">
+  return `<div class="zoff-private-decision" role="region" aria-label="Entscheidung zur gezogenen Karte">
     <div class="zoff-private-draw" aria-label="Gezogene Karte nur für den aktiven Spieler">
       <p class="zoff-private-draw__hint">Nur du siehst diese Karte.</p>
-      ${cardFaceMarkup(species)}
+      ${cardFaceMarkup(species, { compact: true })}
     </div>
     ${actions ? `<div class="zoff-private-decision__actions">${actions}</div>` : ''}
-  </section>`;
+  </div>`;
 }
 
 function handoffMarkup(state: GameState): string {
@@ -258,6 +278,14 @@ function handoffMarkup(state: GameState): string {
       : ''
   }
     <button type="button" class="zoff-start-button" data-confirm-handoff>Bereit</button>
+  </main>`;
+}
+
+function turnCompleteMarkup(): string {
+  return `<main class="zoff-handoff zoff-turn-complete" aria-live="polite">
+    <p class="zoff-handoff__kicker">Zug beendet</p>
+    <h2>Gut gespielt!</h2>
+    <p class="zoff-handoff__text">Der nächste Zug wird vorbereitet.</p>
   </main>`;
 }
 
@@ -304,12 +332,12 @@ function resultMarkup(state: GameState, ui: UiState): string {
 
 function playMarkup(state: GameState, ui: UiState): string {
   const opponent: PlayerId = state.activePlayer === 0 ? 1 : 0;
-  const decision = privateDecisionMarkup(state, ui);
+  const inspecting =
+    state.phase === 'inspectingDraw' && ui.handoffConfirmed && state.pendingCard !== null;
 
-  return `<div class="zoff-game${decision ? ' zoff-game--inspecting' : ''}">
+  return `<div class="zoff-game${inspecting ? ' zoff-game--inspecting' : ''}">
     <div class="zoff-game__opponent">${boardMarkup(state, opponent, { compact: true, interactive: false, ui })}</div>
-    <div class="zoff-game__piles">${pileMarkup(state, true)}</div>
-    <div class="zoff-game__decision${decision ? '' : ' zoff-game__decision--empty'}"${decision ? '' : ' aria-hidden="true"'}>${decision}</div>
+    <div class="zoff-game__piles">${pileMarkup(state, true, ui)}</div>
     <div class="zoff-game__active">${boardMarkup(state, state.activePlayer, { compact: false, interactive: true, ui })}</div>
     <div class="zoff-game__status"><div class="zoff-status" aria-live="polite">${escapeHtml(ui.statusMessage || phaseInstructions(state, ui))}</div></div>
     <div class="zoff-landscape-warning"><b>Handy drehen</b><span>Zoff spielt man hochkant.</span></div>
@@ -328,13 +356,17 @@ export function eatingOverlaysMarkup(state: GameState, ui: UiState): string {
 
 function renderContent(state: GameState, ui: UiState): string {
   if (state.phase === 'setup') return setupMarkup();
+  if (ui.handoffPending) return turnCompleteMarkup();
   if (!ui.handoffConfirmed) return handoffMarkup(state);
   return playMarkup(state, ui);
 }
 
 export function applyPresentationClasses(root: HTMLElement, state: GameState, ui: UiState): void {
-  root.classList.toggle('zoff-root--handoff', state.phase !== 'setup' && !ui.handoffConfirmed);
-  root.classList.toggle('zoff-root--playing', ui.handoffConfirmed && state.phase !== 'setup');
+  root.classList.toggle(
+    'zoff-root--handoff',
+    state.phase !== 'setup' && !ui.handoffConfirmed && !ui.handoffPending,
+  );
+  root.classList.toggle('zoff-root--playing', ui.handoffConfirmed && !ui.handoffPending && state.phase !== 'setup');
   root.classList.toggle('zoff-root--turn-flip', ui.turnFlipActive);
   root.classList.toggle('zoff-root--eating-overlay', ui.eatingOverlayChains.length > 0);
 }
